@@ -13,7 +13,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-with open('README.txt') as file:
+with open('README.md') as file:
     readme = file.read()
 
 requires = [
