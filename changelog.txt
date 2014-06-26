@@ -1,0 +1,6 @@
+Changelog PRTG Probe
+Version 0.1 ALPHA
+    Initial code
+Version 0.2 ALPHA
+    Changed http lib to requests
+    kicked out all strings, now working with dicts only
