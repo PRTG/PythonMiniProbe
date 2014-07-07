@@ -166,7 +166,7 @@ Successfully imported modules.
             probe_user = "%s" % str(
                 raw_input("Please provide the username the script should run under: ")).rstrip().lstrip()
             probe_conf['name'] = "%s" % str(
-                raw_input("Please provide the desired name of your Smallprobe [Python MiniProbe]: ")).rstrip().lstrip()
+                raw_input("Please provide the desired name of your Mini Probe [Python MiniProbe]: ")).rstrip().lstrip()
             probe_conf['gid'] = "%s" % str(
                 raw_input("Please provide the Probe GID (any unique alphanumercial string): ")).rstrip().lstrip()
             probe_conf['server'] = "%s" % str(
@@ -178,7 +178,7 @@ Successfully imported modules.
             probe_conf['key'] = "%s" % str(
                 raw_input("Please provide the Probe Access Key as defined on the PRTG Core: ")).rstrip().lstrip()
             probe_path = "%s" % str(
-                            raw_input("Please provide the path the probe file are located: ")).rstrip().lstrip()
+                            raw_input("Please provide the path the probe files are located: ")).rstrip().lstrip()
             probe_cleanmem = "%s" % str(
                             raw_input("Do you want the mini probe flushing buffered and cached memory [y/N]: ")).rstrip().lstrip()
             probe_conf['announced'] = "0"
@@ -203,6 +203,9 @@ Successfully imported modules.
             else:
                 write_config(probe_conf)
                 print "Config file successfully created"
+                logpath = "%s/logs" % probe_path
+                if not (file_check(logpath)):
+                    os.makedirs(logpath)
                 conf_avail = True
         except Exception, e:
             print "%s. Exiting!" % e
