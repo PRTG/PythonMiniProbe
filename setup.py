@@ -13,8 +13,8 @@ try:
 except ImportError:
     from distutils.core import setup
 
-with open('README.md') as file:
-    readme = file.read()
+with open('README.md') as f:
+    readme = f.read()
 
 requires = [
     "pysnmp >= 4.2.5",
