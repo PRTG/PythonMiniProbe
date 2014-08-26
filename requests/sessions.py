@@ -91,9 +91,16 @@ class SessionRedirectMixin(object):
         """Receives a Response. Returns a generator of Responses."""
 
         i = 0
+        hist = [] # keep track of history
 
         while resp.is_redirect:
             prepared_request = req.copy()
+
+            if i > 0:
+                # Update history and keep track of redirects.
+                hist.append(resp)
+                new_hist = list(hist)
+                resp.history = new_hist
 
             try:
                 resp.content  # Consume socket so it can be released
@@ -118,7 +125,7 @@ class SessionRedirectMixin(object):
             parsed = urlparse(url)
             url = parsed.geturl()
 
-            # Facilitate non-RFC2616-compliant 'location' headers
+            # Facilitate relative 'location' headers, as allowed by RFC 7231.
             # (e.g. '/path/to/resource' instead of 'http://domain.tld/path/to/resource')
             # Compliant with RFC3986, we percent encode the url.
             if not urlparse(url).netloc:
@@ -127,8 +134,11 @@ class SessionRedirectMixin(object):
                 url = requote_uri(url)
 
             prepared_request.url = to_native_string(url)
+            # cache the url
+            if resp.is_permanent_redirect:
+                self.redirect_cache[req.url] = prepared_request.url
 
-            # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.4
+            # http://tools.ietf.org/html/rfc7231#section-6.4.4
             if (resp.status_code == codes.see_other and
                     method != 'HEAD'):
                 method = 'GET'
@@ -146,7 +156,7 @@ class SessionRedirectMixin(object):
             prepared_request.method = method
 
             # https://github.com/kennethreitz/requests/issues/1084
-            if resp.status_code not in (codes.temporary, codes.resume):
+            if resp.status_code not in (codes.temporary_redirect, codes.permanent_redirect):
                 if 'Content-Length' in prepared_request.headers:
                     del prepared_request.headers['Content-Length']
 
@@ -263,7 +273,7 @@ class Session(SessionRedirectMixin):
     __attrs__ = [
         'headers', 'cookies', 'auth', 'timeout', 'proxies', 'hooks',
         'params', 'verify', 'cert', 'prefetch', 'adapters', 'stream',
-        'trust_env', 'max_redirects']
+        'trust_env', 'max_redirects', 'redirect_cache']
 
     def __init__(self):
 
@@ -315,6 +325,8 @@ class Session(SessionRedirectMixin):
         self.adapters = OrderedDict()
         self.mount('https://', HTTPAdapter())
         self.mount('http://', HTTPAdapter())
+
+        self.redirect_cache = {}
 
     def __enter__(self):
         return self
@@ -431,11 +443,11 @@ class Session(SessionRedirectMixin):
                 proxies.setdefault(k, v)
 
             # Look for configuration.
-            if not verify and verify is not False:
+            if verify is True or verify is None:
                 verify = os.environ.get('REQUESTS_CA_BUNDLE')
 
             # Curl compatibility.
-            if not verify and verify is not False:
+            if verify is True or verify is None:
                 verify = os.environ.get('CURL_CA_BUNDLE')
 
         # Merge all the kwargs.
@@ -539,6 +551,9 @@ class Session(SessionRedirectMixin):
         # Guard against that specific failure case.
         if not isinstance(request, PreparedRequest):
             raise ValueError('You can only send PreparedRequests.')
+
+        while request.url in self.redirect_cache:
+            request.url = self.redirect_cache.get(request.url)
 
         # Set up variables needed for resolve_redirects and dispatching of hooks
         allow_redirects = kwargs.pop('allow_redirects', True)
