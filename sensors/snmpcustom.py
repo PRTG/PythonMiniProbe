@@ -1,12 +1,23 @@
 #!/usr/bin/env python
 #Copyright (c) 2014, Paessler AG <support@paessler.com>
 #All rights reserved.
-#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-#1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# following conditions are met:
+#1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# and the following disclaimer.
+#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+# and the following disclaimer in the documentation and/or other materials provided with the distribution.
+#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
+# or promote products derived from this software without specific prior written permission.
 
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
 import gc
@@ -45,16 +56,16 @@ class SNMPCustom(object):
         Definition of the sensor and data to be shown in the PRTG WebGUI
         """
         sensordefinition = {
-            "kind" : SNMPCustom.get_kind(),
-            "name" : "SNMP Custom",
-            "description" : "Monitors a numerical value returned by a specific OID using SNMP",
-            "help" : "",
-            "tag" : "mpsnmpcustomsensor",
-            "groups" : [
+            "kind": SNMPCustom.get_kind(),
+            "name": "SNMP Custom",
+            "description": "Monitors a numerical value returned by a specific OID using SNMP",
+            "help": "",
+            "tag": "mpsnmpcustomsensor",
+            "groups": [
                 {
-                    "name" : "OID values",
-                    "caption" : "OID values",
-                    "fields" : [
+                    "name": "OID values",
+                    "caption": "OID values",
+                    "fields": [
                         {
                             "type": "edit",
                             "name": "oid",
@@ -75,21 +86,22 @@ class SNMPCustom(object):
                             "name": "value_type",
                             "caption": "Value Type",
                             "required": "1",
-                            "help": "Select 'Gauge' if you want to see absolute values (e.g. for temperature value) or 'Delta' for counter differences divided by time period (e.g. for bandwidth values)",
-                            "options":{
-                                "1":"Gauge",
-                                "2":"Delta"
+                            "help": "Select 'Gauge' if you want to see absolute values (e.g. for temperature value) "
+                                    "or 'Delta' for counter differences divided by time period "
+                                    "(e.g. for bandwidth values)",
+                            "options": {
+                                "1": "Gauge",
+                                "2": "Delta"
                             },
                             "default": 1
                         },
-
                         {
                             "type": "integer",
                             "name": "multiplication",
                             "caption": "Multiplication",
                             "required": "1",
                             "default": 1,
-                            "help": "Provide a value the raw SNMP value is to be multipled by."
+                            "help": "Provide a value the raw SNMP value is to be multiplied by."
                         },
                         {
                             "type": "integer",
@@ -105,10 +117,10 @@ class SNMPCustom(object):
                             "caption": "SNMP Version",
                             "required": "1",
                             "help": "Choose your SNMP Version",
-                            "options":{
-                                "1":"V1",
-                                "2":"V2c",
-                                "3":"V3"
+                            "options": {
+                                "1": "V1",
+                                "2": "V2c",
+                                "3": "V3"
                             },
                             "default": 2
                         },
@@ -130,60 +142,66 @@ class SNMPCustom(object):
                     ]
                 }
             ]
-            }
+        }
         return sensordefinition
 
-    def snmp_get(self, oid, target, snmpversion, type, community, port, unit, multiplication=1, division=1):
+    def snmp_get(self, oid, target, snmp_type, community, port, unit, multiplication=1, division=1):
         try:
             sys.path.append('./')
             from pysnmp.entity.rfc3413.oneliner import cmdgen
-        except Exception as e:
-            print log.log_custom(e)
+        except Exception as import_error:
+            print log.log_custom(import_error)
         snmpget = cmdgen.CommandGenerator()
-        errorIndication, errorStatus, errorIndex, varBinding = snmpget.getCmd(cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), oid)
-        channellist = []
+        error_indication, error_status, error_index, var_binding = snmpget.getCmd(
+            cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), oid)
 
-        if type == "1":
-            channellist = [{"name": "Value",
-                        "mode" : "integer",
-                        "kind" : "custom",
-                        "customunit" : "",
-                        "value" : (int(varBinding[0][1]) * int(multiplication)) / int(division)
-                        }]
+        if snmp_type == "1":
+            channellist = [
+                {
+                    "name": "Value",
+                    "mode": "integer",
+                    "kind": "custom",
+                    "customunit": "",
+                    "value": (int(var_binding[0][1]) * int(multiplication)) / int(division)
+                }
+            ]
         else:
-            channellist = [{"name": "Value",
-                        "mode" : "counter",
-                        "kind" : "custom",
-                        "customunit" : "%s" % unit,
-                        "value" : (int(varBinding[0][1]) * int(multiplication)) / int(division)
-                        }]
+            channellist = [
+                {
+                    "name": "Value",
+                    "mode": "counter",
+                    "kind": "custom",
+                    "customunit": "%s" % unit,
+                    "value": (int(var_binding[0][1]) * int(multiplication)) / int(division)
+                }
+            ]
         return channellist
 
-
     @staticmethod
-    def get_data(data, q=None):
-        log = Logger()
+    def get_data(data):
         snmpcustom = SNMPCustom()
         try:
-            snmp_data = snmpcustom.snmp_get(str(data['oid']), data['host'], data['snmp_version'], data['value_type'], data['community'], int(data['port']), data['unit'], int(data['multiplication']),int(data['division']))
-        except Exception as e:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (snmpcustom.get_kind(), data['sensorid'], e))
+            snmp_data = snmpcustom.snmp_get(str(data['oid']), data['host'], data['value_type'],
+                                            data['community'], int(data['port']), data['unit'],
+                                            int(data['multiplication']), int(data['division']))
+        except Exception as get_data_error:
+            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (snmpcustom.get_kind(),
+                                                                                          data['sensorid'],
+                                                                                          get_data_error))
             data = {
-                "sensorid" : int(data['sensorid']),
-                "error" : "Exception",
-                "code" : 1,
-                "message" : "SNMP Request failed. See log for details",
+                "sensorid": int(data['sensorid']),
+                "error": "Exception",
+                "code": 1,
+                "message": "SNMP Request failed. See log for details"
             }
             return data
 
         data = {
-            "sensorid" : int(data['sensorid']),
-            "message" : "OK",
-            "channel":
-                snmp_data
-            }
+            "sensorid": int(data['sensorid']),
+            "message": "OK",
+            "channel": snmp_data
+        }
         del log
         del snmpcustom
         gc.collect()
         return data
-

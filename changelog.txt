@@ -4,3 +4,8 @@ Version 0.1 ALPHA
 Version 0.2 ALPHA
     Changed http lib to requests
     kicked out all strings, now working with dicts only
+
+Version 14.3.2
+    - updated module requests
+    - made code PEP8 compliant
+

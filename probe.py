@@ -1,14 +1,26 @@
 #!/usr/bin/env python
 #Copyright (c) 2014, Paessler AG <support@paessler.com>
 #All rights reserved.
-#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-#1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# following conditions are met:
+#1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# and the following disclaimer.
+#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+# and the following disclaimer in the documentation and/or other materials provided with the distribution.
+#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
+# or promote products derived from this software without specific prior written permission.
 
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-### PRTG Python Miniprobe v0.2 ALPHA
+
+### PRTG Python Miniprobe
 ### Miniprobe needs at least Python 2.7 because of "importlib"
 ### If older python version is used you will have to install "importlib"
 
@@ -39,7 +51,7 @@ class Probe(object):
     """
     def __init__(self):
         gc.enable()
-        log = Logger()
+        self.log = Logger()
         pass
 
     def get_import_sensors(self):
@@ -50,8 +62,8 @@ class Probe(object):
         for mod in sensors.__all__:
             try:
                 sensor_objects.append(self.load_class("sensors.%s.%s" % (mod.lower(), mod)))
-            except Exception as e:
-                print e
+            except Exception as import_error:
+                print import_error
         return sensor_objects
 
     def load_class(self, full_class_string):
@@ -77,8 +89,8 @@ class Probe(object):
                         config[line.split(':')[0]] = line.split(':')[1].rstrip()
             conf_file.close()
             return config
-        except Exception, e:
-            self.log.log("No config found! Error Message: %s Exiting!" % e)
+        except Exception as read_error:
+            self.log.log("No config found! Error Message: %s Exiting!" % read_error)
             sys.exit()
 
     def hash_access_key(self, key):
@@ -93,7 +105,7 @@ class Probe(object):
         """
         if i == 'announce':
             return {'gid': config['gid'], 'key': self.hash_access_key(config['key']), 'protocol': config['protocol'],
-                 'name': config['name'],'baseinterval': config['baseinterval'], 'sensors': jsondata}
+                    'name': config['name'], 'baseinterval': config['baseinterval'], 'sensors': jsondata}
         else:
             return {'gid': config['gid'], 'key': self.hash_access_key(config['key']), 'protocol': config['protocol']}
 
@@ -105,9 +117,10 @@ class Probe(object):
         if not (i is None) and (i != "data"):
             return "https://%s:%s/probe/%s" % (
                 config['server'], config['port'], i)
-        elif (i == "data"):
-            return "https://%s:%s/probe/%s?gid=%s&protocol=%s&key=%s"  % (
-                config['server'], config['port'], i, config['gid'], config['protocol'], self.hash_access_key(config['key']))
+        elif i == "data":
+            return "https://%s:%s/probe/%s?gid=%s&protocol=%s&key=%s" % (config['server'], config['port'], i,
+                                                                         config['gid'], config['protocol'],
+                                                                         self.hash_access_key(config['key']))
             pass
         else:
             return "No method given"
@@ -153,17 +166,21 @@ class Probe(object):
                 if config['debug']:
                     log.log_custom(config['server'])
                     log.log_custom(config['port'])
-                    log.log_custom("Status Code: %s | Message: %s" % (request_announce.status_code, request_announce.text))
+                    log.log_custom("Status Code: %s | Message: %s" % (request_announce.status_code,
+                                                                      request_announce.text))
                 request_announce.close()
-            except Exception as e:
-                log.log_custom(e)
+            except Exception as announce_error:
+                log.log_custom(announce_error)
                 time.sleep(int(config['baseinterval']) / 2)
 
         while not probe_stop:
             # creating some objects only needed in loop
             url_task = mini_probe.create_url(config, 'tasks')
-            task_data = {'gid':config['gid'], 'protocol':config['protocol'], 'key':key_sha1}
-
+            task_data = {
+                'gid': config['gid'],
+                'protocol': config['protocol'],
+                'key': key_sha1
+            }
             task = False
             while not task:
                 json_payload_data = []
@@ -176,12 +193,12 @@ class Probe(object):
                     log.log(True, None, config, "TASK", None, None)
                     if config['debug']:
                         log.log_custom(url_task)
-                except Exception as e:
-                    log.log_custom(e)
+                except Exception as announce_error:
+                    log.log_custom(announce_error)
                     time.sleep(int(config['baseinterval']) / 2)
             gc.collect()
             if str(json_response) != '[]':
-                json_response_chunks = [json_response[i:i+10] for i in range(0, len(json_response), 10)]
+                json_response_chunks = [json_response[i:i + 10] for i in range(0, len(json_response), 10)]
                 for element in json_response_chunks:
                     for part in element:
                         if config['debug']:
@@ -201,9 +218,9 @@ class Probe(object):
                             log.log_custom(json_payload_data)
                         request_data.close()
                         json_payload_data = []
-                    except Exception as e:
-                        log.log_custom(e)
-                    if (len(json_response) > 10):
+                    except Exception as announce_error:
+                        log.log_custom(announce_error)
+                    if len(json_response) > 10:
                         time.sleep((int(config['baseinterval']) * (9 / len(json_response))))
                     else:
                         time.sleep(int(config['baseinterval']) / 2)

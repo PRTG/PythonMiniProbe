@@ -1,12 +1,23 @@
 #!/usr/bin/env python
 #Copyright (c) 2014, Paessler AG <support@paessler.com>
 #All rights reserved.
-#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-#1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# following conditions are met:
+#1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# and the following disclaimer.
+#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+# and the following disclaimer in the documentation and/or other materials provided with the distribution.
+#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
+# or promote products derived from this software without specific prior written permission.
 
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### Quick and Dirty Setup Script for the Mini Probe
 import sys
@@ -20,14 +31,14 @@ if sys.version_info < (2, 7):
     sys.exit(2)
 
 
-def file_check(path):
+def file_check(check_path):
     # Check if a give file exists
-    return os.path.exists(path)
+    return os.path.exists(check_path)
 
 
-def file_create(path):
+def file_create(create_path):
     # Creates a given file and writes some startup information to it
-    with open(path, 'w') as f:
+    with open(create_path, 'w') as f:
         f.write("###Mini Probe Config File\n")
         f.close()
 
@@ -42,13 +53,13 @@ def write_config(config):
     print "Config file successfully written!"
 
 
-def write_file(path, content):
-    with open(path, 'w') as f:
+def write_file(write_path, content):
+    with open(write_path, 'w') as f:
         f.write(content)
     f.close()
 
 
-def logrotation(path):
+def logrotation(rotation_path):
     rotatetemplate = """%s/logs/probe.log {
     rotate 4
     daily
@@ -56,11 +67,11 @@ def logrotation(path):
     compress
     missingok
     }
-    """ % path
+    """ % rotation_path
     return rotatetemplate
 
 
-def init_script(path, user):
+def init_script(script_path, user):
     scripttemplate = """
 #!/usr/bin/env sh
 
@@ -120,7 +131,7 @@ case "$1" in
 
 esac
 exit 0
-""" % (path, user)
+""" % (script_path, user)
     return scripttemplate
 
 if __name__ == '__main__':
@@ -150,14 +161,11 @@ Checking for necessary modules and Python Version
     print "."
     time.sleep(1)
     print "."
-
-
     path = './probe.conf'
-
     print """
 Successfully imported modules.
     """
-    if (file_check(path)):
+    if file_check(path):
         print "Config file found. Skipping Configuration."
     else:
         print "No configuration file found. Creating."
@@ -169,19 +177,20 @@ Successfully imported modules.
             probe_conf['name'] = "%s" % str(
                 raw_input("Please provide the desired name of your Mini Probe [Python MiniProbe]: ")).rstrip().lstrip()
             probe_conf['gid'] = "%s" % str(
-                raw_input("Please provide the Probe GID (any unique alphanumercial string): ")).rstrip().lstrip()
+                raw_input("Please provide the Probe GID (any unique alphanumerical string): ")).rstrip().lstrip()
             probe_conf['server'] = "%s" % str(
                 raw_input("Please provide the IP/DNS name of the PRTG Core Server: ")).rstrip().lstrip()
             probe_conf['port'] = "%s" % str(raw_input(
-                "Please provide the port the PRTG web server is listening to (IMPORTANT: Only SSL is supported)[443]: ")).rstrip().lstrip()
+                "Please provide the port the PRTG web server is listening to "
+                "(IMPORTANT: Only SSL is supported)[443]: ")).rstrip().lstrip()
             probe_conf['baseinterval'] = "%s" % str(
                 raw_input("Please provide the base interval for your sensors [60]: ")).rstrip().lstrip()
             probe_conf['key'] = "%s" % str(
                 raw_input("Please provide the Probe Access Key as defined on the PRTG Core: ")).rstrip().lstrip()
             probe_path = "%s" % str(
-                            raw_input("Please provide the path the probe files are located: ")).rstrip().lstrip()
+                raw_input("Please provide the path the probe files are located: ")).rstrip().lstrip()
             probe_cleanmem = "%s" % str(
-                            raw_input("Do you want the mini probe flushing buffered and cached memory [y/N]: ")).rstrip().lstrip()
+                raw_input("Do you want the mini probe flushing buffered and cached memory [y/N]: ")).rstrip().lstrip()
             probe_conf['announced'] = "0"
             probe_conf['protocol'] = "1"
             probe_conf['debug'] = ""
@@ -225,7 +234,8 @@ Successfully imported modules.
         print subprocess.call(["update-rc.d", "probe.sh", "defaults"], shell=True)
         print "Starting Mini Probe"
         print subprocess.call("/etc/init.d/probe.sh start", shell=True)
-        print "Done. You now can start/stop the Mini Probe using '/etc/init.d/probe.sh start' or  '/etc/init.d/probe.sh stop'"
+        print "Done. You now can start/stop the Mini Probe using '/etc/init.d/probe.sh start' " \
+              "or  '/etc/init.d/probe.sh stop'"
     else:
         print "No Config available. Exiting!"
         sys.exit()

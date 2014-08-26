@@ -1,12 +1,23 @@
 #!/usr/bin/env python
 #Copyright (c) 2014, Paessler AG <support@paessler.com>
 #All rights reserved.
-#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-#1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# following conditions are met:
+#1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# and the following disclaimer.
+#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+# and the following disclaimer in the documentation and/or other materials provided with the distribution.
+#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
+# or promote products derived from this software without specific prior written permission.
 
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
 import socket
@@ -19,7 +30,7 @@ class Logger(object):
         pass
     
     path = './logs/probe.log'
-    
+
     def file_check(self, path):
         # Check if a given file exists
         return os.path.exists(path)    
@@ -30,29 +41,30 @@ class Logger(object):
         f.write(str(self.startup_logging()))
         f.close()
 
-    def log(self, kind=None, type=None, config=None, request=None, e=None, sensor=None):
+    def log(self, kind=None, log_type=None, config=None, request=None, e=None, sensor=None):
         # provides internal logging
         messages = {
-            "request_error" : "Could not perform %s request! Error Message: %s %s %s. Trying again in %s seconds.",
-            "request_success" : "%s request successfully sent to PRTG Core Server at %s:%s.",
-            "sensor_error" : "Ooops Something went wrong with '%s' sensor %s. Error: %s.",
-            "nothing_todo" : "Nothing to do. Waiting for %s seconds.",
-            "subprocess" : "Could not start sensor %s subprocess. Error Message: %s"
+            "request_error": "Could not perform %s request! Error Message: %s %s %s. Trying again in %s seconds.",
+            "request_success": "%s request successfully sent to PRTG Core Server at %s:%s.",
+            "sensor_error": "Ooops Something went wrong with '%s' sensor %s. Error: %s.",
+            "nothing_todo": "Nothing to do. Waiting for %s seconds.",
+            "subprocess": "Could not start sensor %s subprocess. Error Message: %s"
         }
         loggingtext = ""
         timestamp = datetime.datetime.utcnow()
-        if kind and not request==None:
+        if kind and not request:
             loggingtext = messages['request_success'] % (request, config['server'], config['port'])
-        elif kind and type == "Nothing":
+        elif kind and log_type == "Nothing":
             loggingtext = messages['nothing_todo'] % (int(config['baseinterval']) / 2)
-        elif kind and type == "Subprocess":
+        elif kind and log_type == "Subprocess":
             loggingtext = messages['subprocess'] % (config['sensorid'], e)
         else:
-            if type == "HTTP":
-                loggingtext = messages['request_error'] % (request, e.getcode(), e.reason, e.read(), int(config['baseinterval'] / 2))
-            elif type == "URL":
+            if log_type == "HTTP":
+                loggingtext = messages['request_error'] % (request, e.getcode(), e.reason, e.read(),
+                                                           int(config['baseinterval'] / 2))
+            elif log_type == "URL":
                 loggingtext = messages['request_error'] % (request, e, "", "", int(config['baseinterval'] / 2))
-            elif type == "SENSOR":
+            elif log_type == "SENSOR":
                 loggingtext = messages['sensor_error'] % (sensor, config['sensorid'], e)
         if not(self.file_check(self.path)):
             self.file_create(self.path)
@@ -73,7 +85,8 @@ class Logger(object):
         # startup logging
         timestamp = datetime.datetime.utcnow()
         config = self.read_config('./probe.conf')
-        startupstring = "%s PRTG Small Probe '%s' starting on '%s'\n" % (timestamp, config['name'], socket.gethostname())
+        startupstring = "%s PRTG Small Probe '%s' starting on '%s'\n" % (timestamp, config['name'],
+                                                                         socket.gethostname())
         startupstring += "%s Connecting to PRTG Core Server at %s:%s\n" % (timestamp, config['server'], config['port'])
         return startupstring
             
@@ -82,7 +95,7 @@ class Logger(object):
         config = {}
         conf_file = open(path)
         for line in conf_file:
-            if not (line ==  '\n'):
+            if not (line == '\n'):
                 if not (line.startswith('#')):
                     config[line.split(':')[0]] = line.split(':')[1].rstrip()
         conf_file.close()

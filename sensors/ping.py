@@ -1,12 +1,23 @@
 #!/usr/bin/env python
 #Copyright (c) 2014, Paessler AG <support@paessler.com>
 #All rights reserved.
-#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-#1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# following conditions are met:
+#1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# and the following disclaimer.
+#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+# and the following disclaimer in the documentation and/or other materials provided with the distribution.
+#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
+# or promote products derived from this software without specific prior written permission.
 
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
 import os
@@ -34,16 +45,16 @@ class Ping(object):
         Definition of the sensor and data to be shown in the PRTG WebGUI
         """
         sensordefinition = {
-            "kind" : Ping.get_kind(),
-            "name" : "Ping",
-            "description" : "Monitors the availability of a target using ICMP",
-            "help" : "test",
-            "tag" : "mppingsensor",
-            "groups" : [
+            "kind": Ping.get_kind(),
+            "name": "Ping",
+            "description": "Monitors the availability of a target using ICMP",
+            "help": "test",
+            "tag": "mppingsensor",
+            "groups": [
                 {
-                    "name" : " Ping Settings",
-                    "caption" : "Ping Settings",
-                    "fields" : [
+                    "name": " Ping Settings",
+                    "caption": "Ping Settings",
+                    "fields": [
                         {
                             "type": "integer",
                             "name": "timeout",
@@ -62,7 +73,8 @@ class Ping(object):
                             "default": 32,
                             "minimum": 1,
                             "maximum": 10000,
-                            "help": "The default packet size for Ping requests is 32 bytes, but you can choose any other packet size between 1 and 10,000 bytes." 
+                            "help": "The default packet size for Ping requests is 32 bytes, "
+                                    "but you can choose any other packet size between 1 and 10,000 bytes."
                         },
                         {
                             "type": "integer",
@@ -74,12 +86,10 @@ class Ping(object):
                             "maximum": 20,
                             "help": "Enter the count of Ping requests PRTG will send to the device during an interval"
                         }
-                        
                     ]
                 }
-                
             ]
-            }
+        }
         return sensordefinition
 
     def ping(self, target, count, timeout, packetsize):
@@ -87,63 +97,68 @@ class Ping(object):
         pingdata = ret.readlines()
         ret.close()
         for line in pingdata:
-            if (line.startswith("r")):
+            if line.startswith("r"):
                 ping = line.split("=")[1].lstrip()
-            if (line.find("packet") > 0):
+            if line.find("packet") > 0:
                 pack_loss = line.split(",")[2].lstrip()
                 pack_loss = pack_loss.split(' ')[0].lstrip()
                 pack_loss = pack_loss[:-1]
         values = ping.split("/") + [pack_loss]
-        channel_list = [{"name": "Ping Time Min",
-                        "mode" : "float",
-                        "kind" : "TimeResponse",
-                        "value" : float(values[0])
-                        },
-                        {"name": "Ping Time Avg",
-                        "mode" : "float",
-                        "kind" : "TimeResponse",
-                        "value" : float(values[1])
-                        },
-                        {"name": "Ping Time Max",
-                        "mode" : "float",
-                        "kind" : "TimeResponse",
-                        "value" : float(values[2])
-                        },
-                        {"name": "Ping Time MDEV",
-                        "mode" : "float",
-                        "kind" : "TimeResponse",
-                        "value" : float(values[3].split(' ')[0])
-                        },
-                        {"name": "Packet Loss",
-                        "mode" : "integer",
-                        "kind" : "Percent",
-                        "value" : int(values[4])
-                        }]
+        channel_list = [
+            {
+                "name": "Ping Time Min",
+                "mode": "float",
+                "kind": "TimeResponse",
+                "value": float(values[0])
+            },
+            {
+                "name": "Ping Time Avg",
+                "mode": "float",
+                "kind": "TimeResponse",
+                "value": float(values[1])
+            },
+            {
+                "name": "Ping Time Max",
+                "mode": "float",
+                "kind": "TimeResponse",
+                "value": float(values[2])
+            },
+            {
+                "name": "Ping Time MDEV",
+                "mode": "float",
+                "kind": "TimeResponse",
+                "value": float(values[3].split(' ')[0])
+            },
+            {
+                "name": "Packet Loss",
+                "mode": "integer",
+                "kind": "Percent",
+                "value": int(values[4])
+            }
+        ]
         return channel_list
 
-
     @staticmethod
-    def get_data(data, q=None):
+    def get_data(data):
         log = Logger()
         ping = Ping()
         try:
             pingdata = ping.ping(data['host'], data['pingcount'], data['timeout'], data['packsize'])
         except Exception as e:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (ping.get_kind(), data['sensorid'], e))
+            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (ping.get_kind(),
+                                                                                          data['sensorid'], e))
             data = {
-                "sensorid" : int(data['sensorid']),
-                "error" : "Exception",
-                "code" : 1,
-                "message" : "Ping failed. %s" % e,
+                "sensorid": int(data['sensorid']),
+                "error": "Exception",
+                "code": 1,
+                "message": "Ping failed. %s" % e
             }
             return data
-
         data = {
-            "sensorid" : int(data['sensorid']),
-            "message" : "OK",
-            "channel":
-                pingdata
-            }
+            "sensorid": int(data['sensorid']),
+            "message": "OK",
+            "channel": pingdata
+        }
         del log
         del ping
         gc.collect()
