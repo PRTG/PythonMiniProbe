@@ -14,6 +14,11 @@ import os
 import time
 import subprocess
 
+if sys.version_info < (2, 7):
+    print "Python version too old! Please install at least version 2.7"
+    print "Exiting"
+    sys.exit(2)
+
 
 def file_check(path):
     # Check if a give file exists
@@ -143,10 +148,6 @@ Checking for necessary modules and Python Version
         sys.exit(1)
     time.sleep(1)
     print "."
-    if sys.version_info < (2,7):
-        print "Python version too old!"
-        print "Exiting"
-        sys.exit(2)
     time.sleep(1)
     print "."
 
