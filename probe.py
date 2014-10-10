@@ -26,18 +26,17 @@
 
 # import general modules
 import sys
-import hashlib
 import json
 import time
-import importlib
 import gc
+import logging
+import socket
 
 # import own modules
 sys.path.append('./')
 
 try:
-    from logger import Logger
-    # import external modules
+    from miniprobe import MiniProbe
     import sensors
     import requests
 except Exception as e:
@@ -45,96 +44,7 @@ except Exception as e:
     #sys.exit()
 
 
-class Probe(object):
-    """
-    Main class for the Python Mini Probe
-    """
-    def __init__(self):
-        gc.enable()
-        self.log = Logger()
-        pass
-
-    def get_import_sensors(self):
-        """
-        import available sensor modules and return list of sensor objects
-        """
-        sensor_objects = []
-        for mod in sensors.__all__:
-            try:
-                sensor_objects.append(self.load_class("sensors.%s.%s" % (mod.lower(), mod)))
-            except Exception as import_error:
-                print import_error
-        return sensor_objects
-
-    def load_class(self, full_class_string):
-        """
-        dynamically load a class from a string
-        """
-        class_data = full_class_string.split(".")
-        module_path = ".".join(class_data[:-1])
-        class_str = class_data[-1]
-        module = importlib.import_module(module_path)
-        return getattr(module, class_str)
-
-    def read_config(self, path):
-        """
-        read configuration file and write data to dict
-        """
-        config = {}
-        try:
-            conf_file = open(path)
-            for line in conf_file:
-                if not (line == '\n'):
-                    if not (line.startswith('#')):
-                        config[line.split(':')[0]] = line.split(':')[1].rstrip()
-            conf_file.close()
-            return config
-        except Exception as read_error:
-            self.log.log("No config found! Error Message: %s Exiting!" % read_error)
-            sys.exit()
-
-    def hash_access_key(self, key):
-        """
-        create hash of probes access key
-        """
-        return hashlib.sha1(key).hexdigest()
-
-    def create_parameters(self, config, jsondata, i=None):
-        """
-        create URL parameters for announce, task and data requests
-        """
-        if i == 'announce':
-            return {'gid': config['gid'], 'key': self.hash_access_key(config['key']), 'protocol': config['protocol'],
-                    'name': config['name'], 'baseinterval': config['baseinterval'], 'sensors': jsondata}
-        else:
-            return {'gid': config['gid'], 'key': self.hash_access_key(config['key']), 'protocol': config['protocol']}
-
-    def create_url(self, config, i=None):
-        """
-        creating the actual URL
-        """
-
-        if not (i is None) and (i != "data"):
-            return "https://%s:%s/probe/%s" % (
-                config['server'], config['port'], i)
-        elif i == "data":
-            return "https://%s:%s/probe/%s?gid=%s&protocol=%s&key=%s" % (config['server'], config['port'], i,
-                                                                         config['gid'], config['protocol'],
-                                                                         self.hash_access_key(config['key']))
-            pass
-        else:
-            return "No method given"
-
-    def build_announce(self, sensor_list):
-        """
-        build json for announce request
-        """
-        sensors_avail = []
-        for sensor in sensor_list:
-            sensors_avail.append(sensor.get_sensordef())
-        return sensors_avail
-
-    def main(self):
+def main():
         """
         Main routine for MiniProbe (Python)
         """
@@ -142,12 +52,13 @@ class Probe(object):
         gc.enable()
         # make sure the probe will not stop
         probe_stop = False
-        # Create instance of Logger to provide logging
-        log = Logger()
         # make sure probe is announced at every start
         announce = False
         # read configuration file (existence check done in probe_controller.py)
         config = mini_probe.read_config('./probe.conf')
+        # Doing some startup logging
+        logging.info("PRTG Small Probe '%s' starting on '%s'" % (config['name'], socket.gethostname()))
+        logging.info("Connecting to PRTG Core Server at %s:%s" % (config['server'], config['port']))
         # create hash of probe access key
         key_sha1 = mini_probe.hash_access_key(config['key'])
         # get list of all sensors announced in __init__.py in package sensors
@@ -162,15 +73,15 @@ class Probe(object):
                 # announcing the probe and all sensors
                 request_announce = requests.get(url_announce, params=data_announce, verify=False)
                 announce = True
-                log.log(True, None, config, "ANNOUNCE", None, None)
+                logging.info("ANNOUNCE request successfully sent to PRTG Core Server at %s:%s."
+                             % (config["server"], config["port"]))
                 if config['debug']:
-                    log.log_custom(config['server'])
-                    log.log_custom(config['port'])
-                    log.log_custom("Status Code: %s | Message: %s" % (request_announce.status_code,
-                                                                      request_announce.text))
+                    logging.debug("Connecting to %s:%s" % (config["server"], config["port"]))
+                    logging.debug("Status Code: %s | Message: %s" % (request_announce.status_code,
+                                                                     request_announce.text))
                 request_announce.close()
             except Exception as announce_error:
-                log.log_custom(announce_error)
+                logging.error(announce_error)
                 time.sleep(int(config['baseinterval']) / 2)
 
         while not probe_stop:
@@ -190,11 +101,12 @@ class Probe(object):
                     request_task.close()
                     gc.collect()
                     task = True
-                    log.log(True, None, config, "TASK", None, None)
+                    logging.info("TASK request successfully sent to PRTG Core Server at %s:%s."
+                                 % (config["server"], config["port"]))
                     if config['debug']:
-                        log.log_custom(url_task)
+                        logging.debug(url_task)
                 except Exception as announce_error:
-                    log.log_custom(announce_error)
+                    logging.error(announce_error)
                     time.sleep(int(config['baseinterval']) / 2)
             gc.collect()
             if str(json_response) != '[]':
@@ -202,7 +114,7 @@ class Probe(object):
                 for element in json_response_chunks:
                     for part in element:
                         if config['debug']:
-                            log.log_custom(part)
+                            logging.debug(part)
                         for sensor in sensor_list:
                             if part['kind'] == sensor.get_kind():
                                 json_payload_data.append(sensor.get_data(part))
@@ -212,20 +124,20 @@ class Probe(object):
                     url_data = mini_probe.create_url(config, 'data')
                     try:
                         request_data = requests.post(url_data, data=json.dumps(json_payload_data), verify=False)
-                        log.log(True, None, config, "DATA", None, None)
-
+                        logging.info("DATA request successfully sent to PRTG Core Server at %s:%s."
+                                     % (config["server"], config["port"]))
                         if config['debug']:
-                            log.log_custom(json_payload_data)
+                            logging.debug(json_payload_data)
                         request_data.close()
                         json_payload_data = []
                     except Exception as announce_error:
-                        log.log_custom(announce_error)
+                        logging.error(announce_error)
                     if len(json_response) > 10:
                         time.sleep((int(config['baseinterval']) * (9 / len(json_response))))
                     else:
                         time.sleep(int(config['baseinterval']) / 2)
             else:
-                log.log(True, "Nothing", config, None, None, None)
+                logging.info("Nothing to do. Waiting for %s seconds." % (int(config['baseinterval']) / 3))
                 time.sleep(int(config['baseinterval']) / 3)
 
             # Delete some stuff used in the loop and run the garbage collector
@@ -240,5 +152,5 @@ class Probe(object):
         sys.exit()
 
 if __name__ == "__main__":
-    mini_probe = Probe()
-    mini_probe.main()
+    mini_probe = MiniProbe()
+    main()

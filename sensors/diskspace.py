@@ -20,12 +20,8 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import sys
 import gc
-
-#import logging module
-sys.path.append('../')
-from logger import Logger
+import logging
 
 
 class Diskspace(object):
@@ -58,13 +54,13 @@ class Diskspace(object):
 
     @staticmethod
     def get_data(data):
-        log = Logger()
         diskspace = Diskspace()
         try:
             disk = diskspace.read_disk()
+            logging.info("Running sensor: %s" % diskspace.get_kind())
         except Exception as e:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (diskspace.get_kind(),
-                                                                                          data['sensorid'], e))
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (diskspace.get_kind(),
+                                                                                         data['sensorid'], e))
             data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
@@ -72,15 +68,12 @@ class Diskspace(object):
                 "message": "Disk Space Sensor failed. See log for details"
             }
             return data
-
         channels = disk
-
         data = {
             "sensorid": int(data['sensorid']),
             "message": "OK",
             "channel": channels
         }
-        del log
         del diskspace
         gc.collect()
         return data
@@ -91,7 +84,6 @@ class Diskspace(object):
         for line in os.popen("df -k"):
             if line.startswith("/"):
                 disks.append(line.rstrip().split())
-
         for line in disks:
             channel1 = {"name": "Total Bytes " + str(line[0]),
                         "mode": "integer",

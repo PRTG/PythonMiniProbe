@@ -10,7 +10,7 @@
 #3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
 # or promote products derived from this software without specific prior written permission.
 
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 # A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
@@ -21,16 +21,12 @@
 
 import sys
 import gc
+import logging
 
-#import logging module
-sys.path.append('../')
-from logger import Logger
-
-log = Logger()
 try:
     from pysnmp.entity.rfc3413.oneliner import cmdgen
 except Exception as e:
-    log.log_custom("PySNMP could not be imported. SNMP Sensors won't work.Error: %s" % e)
+    logging.error("PySNMP could not be imported. SNMP Sensors won't work.Error: %s" % e)
     sys.exit()
 
 
@@ -128,7 +124,6 @@ class SNMPTraffic(object):
             data = []
             oid_endings = range(1, 19)
             for number in oid_endings:
-                #print number
                 data.append("1.3.6.1.2.1.2.2.1.%s.%s" % (str(number), str(ifindex)))
         else:
             data = []
@@ -175,10 +170,11 @@ class SNMPTraffic(object):
         try:
             snmp_data = snmptraffic.snmp_get(data['host'], data['snmp_counter'],
                                              data['community'], int(data['port']), data['ifindex'])
+            logging.info("Running sensor: %s" % snmptraffic.get_kind())
         except Exception as get_data_error:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (snmptraffic.get_kind(),
-                                                                                          data['sensorid'],
-                                                                                          get_data_error))
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (snmptraffic.get_kind(),
+                                                                                         data['sensorid'],
+                                                                                         get_data_error))
             data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
@@ -192,7 +188,6 @@ class SNMPTraffic(object):
             "message": "OK",
             "channel": snmp_data
         }
-        del log
         del snmptraffic
         gc.collect()
         return data

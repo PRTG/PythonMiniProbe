@@ -19,13 +19,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
 import gc
-
-#import logging module
-sys.path.append('../')
 import requests
-from logger import Logger
+import logging
 
 
 class HTTP(object):
@@ -156,13 +152,13 @@ class HTTP(object):
                 else:
                     req = requests.head(url, timeout=timeout, verify=False)
         except Exception as e:
-            print e
+            logging.error(e)
         time = req.elapsed
         try:
             code = req.status_code
             response_time = time.microseconds / 1000
         except Exception as e:
-            log.log_custom(e)
+            logging.error(e)
             raise
         #channel_list = [{"name": "Status Code",
         #                "mode": "integer",
@@ -178,15 +174,15 @@ class HTTP(object):
 
     @staticmethod
     def get_data(data):
-        log = Logger()
         http = HTTP()
         try:
             http_data = http.request(data['url'], request_method=data["http_method"], auth_method=data["auth_method"],
                                      user=data["username"], password=data["password"],
                                      post_data=data["post_data"], timeout=data["timeout"])
+            logging.info("Running sensor: %s" % http.get_kind())
         except Exception as e:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s"
-                           % (http.get_kind(), data['sensorid'], e))
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s"
+                          % (http.get_kind(), data['sensorid'], e))
             data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
@@ -206,7 +202,6 @@ class HTTP(object):
                     "value": http_data[1]
                 }]
         }
-        del log
         del http
         gc.collect()
         return data

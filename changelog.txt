@@ -5,7 +5,13 @@ Version 0.2 ALPHA
     Changed http lib to requests
     kicked out all strings, now working with dicts only
 
-Version 14.3.2
+Version 14.3.2 BETA
     - updated module requests
     - made code PEP8 compliant
+
+Version 14.3.3 BETA
+    - dropped own logging, now using python built in logging function (you might delete the file logger.py if existant)
+    - created file miniprobe.py which offers base functionality, probe.py now only does the work
+    - various changes and code cleanup
+    - added script templates for the probe_installer.py in folder /scripts
 

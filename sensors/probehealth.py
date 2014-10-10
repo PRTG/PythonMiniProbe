@@ -20,12 +20,7 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import sys
-import json
-
-#import logging module
-sys.path.append('../')
-from logger import Logger
+import logging
 
 
 class Probehealth(object):
@@ -58,14 +53,14 @@ class Probehealth(object):
     
     @staticmethod
     def get_data(data):
-        log = Logger()
         probehealth = Probehealth()
         try:
             mem = probehealth.read_memory('/proc/meminfo')
             cpu = probehealth.read_cpu('/proc/loadavg')
+            logging.info("Running sensor: %s" % probehealth.get_kind())
         except Exception as e:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (probehealth.get_kind(),
-                                                                                          data['sensorid'], e))
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (probehealth.get_kind(),
+                                                                                         data['sensorid'], e))
             data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",

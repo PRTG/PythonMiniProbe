@@ -21,20 +21,13 @@
 
 import sys
 import gc
+import logging
 
-
-#import logging module
-sys.path.append('../')
-from logger import Logger
-
-log = Logger()
 try:
-    sys.path.append('./')
+    sys.path.append('../')
     from pysnmp.entity.rfc3413.oneliner import cmdgen
 except Exception as e:
-    log.log_custom("PySNMP could not be imported. SNMP Sensors won't work.Error: %s" % e)
-    print e
-    #sys.exit()
+    logging.error("PySNMP could not be imported. SNMP Sensors won't work.Error: %s" % e)
     pass
 
 
@@ -150,7 +143,7 @@ class SNMPCustom(object):
             sys.path.append('./')
             from pysnmp.entity.rfc3413.oneliner import cmdgen
         except Exception as import_error:
-            print log.log_custom(import_error)
+            logging.error(import_error)
         snmpget = cmdgen.CommandGenerator()
         error_indication, error_status, error_index, var_binding = snmpget.getCmd(
             cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), oid)
@@ -184,10 +177,11 @@ class SNMPCustom(object):
             snmp_data = snmpcustom.snmp_get(str(data['oid']), data['host'], data['value_type'],
                                             data['community'], int(data['port']), data['unit'],
                                             int(data['multiplication']), int(data['division']))
+            logging.info("Running sensor: %s" % snmpcustom.get_kind())
         except Exception as get_data_error:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (snmpcustom.get_kind(),
-                                                                                          data['sensorid'],
-                                                                                          get_data_error))
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (snmpcustom.get_kind(),
+                                                                                         data['sensorid'],
+                                                                                         get_data_error))
             data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
@@ -201,7 +195,6 @@ class SNMPCustom(object):
             "message": "OK",
             "channel": snmp_data
         }
-        del log
         del snmpcustom
         gc.collect()
         return data

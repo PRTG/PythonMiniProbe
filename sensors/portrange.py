@@ -22,13 +22,10 @@ Not stable therefore removed in the Beta. Might come back later.
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
 import time
 import socket
-
-#import logging module
-sys.path.append('../')
-from logger import Logger
+import logging
+import gc
 
 
 class Portrange(object):
@@ -135,13 +132,13 @@ class Portrange(object):
 
     @staticmethod
     def get_data(data):
-        log = Logger()
         port = Portrange()
         try:
             port_data = port.portrange(data['host'], data['timeout'], data['startport'], data['endport'])
+            logging.info("Running sensor: %s" % port.get_kind())
         except Exception as e:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (port.get_kind(),
-                                                                                          data['sensorid'], e))
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (port.get_kind(),
+                                                                                         data['sensorid'], e))
             sensor_data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
@@ -154,4 +151,6 @@ class Portrange(object):
             "message": "OK Ports open",
             "channel": port_data
         }
+        del port
+        gc.collect()
         return sensor_data

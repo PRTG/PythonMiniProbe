@@ -19,13 +19,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
 import os
 import gc
-
-#import logging module
-sys.path.append('../')
-from logger import Logger
+import logging
 
 
 class Ping(object):
@@ -140,13 +136,13 @@ class Ping(object):
 
     @staticmethod
     def get_data(data):
-        log = Logger()
         ping = Ping()
         try:
             pingdata = ping.ping(data['host'], data['pingcount'], data['timeout'], data['packsize'])
+            logging.info("Running sensor: %s" % ping.get_kind())
         except Exception as e:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (ping.get_kind(),
-                                                                                          data['sensorid'], e))
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (ping.get_kind(),
+                                                                                         data['sensorid'], e))
             data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
@@ -159,7 +155,6 @@ class Ping(object):
             "message": "OK",
             "channel": pingdata
         }
-        del log
         del ping
         gc.collect()
         return data

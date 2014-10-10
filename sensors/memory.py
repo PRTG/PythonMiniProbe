@@ -19,12 +19,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
 import gc
-
-#import logging module
-sys.path.append('../')
-from logger import Logger
+import logging
 
 
 class Memory(object):
@@ -57,13 +53,13 @@ class Memory(object):
 
     @staticmethod
     def get_data(data):
-        log = Logger()
         memory = Memory()
         try:
             mem = memory.read_memory('/proc/meminfo')
+            logging.info("Running sensor: %s" % memory.get_kind())
         except Exception as e:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (memory.get_kind(),
-                                                                                          data['sensorid'], e))
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (memory.get_kind(),
+                                                                                         data['sensorid'], e))
             data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
@@ -79,7 +75,6 @@ class Memory(object):
             "message": "OK",
             "channel": memorydata
         }
-        del log
         del memory
         gc.collect()
         return data

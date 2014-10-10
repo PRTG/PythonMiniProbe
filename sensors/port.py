@@ -19,18 +19,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
 import time
 import socket
 import gc
-
-#import logging module
-sys.path.append('../')
-from logger import Logger
+import logging
 
 
 class Port(object):
-    #log = Logger()
     def __init__(self):
         gc.enable()
 
@@ -94,7 +89,8 @@ class Port(object):
             start_time = time.time()
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.settimeout(float(timeout))
-            result = conn.connect((remote_server, int(port)))
+            #result = conn.connect((remote_server, int(port)))
+            conn.connect((remote_server, int(port)))
             conn.close()
             end_time = time.time()
             response_time = (end_time - start_time) * 1000
@@ -117,13 +113,13 @@ class Port(object):
 
     @staticmethod
     def get_data(data):
-        log = Logger()
         port = Port()
         try:
             port_data = port.port(data['host'], data['timeout'], data['targetport'])
+            logging.info("Running sensor: %s" % port.get_kind())
         except Exception as e:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (port.get_kind(),
-                                                                                          data['sensorid'], e))
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (port.get_kind(),
+                                                                                         data['sensorid'], e))
             sensor_data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
@@ -136,7 +132,6 @@ class Port(object):
             "message": "OK Port %s available" % data['targetport'],
             "channel": port_data
         }
-        del log
         del port
         gc.collect()
         return sensor_data

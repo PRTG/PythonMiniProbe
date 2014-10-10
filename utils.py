@@ -29,7 +29,7 @@ class Utils(object):
 
     @staticmethod
     def clean_mem():
-        pass
+        """Ugly brute force method to clean up Mem"""
         subprocess.call("sync", shell=False)
         os.popen("sysctl vm.drop_caches=1")
         os.popen("sysctl vm.drop_caches=2")

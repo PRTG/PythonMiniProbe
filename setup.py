@@ -38,12 +38,12 @@ packages = [
 ]
 
 setup(
-    name='PRTG Small Probe',
+    name='Python Mini Probe',
     version='0.1',
     author='Paessler AG',
     author_email='support@paessler.com',
     license='BSD 3.0',
-    description='MiniProbe for PRTG',
+    description='Python MiniProbe for PRTG',
     long_description=readme,
     #packages=find_packages(),
     install_requires=requires

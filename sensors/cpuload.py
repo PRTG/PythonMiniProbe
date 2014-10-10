@@ -19,12 +19,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
 import gc
-
-#import logging module
-sys.path.append('../')
-from logger import Logger
+import logging
 
 
 class CPULoad(object):
@@ -57,13 +53,13 @@ class CPULoad(object):
 
     @staticmethod
     def get_data(data):
-        log = Logger()
         cpuload = CPULoad()
+        logging.info("Running sensor: %s" % cpuload.get_kind())
         try:
             cpu = cpuload.read_cpu('/proc/loadavg')
         except Exception as e:
-            log.log_custom("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (cpuload.get_kind(),
-                                                                                          data['sensorid'], e))
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (cpuload.get_kind(),
+                                                                                         data['sensorid'], e))
             data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
@@ -79,12 +75,12 @@ class CPULoad(object):
             "message": "OK",
             "channel": cpudata
         }
-        del log
         del cpuload
         gc.collect()
         return data
 
-    def read_cpu(self, path):
+    @staticmethod
+    def read_cpu(path):
         cpu = open(path, "r")
         data = []
         for line in cpu:
