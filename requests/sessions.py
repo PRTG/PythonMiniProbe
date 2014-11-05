@@ -13,7 +13,7 @@ from collections import Mapping
 from datetime import datetime
 
 from .auth import _basic_auth_str
-from .compat import cookielib, OrderedDict, urljoin, urlparse, builtin_str
+from .compat import cookielib, OrderedDict, urljoin, urlparse
 from .cookies import (
     cookiejar_from_dict, extract_cookies_to_jar, RequestsCookieJar, merge_cookies)
 from .models import Request, PreparedRequest, DEFAULT_REDIRECT_LIMIT
@@ -134,8 +134,8 @@ class SessionRedirectMixin(object):
                 url = requote_uri(url)
 
             prepared_request.url = to_native_string(url)
-            # cache the url
-            if resp.is_permanent_redirect:
+            # Cache the url, unless it redirects to itself.
+            if resp.is_permanent_redirect and req.url != prepared_request.url:
                 self.redirect_cache[req.url] = prepared_request.url
 
             # http://tools.ietf.org/html/rfc7231#section-6.4.4
@@ -271,9 +271,10 @@ class Session(SessionRedirectMixin):
     """
 
     __attrs__ = [
-        'headers', 'cookies', 'auth', 'timeout', 'proxies', 'hooks',
-        'params', 'verify', 'cert', 'prefetch', 'adapters', 'stream',
-        'trust_env', 'max_redirects', 'redirect_cache']
+        'headers', 'cookies', 'auth', 'proxies', 'hooks', 'params', 'verify',
+        'cert', 'prefetch', 'adapters', 'stream', 'trust_env',
+        'max_redirects', 'redirect_cache'
+    ]
 
     def __init__(self):
 
@@ -365,6 +366,7 @@ class Session(SessionRedirectMixin):
             url=request.url,
             files=request.files,
             data=request.data,
+            json=request.json,
             headers=merge_setting(request.headers, self.headers, dict_class=CaseInsensitiveDict),
             params=merge_setting(request.params, self.params),
             auth=merge_setting(auth, self.auth),
@@ -386,7 +388,8 @@ class Session(SessionRedirectMixin):
         hooks=None,
         stream=None,
         verify=None,
-        cert=None):
+        cert=None,
+        json=None):
         """Constructs a :class:`Request <Request>`, prepares it and sends it.
         Returns :class:`Response <Response>` object.
 
@@ -396,17 +399,22 @@ class Session(SessionRedirectMixin):
             string for the :class:`Request`.
         :param data: (optional) Dictionary or bytes to send in the body of the
             :class:`Request`.
+        :param json: (optional) json to send in the body of the
+            :class:`Request`.
         :param headers: (optional) Dictionary of HTTP Headers to send with the
             :class:`Request`.
         :param cookies: (optional) Dict or CookieJar object to send with the
             :class:`Request`.
-        :param files: (optional) Dictionary of 'filename': file-like-objects
+        :param files: (optional) Dictionary of ``'filename': file-like-objects``
             for multipart encoding upload.
         :param auth: (optional) Auth tuple or callable to enable
             Basic/Digest/Custom HTTP Auth.
-        :param timeout: (optional) Float describing the timeout of the
-            request in seconds.
-        :param allow_redirects: (optional) Boolean. Set to True by default.
+        :param timeout: (optional) How long to wait for the server to send
+            data before giving up, as a float, or a (`connect timeout, read
+            timeout <user/advanced.html#timeouts>`_) tuple.
+        :type timeout: float or tuple
+        :param allow_redirects: (optional) Set to True by default.
+        :type allow_redirects: bool
         :param proxies: (optional) Dictionary mapping protocol to the URL of
             the proxy.
         :param stream: (optional) whether to immediately download the response
@@ -417,7 +425,7 @@ class Session(SessionRedirectMixin):
             If Tuple, ('cert', 'key') pair.
         """
 
-        method = builtin_str(method)
+        method = to_native_string(method)
 
         # Create the Request.
         req = Request(
@@ -426,6 +434,7 @@ class Session(SessionRedirectMixin):
             headers = headers,
             files = files,
             data = data or {},
+            json = json,
             params = params or {},
             auth = auth,
             cookies = cookies,
@@ -435,36 +444,16 @@ class Session(SessionRedirectMixin):
 
         proxies = proxies or {}
 
-        # Gather clues from the surrounding environment.
-        if self.trust_env:
-            # Set environment's proxies.
-            env_proxies = get_environ_proxies(url) or {}
-            for (k, v) in env_proxies.items():
-                proxies.setdefault(k, v)
-
-            # Look for configuration.
-            if verify is True or verify is None:
-                verify = os.environ.get('REQUESTS_CA_BUNDLE')
-
-            # Curl compatibility.
-            if verify is True or verify is None:
-                verify = os.environ.get('CURL_CA_BUNDLE')
-
-        # Merge all the kwargs.
-        proxies = merge_setting(proxies, self.proxies)
-        stream = merge_setting(stream, self.stream)
-        verify = merge_setting(verify, self.verify)
-        cert = merge_setting(cert, self.cert)
+        settings = self.merge_environment_settings(
+            prep.url, proxies, stream, verify, cert
+        )
 
         # Send the request.
         send_kwargs = {
-            'stream': stream,
             'timeout': timeout,
-            'verify': verify,
-            'cert': cert,
-            'proxies': proxies,
             'allow_redirects': allow_redirects,
         }
+        send_kwargs.update(settings)
         resp = self.send(prep, **send_kwargs)
 
         return resp
@@ -499,15 +488,16 @@ class Session(SessionRedirectMixin):
         kwargs.setdefault('allow_redirects', False)
         return self.request('HEAD', url, **kwargs)
 
-    def post(self, url, data=None, **kwargs):
+    def post(self, url, data=None, json=None, **kwargs):
         """Sends a POST request. Returns :class:`Response` object.
 
         :param url: URL for the new :class:`Request` object.
         :param data: (optional) Dictionary, bytes, or file-like object to send in the body of the :class:`Request`.
+        :param json: (optional) json to send in the body of the :class:`Request`.
         :param \*\*kwargs: Optional arguments that ``request`` takes.
         """
 
-        return self.request('POST', url, data=data, **kwargs)
+        return self.request('POST', url, data=data, json=json, **kwargs)
 
     def put(self, url, data=None, **kwargs):
         """Sends a PUT request. Returns :class:`Response` object.
@@ -552,8 +542,13 @@ class Session(SessionRedirectMixin):
         if not isinstance(request, PreparedRequest):
             raise ValueError('You can only send PreparedRequests.')
 
+        checked_urls = set()
         while request.url in self.redirect_cache:
-            request.url = self.redirect_cache.get(request.url)
+            checked_urls.add(request.url)
+            new_url = self.redirect_cache.get(request.url)
+            if new_url in checked_urls:
+                break
+            request.url = new_url
 
         # Set up variables needed for resolve_redirects and dispatching of hooks
         allow_redirects = kwargs.pop('allow_redirects', True)
@@ -611,6 +606,30 @@ class Session(SessionRedirectMixin):
             r.content
 
         return r
+
+    def merge_environment_settings(self, url, proxies, stream, verify, cert):
+        """Check the environment and merge it with some settings."""
+        # Gather clues from the surrounding environment.
+        if self.trust_env:
+            # Set environment's proxies.
+            env_proxies = get_environ_proxies(url) or {}
+            for (k, v) in env_proxies.items():
+                proxies.setdefault(k, v)
+
+            # Look for requests environment configuration and be compatible
+            # with cURL.
+            if verify is True or verify is None:
+                verify = (os.environ.get('REQUESTS_CA_BUNDLE') or
+                          os.environ.get('CURL_CA_BUNDLE'))
+
+        # Merge all the kwargs.
+        proxies = merge_setting(proxies, self.proxies)
+        stream = merge_setting(stream, self.stream)
+        verify = merge_setting(verify, self.verify)
+        cert = merge_setting(cert, self.cert)
+
+        return {'verify': verify, 'proxies': proxies, 'stream': stream,
+                'cert': cert}
 
     def get_adapter(self, url):
         """Returns the appropriate connnection adapter for the given URL."""

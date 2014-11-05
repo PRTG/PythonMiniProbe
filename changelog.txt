@@ -10,8 +10,11 @@ Version 14.3.2 BETA
     - made code PEP8 compliant
 
 Version 14.3.3 BETA
-    - dropped own logging, now using python built in logging function (you might delete the file logger.py if existant)
-    - created file miniprobe.py which offers base functionality, probe.py now only does the work
-    - various changes and code cleanup
-    - added script templates for the probe_installer.py in folder /scripts
+    - [major] dropped own logging, now using python built in logging function (you might delete the file logger.py if existant)
+    - [major] created file miniprobe.py which offers base functionality, probe.py now only does the work
+    - [minor] various changes and code cleanup
+    - [minor] added script templates for the probe_installer.py in folder /scripts
+
+Version 14.4.4 BETA
+    - [minor] Updated module requests to ver 2.3.4 which also includes a new version of urllib3
 
