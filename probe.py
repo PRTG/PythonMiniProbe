@@ -39,6 +39,8 @@ try:
     from miniprobe import MiniProbe
     import sensors
     import requests
+    import worker
+    import multiprocessing
 except Exception as e:
     print e
     #sys.exit()
@@ -111,16 +113,31 @@ def main():
             gc.collect()
             if str(json_response) != '[]':
                 json_response_chunks = [json_response[i:i + 10] for i in range(0, len(json_response), 10)]
+                procs = []
+                out_queue = multiprocessing.Queue()
                 for element in json_response_chunks:
                     for part in element:
                         if config['debug']:
                             logging.debug(part)
                         for sensor in sensor_list:
                             if part['kind'] == sensor.get_kind():
-                                json_payload_data.append(sensor.get_data(part))
+                                #json_payload_data.append(sensor.get_data(part))
+                                p = multiprocessing.Process(target=sensor.get_data, args=(part, out_queue),
+                                                            name=part['kind'])
+                                procs.append(p)
+                                p.start()
+                                print p
                             else:
                                 pass
                         gc.collect()
+                    for i in range(len(procs)):
+                        json_payload_data.append(out_queue.get())
+                    for p in procs:
+                        #json_payload_data.append(out_queue.get())
+                        print p
+                        p.join()
+                        procs = []
+
                     url_data = mini_probe.create_url(config, 'data')
                     try:
                         request_data = requests.post(url_data, data=json.dumps(json_payload_data), verify=False)
@@ -136,6 +153,7 @@ def main():
                         time.sleep((int(config['baseinterval']) * (9 / len(json_response))))
                     else:
                         time.sleep(int(config['baseinterval']) / 2)
+                del out_queue
             else:
                 logging.info("Nothing to do. Waiting for %s seconds." % (int(config['baseinterval']) / 3))
                 time.sleep(int(config['baseinterval']) / 3)

@@ -171,7 +171,7 @@ class SNMPCustom(object):
         return channellist
 
     @staticmethod
-    def get_data(data):
+    def get_data(data, out_queue):
         snmpcustom = SNMPCustom()
         try:
             snmp_data = snmpcustom.snmp_get(str(data['oid']), data['host'], data['value_type'],
@@ -197,4 +197,5 @@ class SNMPCustom(object):
         }
         del snmpcustom
         gc.collect()
+        out_queue.put(data)
         return data

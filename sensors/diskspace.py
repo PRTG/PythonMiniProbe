@@ -53,7 +53,7 @@ class Diskspace(object):
         return sensordefinition
 
     @staticmethod
-    def get_data(data):
+    def get_data(data, out_queue):
         diskspace = Diskspace()
         try:
             disk = diskspace.read_disk()
@@ -76,6 +76,7 @@ class Diskspace(object):
         }
         del diskspace
         gc.collect()
+        out_queue.put(data)
         return data
 
     def read_disk(self):

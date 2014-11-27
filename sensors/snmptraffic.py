@@ -165,7 +165,7 @@ class SNMPTraffic(object):
         return channellist
 
     @staticmethod
-    def get_data(data):
+    def get_data(data, out_queue):
         snmptraffic = SNMPTraffic()
         try:
             snmp_data = snmptraffic.snmp_get(data['host'], data['snmp_counter'],
@@ -190,4 +190,5 @@ class SNMPTraffic(object):
         }
         del snmptraffic
         gc.collect()
+        out_queue.put(data)
         return data

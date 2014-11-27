@@ -52,7 +52,7 @@ class Probehealth(object):
         return sensordefinition
     
     @staticmethod
-    def get_data(data):
+    def get_data(data, out_queue):
         probehealth = Probehealth()
         try:
             mem = probehealth.read_memory('/proc/meminfo')
@@ -78,6 +78,7 @@ class Probehealth(object):
             "message": "OK",
             "channel": probedata
         }
+        out_queue.put(data)
         return data
 
     def read_memory(self, path):

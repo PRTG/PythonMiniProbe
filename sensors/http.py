@@ -173,7 +173,7 @@ class HTTP(object):
         return data
 
     @staticmethod
-    def get_data(data):
+    def get_data(data, out_queue):
         http = HTTP()
         try:
             http_data = http.request(data['url'], request_method=data["http_method"], auth_method=data["auth_method"],
@@ -204,4 +204,5 @@ class HTTP(object):
         }
         del http
         gc.collect()
+        out_queue.put(data)
         return data

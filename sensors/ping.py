@@ -135,7 +135,7 @@ class Ping(object):
         return channel_list
 
     @staticmethod
-    def get_data(data):
+    def get_data(data, out_queue):
         ping = Ping()
         try:
             pingdata = ping.ping(data['host'], data['pingcount'], data['timeout'], data['packsize'])
@@ -157,4 +157,5 @@ class Ping(object):
         }
         del ping
         gc.collect()
+        out_queue.put(data)
         return data

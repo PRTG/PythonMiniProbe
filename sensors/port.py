@@ -112,7 +112,7 @@ class Port(object):
         return channel_list
 
     @staticmethod
-    def get_data(data):
+    def get_data(data, out_queue):
         port = Port()
         try:
             port_data = port.port(data['host'], data['timeout'], data['targetport'])
@@ -120,18 +120,19 @@ class Port(object):
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (port.get_kind(),
                                                                                          data['sensorid'], e))
-            sensor_data = {
+            data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
                 "code": 1,
                 "message": "Port check failed. See log for details"
             }
-            return sensor_data
-        sensor_data = {
+            return data
+        data = {
             "sensorid": int(data['sensorid']),
             "message": "OK Port %s available" % data['targetport'],
             "channel": port_data
         }
         del port
         gc.collect()
-        return sensor_data
+        out_queue.put(data)
+        return data

@@ -52,7 +52,7 @@ class CPULoad(object):
         return sensordefinition
 
     @staticmethod
-    def get_data(data):
+    def get_data(data, out_queue):
         cpuload = CPULoad()
         logging.info("Running sensor: %s" % cpuload.get_kind())
         try:
@@ -77,6 +77,7 @@ class CPULoad(object):
         }
         del cpuload
         gc.collect()
+        out_queue.put(data)
         return data
 
     @staticmethod
