@@ -120,22 +120,19 @@ def main():
                             logging.debug(part)
                         for sensor in sensor_list:
                             if part['kind'] == sensor.get_kind():
-                                #json_payload_data.append(sensor.get_data(part))
                                 p = multiprocessing.Process(target=sensor.get_data, args=(part, out_queue),
                                                             name=part['kind'])
                                 procs.append(p)
                                 p.start()
-                                print p
                             else:
                                 pass
                         gc.collect()
                     for i in range(len(procs)):
                         json_payload_data.append(out_queue.get())
                     for p in procs:
-                        #json_payload_data.append(out_queue.get())
-                        print p
                         p.join()
                         procs = []
+                        del p
 
                     url_data = mini_probe.create_url(config, 'data')
                     try:
