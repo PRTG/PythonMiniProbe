@@ -39,7 +39,6 @@ try:
     from miniprobe import MiniProbe
     import sensors
     import requests
-    import worker
     import multiprocessing
 except Exception as e:
     print e
