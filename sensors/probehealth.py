@@ -79,7 +79,6 @@ class Probehealth(object):
             "channel": probedata
         }
         out_queue.put(data)
-        return data
 
     def read_memory(self, path):
         mem = open(path, "r")

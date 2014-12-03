@@ -113,8 +113,9 @@ def main():
             if str(json_response) != '[]':
                 json_response_chunks = [json_response[i:i + 10] for i in range(0, len(json_response), 10)]
                 procs = []
-                out_queue = multiprocessing.Queue()
+
                 for element in json_response_chunks:
+                    out_queue = multiprocessing.Queue()
                     for part in element:
                         if config['debug']:
                             logging.debug(part)
@@ -130,10 +131,11 @@ def main():
                     for i in range(len(procs)):
                         json_payload_data.append(out_queue.get())
                     for p in procs:
-                        p.join()
+                        p.join(2)
                         procs = []
+                        p.terminate()
                         del p
-
+                    del out_queue
                     url_data = mini_probe.create_url(config, 'data')
                     try:
                         request_data = requests.post(url_data, data=json.dumps(json_payload_data), verify=False)
@@ -149,7 +151,7 @@ def main():
                         time.sleep((int(config['baseinterval']) * (9 / len(json_response))))
                     else:
                         time.sleep(int(config['baseinterval']) / 2)
-                del out_queue
+
             else:
                 logging.info("Nothing to do. Waiting for %s seconds." % (int(config['baseinterval']) / 3))
                 time.sleep(int(config['baseinterval']) / 3)

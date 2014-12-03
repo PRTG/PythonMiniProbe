@@ -205,4 +205,3 @@ class HTTP(object):
         del http
         gc.collect()
         out_queue.put(data)
-        return data

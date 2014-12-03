@@ -78,7 +78,6 @@ class CPULoad(object):
         del cpuload
         gc.collect()
         out_queue.put(data)
-        return data
 
     @staticmethod
     def read_cpu(path):

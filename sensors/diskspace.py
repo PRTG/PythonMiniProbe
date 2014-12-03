@@ -77,7 +77,6 @@ class Diskspace(object):
         del diskspace
         gc.collect()
         out_queue.put(data)
-        return data
 
     def read_disk(self):
         disks = []

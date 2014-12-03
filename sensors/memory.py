@@ -78,7 +78,6 @@ class Memory(object):
         del memory
         gc.collect()
         out_queue.put(data)
-        return data
 
     def read_memory(self, path):
         mem = open(path, "r")
