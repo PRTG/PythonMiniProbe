@@ -30,6 +30,7 @@ except Exception as e:
     sys.exit()
 
 
+
 class SNMPTraffic(object):
 
     def __init__(self):
@@ -122,25 +123,43 @@ class SNMPTraffic(object):
     def snmp_get(self, target, countertype, community, port, ifindex):
         if countertype == "1":
             data = []
-            oid_endings = range(1, 19)
-            for number in oid_endings:
-                data.append("1.3.6.1.2.1.2.2.1.%s.%s" % (str(number), str(ifindex)))
+            #data2 = []
+            #oid_endings = range(1, 19)
+            #for number in oid_endings:
+                #data.append("1.3.6.1.2.1.2.2.1.%s.%s" % (str(number), str(ifindex)))
+            data.append("1.3.6.1.2.1.2.2.1.10.%s" % str(ifindex))
+            data.append("1.3.6.1.2.1.2.2.1.16.%s" % str(ifindex))
         else:
             data = []
-            oid_endings = range(1, 20)
-            for number in oid_endings:
-                data.append("1.3.6.1.2.1.31.1.1.1.%s.%s" % (str(number), str(ifindex)))
+            #oid_endings = range(1, 20)
+            #for number in oid_endings:
+                #data.append("1.3.6.1.2.1.31.1.1.1.%s.%s" % (str(number), str(ifindex)))
+            data.append("1.3.6.1.2.1.31.1.1.1.6.%s" % str(ifindex))
+            data.append("1.3.6.1.2.1.31.1.1.1.10.%s" % str(ifindex))
         snmpget = cmdgen.CommandGenerator()
         error_indication, error_status, error_index, var_binding = snmpget.getCmd(
             cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), *data)
         if countertype == "1":
-            traffic_in = str(long(var_binding[9][1]))
-            traffic_out = str(long(var_binding[15][1]))
-            traffic_total = str(long(var_binding[9][1]) + long(var_binding[15][1]))
+            #print var_binding[0][1]
+            #print var_binding[1][1]
+            #sys.exit()
+            #traffic_in = str(long(var_binding[9][1]))
+            traffic_in = str(long(var_binding[0][1]))
+            #traffic_out = str(long(var_binding[15][1]))
+            traffic_out = str(long(var_binding[1][1]))
+            #traffic_total = str(long(var_binding[9][1]) + long(var_binding[15][1]))
+            traffic_total = str(long(var_binding[0][1]) + long(var_binding[1][1]))
         else:
-            traffic_in = str(long(var_binding[5][1]))
-            traffic_out = str(long(var_binding[9][1]))
-            traffic_total = str(long(var_binding[5][1]) + long(var_binding[9][1]))
+            #print var_binding[0][1]
+            #print var_binding[1][1]
+
+            #sys.exit()
+            #traffic_in = str(long(var_binding[5][1]))
+            traffic_in = str(long(var_binding[0][1]))
+            #traffic_out = str(long(var_binding[9][1]))
+            traffic_out = str(long(var_binding[1][1]))
+            #traffic_total = str(long(var_binding[5][1]) + long(var_binding[9][1]))
+            traffic_total = str(long(var_binding[0][1]) + long(var_binding[1][1]))
 
         channellist = [
             {

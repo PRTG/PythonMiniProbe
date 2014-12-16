@@ -93,6 +93,8 @@ def main():
                 'protocol': config['protocol'],
                 'key': key_sha1
             }
+            procs = []
+            out_queue = multiprocessing.Queue()
             task = False
             while not task:
                 json_payload_data = []
@@ -112,15 +114,13 @@ def main():
             gc.collect()
             if str(json_response) != '[]':
                 json_response_chunks = [json_response[i:i + 10] for i in range(0, len(json_response), 10)]
-                procs = []
-
                 for element in json_response_chunks:
-                    out_queue = multiprocessing.Queue()
                     for part in element:
                         if config['debug']:
                             logging.debug(part)
                         for sensor in sensor_list:
                             if part['kind'] == sensor.get_kind():
+                                print part['kind']
                                 p = multiprocessing.Process(target=sensor.get_data, args=(part, out_queue),
                                                             name=part['kind'])
                                 procs.append(p)
@@ -128,14 +128,21 @@ def main():
                             else:
                                 pass
                         gc.collect()
-                    for i in range(len(procs)):
-                        json_payload_data.append(out_queue.get())
-                    for p in procs:
-                        p.join(2)
-                        procs = []
-                        p.terminate()
-                        del p
-                    del out_queue
+                    try:
+                        while len(json_payload_data) < len(element):
+                            out = out_queue.get()
+                            json_payload_data.append(out)
+                    except Exception as e:
+                        logging.error(e)
+                        print e
+                        pass
+                    #print len(json_response_chunks)
+                    #print len(json_payload_data)
+                        #p.join()
+                        #p.terminate()
+                        #del p
+                    #del out_queue
+                    #procs = []
                     url_data = mini_probe.create_url(config, 'data')
                     try:
                         request_data = requests.post(url_data, data=json.dumps(json_payload_data), verify=False)
@@ -157,6 +164,14 @@ def main():
                 time.sleep(int(config['baseinterval']) / 3)
 
             # Delete some stuff used in the loop and run the garbage collector
+            for p in procs:
+                if not p.is_alive():
+                    p.join()
+                    p.terminate()
+                    del p
+                #p.join()
+                #p.terminate()
+                #del p
             del json_response
             del json_payload_data
             gc.collect()
