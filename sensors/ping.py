@@ -149,7 +149,7 @@ class Ping(object):
                 "code": 1,
                 "message": "Ping failed. %s" % e
             }
-            return data
+            out_queue.put(data)
         data = {
             "sensorid": int(data['sensorid']),
             "message": "OK",

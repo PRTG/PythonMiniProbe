@@ -66,7 +66,7 @@ class CPULoad(object):
                 "code": 1,
                 "message": "CPU load sensor failed. See log for details"
             }
-            return data
+            out_queue.put(data)
         cpudata = []
         for element in cpu:
             cpudata.append(element)

@@ -126,7 +126,7 @@ class Port(object):
                 "code": 1,
                 "message": "Port check failed. See log for details"
             }
-            return data
+            out_queue.put(data)
         data = {
             "sensorid": int(data['sensorid']),
             "message": "OK Port %s available" % data['targetport'],

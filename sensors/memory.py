@@ -66,7 +66,7 @@ class Memory(object):
                 "code": 1,
                 "message": "Memory sensor failed. See log for details"
             }
-            return data
+            out_queue.put(data)
         memorydata = []
         for element in mem:
             memorydata.append(element)

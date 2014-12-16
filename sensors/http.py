@@ -189,7 +189,7 @@ class HTTP(object):
                 "code": 1,
                 "message": "HTTP Request failed. See log for details"
             }
-            return data
+            out_queue.put(data)
         
         data = {
             "sensorid": int(data['sensorid']),

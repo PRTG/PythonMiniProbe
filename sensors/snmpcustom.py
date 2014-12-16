@@ -188,7 +188,7 @@ class SNMPCustom(object):
                 "code": 1,
                 "message": "SNMP Request failed. See log for details"
             }
-            return data
+            out_queue.put(data)
 
         data = {
             "sensorid": int(data['sensorid']),

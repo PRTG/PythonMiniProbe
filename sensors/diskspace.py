@@ -67,7 +67,7 @@ class Diskspace(object):
                 "code": 1,
                 "message": "Disk Space Sensor failed. See log for details"
             }
-            return data
+            out_queue.put(data)
         channels = disk
         data = {
             "sensorid": int(data['sensorid']),
