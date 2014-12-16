@@ -113,7 +113,12 @@ def main():
                     time.sleep(int(config['baseinterval']) / 2)
             gc.collect()
             if str(json_response) != '[]':
-                json_response_chunks = [json_response[i:i + 10] for i in range(0, len(json_response), 10)]
+                if config['subprocs']:
+                    json_response_chunks = [json_response[i:i + int(config['subprocs'])]
+                                            for i in range(0, len(json_response), int(config['subprocs']))]
+                else:
+                    json_response_chunks = [json_response[i:i + 10]
+                                            for i in range(0, len(json_response), 10)]
                 for element in json_response_chunks:
                     for part in element:
                         if config['debug']:

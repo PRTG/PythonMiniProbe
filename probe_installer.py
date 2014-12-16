@@ -126,6 +126,8 @@ Successfully imported modules.
                 raw_input("Please provide the path the probe files are located: ")).rstrip().lstrip()
             probe_cleanmem = "%s" % str(
                 raw_input("Do you want the mini probe flushing buffered and cached memory [y/N]: ")).rstrip().lstrip()
+            probe_conf['subprocs'] = "%s" % str(
+                raw_input("How much subprocesses should be spawned for scanning [10]: ")).rstrip().lstrip()
             probe_conf['announced'] = "0"
             probe_conf['protocol'] = "1"
             probe_conf['debug'] = ""
@@ -142,6 +144,8 @@ Successfully imported modules.
                 probe_conf['port'] = "443"
             if not probe_conf['baseinterval']:
                 probe_conf['baseinterval'] = "443"
+            if not probe_conf['subprocs']:
+                probe_conf['subprocs'] = "10"
             if not (probe_conf['gid'] or probe_conf['server']):
                 print "No values for GID or CORE SERVER given. Script will now exit"
                 sys.exit()
