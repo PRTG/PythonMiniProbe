@@ -23,3 +23,5 @@ Version 14.4.6 experimental
     - [minor] some changes to the sensor's get_data function, especially the handling of the return values. Now handled by a queue.
     - [minor] stability improvements to multiprocessing
 
+Version 14.4.7 experimental
+    - [major] fix for a bug which could lead to the probe completely locking
