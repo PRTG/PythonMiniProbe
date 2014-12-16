@@ -120,7 +120,6 @@ def main():
                             logging.debug(part)
                         for sensor in sensor_list:
                             if part['kind'] == sensor.get_kind():
-                                print part['kind']
                                 p = multiprocessing.Process(target=sensor.get_data, args=(part, out_queue),
                                                             name=part['kind'])
                                 procs.append(p)
