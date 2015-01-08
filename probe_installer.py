@@ -164,8 +164,8 @@ Successfully imported modules.
         print "Setting up runlevel"
         write_file(path_init, init_script(probe_path, probe_user))
         print "Changing File Permissions"
-        os.chmod('%s/probe.py' % probe_path, 755)
-        os.chmod('/etc/init.d/probe.sh', 755)
+        os.chmod('%s/probe.py' % probe_path, 0755)
+        os.chmod('/etc/init.d/probe.sh', 0755)
         print subprocess.call(["update-rc.d", "probe.sh", "defaults"], shell=True)
         print "Starting Mini Probe"
         print subprocess.call("/etc/init.d/probe.sh start", shell=True)
