@@ -97,6 +97,9 @@ def main():
                 json_payload_data = []
                 try:
                     request_task = requests.get(url_task, params=task_data, verify=False)
+                    if config['debug']:
+                        logging.debug(request_task.headers)
+                        logging.debug(request_task.text)
                     json_response = request_task.json()
                     request_task.close()
                     gc.collect()
