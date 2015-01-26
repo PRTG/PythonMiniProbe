@@ -105,7 +105,6 @@ Successfully imported modules.
         print "No configuration file found. Creating."
         try:
             probe_conf = {}
-            file_create(path)
             probe_user = "%s" % str(
                 raw_input("Please provide the username the script should run under "
                           "(please use 'root' for now): ")).rstrip().lstrip()
@@ -140,10 +139,15 @@ Successfully imported modules.
                 probe_conf['name'] = "Python MiniProbe"
             if not probe_conf['port']:
                 probe_conf['port'] = "443"
+	    response = os.system("ping -c 1 " + probe_conf['server'] + " > /dev/null")
+	    if not response == 0:
+		print "PRTG Server can not be reached. Please make sure the server is reachable."
+		sys.exit()
             if not (probe_conf['gid'] or probe_conf['server']):
                 print "No values for GID or CORE SERVER given. Script will now exit"
                 sys.exit()
             else:
+		file_create(path)
                 write_config(probe_conf)
                 print "Config file successfully created"
                 logpath = "%s/logs" % probe_path
