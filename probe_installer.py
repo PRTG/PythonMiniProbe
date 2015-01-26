@@ -166,7 +166,7 @@ Successfully imported modules.
         print "Changing File Permissions"
         os.chmod('%s/probe.py' % probe_path, 0755)
         os.chmod('/etc/init.d/probe.sh', 0755)
-        print subprocess.call(["update-rc.d", "probe.sh", "defaults"], shell=True)
+        print subprocess.call("update-rc.d probe.sh defaults", shell=True)
         print "Starting Mini Probe"
         print subprocess.call("/etc/init.d/probe.sh start", shell=True)
         print "Done. You now can start/stop the Mini Probe using '/etc/init.d/probe.sh start' " \
