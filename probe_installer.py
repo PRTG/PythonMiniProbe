@@ -142,7 +142,10 @@ Successfully imported modules.
 	    response = os.system("ping -c 1 " + probe_conf['server'] + " > /dev/null")
 	    if not response == 0:
 		print "PRTG Server can not be reached. Please make sure the server is reachable."
-		sys.exit()
+		go_on = "%s" % str(
+		    raw_input("Do you still want to continue using this server [y/N]: ")).rstrip().lstrip()
+		if not go_on == "y":
+		    sys.exit()
             if not (probe_conf['gid'] or probe_conf['server']):
                 print "No values for GID or CORE SERVER given. Script will now exit"
                 sys.exit()
