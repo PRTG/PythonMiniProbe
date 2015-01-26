@@ -140,8 +140,6 @@ Successfully imported modules.
                 probe_conf['name'] = "Python MiniProbe"
             if not probe_conf['port']:
                 probe_conf['port'] = "443"
-            if not probe_conf['baseinterval']:
-                probe_conf['baseinterval'] = "443"
             if not (probe_conf['gid'] or probe_conf['server']):
                 print "No values for GID or CORE SERVER given. Script will now exit"
                 sys.exit()
