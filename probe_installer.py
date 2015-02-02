@@ -221,9 +221,7 @@ if __name__ == '__main__':
     print ""
     path = './probe.conf'
     if file_check(path):
-        probe_config_exists = "%s" % str(
-            raw_input(bcolor.YELLOW + "A config file was already found. Do you want to reconfigure [y/N]: " + bcolor.END
-)).rstrip().lstrip()
+        probe_config_exists = "%s" % str(raw_input(bcolor.YELLOW + "A config file was already found. Do you want to reconfigure [y/N]: " + bcolor.END)).rstrip().lstrip()
         if probe_config_exists == "y":
 	    get_config()            
 	conf_avail = True
