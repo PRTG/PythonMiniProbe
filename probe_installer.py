@@ -24,10 +24,18 @@ import sys
 import os
 import time
 import subprocess
+import uuid
+
+class bcolor:
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    YELLOW = '\033[93m'
+    CYAN = '\033[96m'
+    END = '\033[0m'
 
 probe_conf = {}
 if sys.version_info < (2, 7):
-    print "\033[91mPython version too old! Please install at least version 2.7\033[0m"
+    print bcolor.RED + "Python version too old! Please install at least version 2.7" + bcolor.END
     print "Exiting"
     sys.exit(2)
 
@@ -69,63 +77,110 @@ def init_script(script_path, user):
     init_script_tpl = open("./scripts/probe.tpl")
     return init_script_tpl.read() % (script_path, user)
 
-def get_config():
-    print ""
-    print "No configuration file found. Creating."
-    print ""
-    try:
-        probe_user = "%s" % str(
-            raw_input("Please provide the username the script should run under "
-                      "(please use 'root' for now): ")).rstrip().lstrip()
-        probe_conf['name'] = "%s" % str(
-            raw_input("Please provide the desired name of your Mini Probe [Python MiniProbe]: ")).rstrip().lstrip()
-        probe_conf['gid'] = "%s" % str(
-            raw_input("Please provide the Probe GID (any unique alphanumerical string): ")).rstrip().lstrip()
-        probe_conf['server'] = "%s" % str(
-            raw_input("Please provide the IP/DNS name of the PRTG Core Server: ")).rstrip().lstrip()
-        probe_conf['port'] = "%s" % str(raw_input(
-            "Please provide the port the PRTG web server is listening to "
-            "(IMPORTANT: Only SSL is supported)[443]: ")).rstrip().lstrip()
-        probe_conf['baseinterval'] = "%s" % str(
-            raw_input("Please provide the base interval for your sensors [60]: ")).rstrip().lstrip()
-        probe_conf['key'] = "%s" % str(
-            raw_input("Please provide the Probe Access Key as defined on the PRTG Core: ")).rstrip().lstrip()
-        probe_path = "%s" % str(
-            raw_input("Please provide the path the probe files are located: ")).rstrip().lstrip()
-        probe_cleanmem = "%s" % str(
-            raw_input("Do you want the mini probe flushing buffered and cached memory [y/N]: ")).rstrip().lstrip()
-        probe_conf['announced'] = "0"
-        probe_conf['protocol'] = "1"
-        probe_conf['debug'] = ""
-        # Handling some default values if nothing is provided
-        if probe_cleanmem == "y":
-            probe_conf['cleanmem'] = "True"
-        else:
-            probe_conf['cleanmem'] = "False"
-        if not probe_conf['baseinterval']:
-            probe_conf['baseinterval'] = "60"
-        if not probe_conf['name']:
-            probe_conf['name'] = "Python MiniProbe"
-        if not probe_conf['port']:
-            probe_conf['port'] = "443"
-	response = os.system("ping -c 1 " + probe_conf['server'] + " > /dev/null")
+def get_config_user(default="root"):
+    tmpUser = "%s" % str(raw_input(bcolor.GREEN + "Please provide the username the script should run under [" + default + "]: " + bcolor.END)).rstrip().lstrip()
+    if not tmpUser == "":
+        return tmpUser
+    else:
+	return default
+
+def get_config_name(default="Python MiniProbe"):
+    tmpName = "%s" % str(raw_input(bcolor.GREEN + "Please provide the desired name of your Mini Probe [" + default + "]: " + bcolor.END)).rstrip().lstrip()
+    if not tmpName == "":
+        return tmpName
+    else:
+        return default
+
+def get_config_gid(default=str(uuid.uuid4())):
+    tmpGid = "%s" % str(raw_input(bcolor.GREEN + "Please provide the Probe GID [" + default + "]: " + bcolor.END)).rstrip().lstrip()
+    if not tmpGid == "":
+        return tmpGid
+    else:
+        return default
+
+def get_config_ip(default=""):
+    tmpIP = "%s" % str(raw_input(bcolor.GREEN + "Please provide the IP/DNS name of the PRTG Core Server [" + default + "]: " + bcolor.END)).rstrip().lstrip()
+    if not tmpIP == "":
+	response = os.system("ping -c 1 " + tmpIP  + " > /dev/null")
 	if not response == 0:
-	    print "\033[91mPRTG Server can not be reached. Please make sure the server is reachable.\033[0m"
-	    go_on = "%s" % str(
-	raw_input("Do you still want to continue using this server [y/N]: ")).rstrip().lstrip()
-	if not go_on == "y":
-	    sys.exit()
-	if not (probe_conf['gid'] or probe_conf['server']):
-            print "No values for GID or CORE SERVER given. Script will now exit"
-            sys.exit()
-        else:
-	    file_create(path)
-            write_config(probe_conf)
-            print "Config file successfully created"
-            logpath = "%s/logs" % probe_path
-            if not (file_check(logpath)):
-                os.makedirs(logpath)
-            return True
+	    print bcolor.YELLOW + "PRTG Server can not be reached. Please make sure the server is reachable." + bcolor.END
+	    go_on = "%s" % str(raw_input(bcolor.YELLOW + "Do you still want to continue using this server [y/N]: " + bcolor.END)).rstrip().lstrip()
+            if not go_on == "y":
+	        return get_config_ip()
+	return tmpIP
+    else:
+	print bcolor.YELLOW + "You have not provided an IP/DNS name of the PRTG Core Server." + bcolor.END
+	return get_config_ip()
+
+def get_config_port(default="443"):
+    tmpPort = "%s" % str(raw_input(bcolor.GREEN + "Please provide the port the PRTG web server is listening to (IMPORTANT: Only SSL is supported)[" + default + "]: " + bcolor.END)).rstrip().lstrip()
+    if not tmpPort == "":
+        return tmpPort 
+    else:
+        return default
+
+def get_config_base_interval(default="60"):
+    tmpInterval = "%s" % str(raw_input(bcolor.GREEN + "Please provide the base interval for your sensors [" + default + "]: " + bcolor.END)).rstrip().lstrip()
+    if not tmpInterval == "":
+        return tmpInterval 
+    else:
+        return default
+
+def get_config_access_key(default=""):
+    tmpAccessKey = "%s" % str(raw_input(bcolor.GREEN + "Please provide the Probe Access Key as defined on the PRTG Core [" + default + "]: " + bcolor.END)).rstrip().lstrip()
+    if not tmpAccessKey == "":
+        return tmpAccessKey
+    else:
+	print bcolor.YELLOW + "You have not provided the Probe Access Key as defined on the PRTG Core." + bcolor.END
+        return get_config_access_key()
+
+def get_config_path(default=os.path.dirname(os.path.abspath(__file__))):
+    tmpPath = "%s" % str(raw_input(bcolor.GREEN + "Please provide the path where the probe files are located [" + default + "]: " + bcolor.END)).rstrip().lstrip()
+    if not tmpPath == "":
+        return tmpPath
+    else:
+        return default
+
+def get_config_clean_memory(default=""):
+    tmpCleanMem = "%s" % str(raw_input(bcolor.GREEN + "Do you want the mini probe flushing buffered and cached memory [y/N]: " + bcolor.END)).rstrip().lstrip()
+    if tmpCleanMem.lower() == "y":
+        return "True"
+    else:
+        return "False"
+
+#For future use
+def get_config_announced(default="0"):
+    return "0"
+
+#For future use
+def get_config_protocol(default="1"):
+    return "1"
+
+#For future use
+def get_config_debug(default=""):
+    return ""
+
+def get_config():
+    try:
+        probe_user = get_config_user()
+        probe_conf['name'] = get_config_name()
+        probe_conf['gid'] = get_config_gid()
+        probe_conf['server'] = get_config_ip()
+        probe_conf['port'] = get_config_port()
+        probe_conf['baseinterval'] = get_config_base_interval()
+        probe_conf['key'] = get_config_access_key()
+        probe_path = get_config_path()
+        probe_conf['cleanmem'] = get_config_clean_memory()
+        probe_conf['announced'] = get_config_announced()
+        probe_conf['protocol'] = get_config_protocol()
+        probe_conf['debug'] = get_config_debug()
+        file_create(path)
+        write_config(probe_conf)
+        print "Config file successfully created"
+        logpath = "%s/logs" % probe_path
+        if not (file_check(logpath)):
+            os.makedirs(logpath)
+        return True
         path_rotate = "/etc/logrotate.d/MiniProbe"
         path_init = "/etc/init.d/probe.sh"
         print "Creating Logrotation Config"
@@ -141,9 +196,13 @@ def get_config():
 
 if __name__ == '__main__':
     conf_avail = False
-    print "Welcome to the Miniprobe (Python) for PRTG installer"
+    if not os.getuid() == 0:
+        print bcolor.RED + "You must run me as root user!" + bcolor.END
+        print bcolor.RED + "Rerun me with sudo " + __file__ + bcolor.END
     print ""
-    print "Checking for necessary modules and Python Version"
+    print bcolor.CYAN + "Welcome to the Miniprobe (Python) for PRTG installer" + bcolor.END
+    print ""
+    print bcolor.YELLOW + "Checking for necessary modules and Python Version" + bcolor.END
     try:
         sys.path.append('./')
         import hashlib
@@ -158,11 +217,13 @@ if __name__ == '__main__':
         print "%s.Please install the same" % e
         print "Exiting"
         sys.exit(1)
-    print "Successfully imported modules."
+    print bcolor.GREEN + "Successfully imported modules." + bcolor.END
+    print ""
     path = './probe.conf'
     if file_check(path):
         probe_config_exists = "%s" % str(
-            raw_input("A config file was already found. Do you want to reconfigure [y/N]: ")).rstrip().lstrip()
+            raw_input(bcolor.YELLOW + "A config file was already found. Do you want to reconfigure [y/N]: " + bcolor.END
+)).rstrip().lstrip()
         if probe_config_exists == "y":
 	    get_config()            
 	conf_avail = True
