@@ -105,7 +105,7 @@ def get_config_ip(default=""):
 	if not response == 0:
 	    print bcolor.YELLOW + "PRTG Server can not be reached. Please make sure the server is reachable." + bcolor.END
 	    go_on = "%s" % str(raw_input(bcolor.YELLOW + "Do you still want to continue using this server [y/N]: " + bcolor.END)).rstrip().lstrip()
-            if not go_on == "y":
+            if not go_on.lower() == "y":
 	        return get_config_ip()
 	return tmpIP
     else:
@@ -156,7 +156,6 @@ def get_config_announced(default="0"):
 def get_config_protocol(default="1"):
     return "1"
 
-#For future use
 def get_config_debug(default=""):
     tmpDebug = "%s" % str(raw_input(bcolor.GREEN + "Do you want to enable debug logging (" + bcolor.YELLOW + "can create massive logfiles!" + bcolor.GREEN + ") [y/N]: " + bcolor.END)).rstrip().lstrip()
     if tmpDebug.lower() == "y":
@@ -186,6 +185,23 @@ def get_config():
         print "Exiting"
         sys.exit(1)
     print bcolor.GREEN + "Successfully imported modules." + bcolor.END
+    print ""
+    print bcolor.YELLOW + "Checking the hardware for Raspberry Pi." + bcolor.END
+    if os.uname()[4][:3] == 'arm':
+	print bcolor.GREEN + "Found hardware matching " + os.uname()[4][:3] + bcolor.END
+        tmpUseRaspberry = "%s" % str(raw_input(bcolor.GREEN + "Do you want to enable the Raspberry Pi temperature sensor [Y/n]: " + bcolor.END)).rstrip().lstrip()
+        if not tmpUseRaspberry.lower() == "n":
+	    try:
+		print bcolor.GREEN + "Trying to build and install specific Raspberry Pi module(s)..." + bcolor.END
+		print subprocess.call("cd w1thermsensor && python setup.py install && cd ..", shell=True)
+		from w1thermsensor import W1ThermSensor
+		print bcolor.GREEN + "Successfully build and installed Raspberry Pi module(s)." + bcolor.END
+	    except Exception, e:
+	        print "%s.Please install the same" % e
+        	print "Exiting"
+	        sys.exit(1)
+    else:
+	    print bcolor.RED + "Found hardware matching " + os.uname()[4][:3] + bcolor.END
     print ""
     try:
         probe_user = get_config_user()
@@ -241,12 +257,12 @@ if __name__ == '__main__':
     if file_check(path):
         print ""
         probe_config_exists = "%s" % str(raw_input(bcolor.YELLOW + "A config file was already found. Do you want to reconfigure [y/N]: " + bcolor.END)).rstrip().lstrip()
-        if probe_config_exists == "y":
+        if probe_config_exists.lower() == "y":
 	    get_config()
 	else:
 	    print ""
             uninstall = "%s" % str(raw_input(bcolor.YELLOW + "Do you want to Uninstall or Restart the service [u/R]: " + bcolor.END)).rstrip().lstrip()
-	    if uninstall == "u":
+	    if uninstall.lower() == "u":
 		remove_config()
 		conf_avail = False
 	    else:
