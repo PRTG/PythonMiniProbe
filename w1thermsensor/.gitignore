@@ -1,0 +1,20 @@
+# vim swap files
+*.swp
+
+# python bytecode files
+*.pyc
+
+# virtualenv
+env
+
+# distutils with PIP
+build
+dist
+MANIFEST
+README.rst
+
+# coverage data
+.coverage
+
+# mocked sensors
+test/mockedsensors
