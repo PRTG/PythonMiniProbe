@@ -59,7 +59,7 @@ def write_config(config):
             conf += "%s:%s\n" % (key, config[key])
         f.write(conf)
     f.close()
-    print "Config file successfully written!"
+    print bcolor.GREEN + "Config file successfully written!" + bcolor.END
 
 
 def write_file(write_path, content):
@@ -158,49 +158,17 @@ def get_config_protocol(default="1"):
 
 #For future use
 def get_config_debug(default=""):
-    return ""
+    tmpDebug = "%s" % str(raw_input(bcolor.GREEN + "Do you want to enable debug logging (" + bcolor.YELLOW + "can create massive logfiles!" + bcolor.GREEN + ") [y/N]: " + bcolor.END)).rstrip().lstrip()
+    if tmpDebug.lower() == "y":
+	tmpDebug1 = "%s" % str(raw_input(bcolor.YELLOW + "Are you sure you want to enable debug logging? This will create massive logfiles [y/N]: " + bcolor.END)).rstrip().lstrip()
+	if tmpDebug1.lower() == "y":
+            return "True"
+	else:
+	    return "False"
+    else:
+        return "False"
 
 def get_config():
-    try:
-        probe_user = get_config_user()
-        probe_conf['name'] = get_config_name()
-        probe_conf['gid'] = get_config_gid()
-        probe_conf['server'] = get_config_ip()
-        probe_conf['port'] = get_config_port()
-        probe_conf['baseinterval'] = get_config_base_interval()
-        probe_conf['key'] = get_config_access_key()
-        probe_path = get_config_path()
-        probe_conf['cleanmem'] = get_config_clean_memory()
-        probe_conf['announced'] = get_config_announced()
-        probe_conf['protocol'] = get_config_protocol()
-        probe_conf['debug'] = get_config_debug()
-        file_create(path)
-        write_config(probe_conf)
-        print "Config file successfully created"
-        logpath = "%s/logs" % probe_path
-        if not (file_check(logpath)):
-            os.makedirs(logpath)
-        return True
-        path_rotate = "/etc/logrotate.d/MiniProbe"
-        path_init = "/etc/init.d/probe.sh"
-        print "Creating Logrotation Config"
-        write_file(path_rotate, logrotation(probe_path))
-        print "Setting up runlevel"
-        write_file(path_init, init_script(probe_path, probe_user))
-        print "Changing File Permissions"
-        os.chmod('%s/probe.py' % probe_path, 0755)
-        os.chmod('/etc/init.d/probe.sh', 0755)
-    except Exception, e:
-        print "%s. Exiting!" % e
-        return False
-
-if __name__ == '__main__':
-    conf_avail = False
-    if not os.getuid() == 0:
-        print bcolor.RED + "You must run me as root user!" + bcolor.END
-        print bcolor.RED + "Rerun me with sudo " + __file__ + bcolor.END
-    print ""
-    print bcolor.CYAN + "Welcome to the Miniprobe (Python) for PRTG installer" + bcolor.END
     print ""
     print bcolor.YELLOW + "Checking for necessary modules and Python Version" + bcolor.END
     try:
@@ -219,22 +187,77 @@ if __name__ == '__main__':
         sys.exit(1)
     print bcolor.GREEN + "Successfully imported modules." + bcolor.END
     print ""
+    try:
+        probe_user = get_config_user()
+        probe_conf['name'] = get_config_name()
+        probe_conf['gid'] = get_config_gid()
+        probe_conf['server'] = get_config_ip()
+        probe_conf['port'] = get_config_port()
+        probe_conf['baseinterval'] = get_config_base_interval()
+        probe_conf['key'] = get_config_access_key()
+        probe_path = get_config_path()
+        probe_conf['cleanmem'] = get_config_clean_memory()
+        probe_conf['announced'] = get_config_announced()
+        probe_conf['protocol'] = get_config_protocol()
+        probe_conf['debug'] = get_config_debug()
+	print ""
+        file_create(path)
+        write_config(probe_conf)
+        logpath = "%s/logs" % probe_path
+        if not (file_check(logpath)):
+            os.makedirs(logpath)
+        path_rotate = "/etc/logrotate.d/MiniProbe"
+        path_init = "/etc/init.d/probe.sh"
+        print bcolor.GREEN + "Creating Logrotation Config" + bcolor.END
+        write_file(path_rotate, logrotation(probe_path))
+        print bcolor.GREEN + "Setting up runlevel" + bcolor.END
+        write_file(path_init, init_script(probe_path, probe_user))
+        print bcolor.GREEN + "Changing File Permissions" + bcolor.END
+        os.chmod('%s/probe.py' % probe_path, 0755)
+        os.chmod('/etc/init.d/probe.sh', 0755)
+	return True
+    except Exception, e:
+        print bcolor.RED + "%s. Exiting!" % e + bcolor.END
+        return False
+
+def remove_config():
+    try:
+	print subprocess.call("/etc/init.d/probe.sh stop", shell=True)
+	os.remove('/etc/init.d/probe.sh')
+	os.remove('/etc/logrotate.d/MiniProbe')
+	os.remove('./probe.conf')
+    except Exception, e:
+        print "%s. Exiting!" % e
+        return False
+
+if __name__ == '__main__':
+    conf_avail = False
+    if not os.getuid() == 0:
+        print bcolor.RED + "You must run me as root user!" + bcolor.END
+        print bcolor.RED + "Rerun me with sudo " + __file__ + bcolor.END
+    print ""
+    print bcolor.CYAN + "Welcome to the Miniprobe (Python) for PRTG installer" + bcolor.END
     path = './probe.conf'
     if file_check(path):
+        print ""
         probe_config_exists = "%s" % str(raw_input(bcolor.YELLOW + "A config file was already found. Do you want to reconfigure [y/N]: " + bcolor.END)).rstrip().lstrip()
         if probe_config_exists == "y":
-	    get_config()            
-	conf_avail = True
+	    get_config()
+	else:
+	    print ""
+            uninstall = "%s" % str(raw_input(bcolor.YELLOW + "Do you want to Uninstall or Restart the service [u/R]: " + bcolor.END)).rstrip().lstrip()
+	    if uninstall == "u":
+		remove_config()
+		conf_avail = False
+	    else:
+		conf_avail = True
     else:
 	conf_avail = get_config()
-	
-
     if conf_avail:
         print subprocess.call("update-rc.d probe.sh defaults", shell=True)
-        print "Starting Mini Probe"
+        print bcolor.GREEN + "Starting Mini Probe" + bcolor.END
         print subprocess.call("/etc/init.d/probe.sh start", shell=True)
-        print "Done. You now can start/stop the Mini Probe using '/etc/init.d/probe.sh start' " \
-              "or  '/etc/init.d/probe.sh stop'"
+        print bcolor.GREEN + "Done. You now can start/stop the Mini Probe using '/etc/init.d/probe.sh start' or '/etc/init.d/probe.sh stop'" + bcolor.END
     else:
-        print "No Config available. Exiting!"
+        print "Exiting!"
         sys.exit()
