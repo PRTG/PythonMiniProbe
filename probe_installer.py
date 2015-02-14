@@ -111,10 +111,6 @@ def install_w1_module():
         if not tmpUseRaspberry.lower() == "n":
 	    try:
 		install_kernel_module()
-		print bcolor.GREEN + "Trying to build and install specific Raspberry Pi module(s)..." + bcolor.END
-		print subprocess.call("cd w1thermsensor && python setup.py install && cd ..", shell=True)
-		from w1thermsensor import W1ThermSensor
-		print bcolor.GREEN + "Successfully build and installed Raspberry Pi module(s)." + bcolor.END
                 return True
 	    except Exception, e:
 	        print "%s.Please install the same" % e
@@ -270,7 +266,7 @@ def get_config():
     install_w1_module()
     sensors = get_w1_sensors()
     if not sensors == "":
-        print bcolor.GREEN + "Adding DS18B20.pyand selected sensors to /sensors/__init__.py" + bcolor.END
+        print bcolor.GREEN + "Adding DS18B20.py and selected sensors to /sensors/__init__.py" + bcolor.END
         add_sensor_to_load_list(sensors)
     print ""
     try:
