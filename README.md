@@ -40,6 +40,13 @@ This will enable detailed logging to folder "logs" which is as sub folder of the
 
 Changelog
 =========
+14-02-2015
+----------
+- Added full support for the DS18B20 and a lot of cleanup and fixes
+- Also added the boot/config.txt fix for the DS18B20 that is needed on the RPi
+- Removed the no longer needed W1ThermSensor module from the repo
+    as the Raspbian Image for raspberry already includes everything needed
+
 02-02-2015
 ----------
 - Installer cleanup and preparation for reading current config
