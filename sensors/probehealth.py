@@ -44,7 +44,7 @@ class Probehealth(object):
             "name": "Probe Health",
             "description": "Internal sensor used to monitor the health of a PRTG probe",
             "default": "yes",
-            "help": "test",
+            "help": "Internal sensor used to monitor the health of a PRTG probe",
             "tag": "mpprobehealthsensor",
             "fields": [],
             "groups": []

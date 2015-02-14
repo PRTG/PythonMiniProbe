@@ -51,7 +51,7 @@ class SNMPTraffic(object):
             "kind": SNMPTraffic.get_kind(),
             "name": "SNMP Traffic",
             "description": "Monitors Traffic on provided interface using SNMP",
-            "help": "",
+            "help": "Monitors Traffic on provided interface using SNMP",
             "tag": "mpsnmptrafficsensor",
             "groups": [
                 {

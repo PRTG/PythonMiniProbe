@@ -44,7 +44,7 @@ class CPULoad(object):
             "name": "CPU Load",
             "description": "Monitors CPU load avg on the system the mini probe is running on",
             "default": "yes",
-            "help": "test",
+            "help": "Monitors CPU load avg on the system the mini probe is running on",
             "tag": "mpcpuloadsensor",
             "fields": [],
             "groups": []

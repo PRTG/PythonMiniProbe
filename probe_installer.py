@@ -39,7 +39,6 @@ if sys.version_info < (2, 7):
     print "Exiting"
     sys.exit(2)
 
-
 def file_check(check_path):
     # Check if a give file exists
     return os.path.exists(check_path)
@@ -50,7 +49,6 @@ def file_create(create_path):
     with open(create_path, 'w') as f:
         f.write("###Mini Probe Config File\n")
         f.close()
-
 
 def write_config(config):
     conf = ""
@@ -67,7 +65,6 @@ def write_file(write_path, content):
         f.write(content)
     f.close()
 
-
 def logrotation(rotation_path):
     rotate_tpl = open("./scripts/rotate.tpl")
     return rotate_tpl.read() % rotation_path
@@ -76,6 +73,90 @@ def logrotation(rotation_path):
 def init_script(script_path, user):
     init_script_tpl = open("./scripts/probe.tpl")
     return init_script_tpl.read() % (script_path, user)
+
+def add_sensor_to_load_list(sensors):
+    f=open("./sensors/__init__.py","w")
+    f.write("#Copyright (c) 2014, Paessler AG <support@paessler.com>\n")
+    f.write("#All rights reserved.\n")
+    f.write("#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the\n")
+    f.write("# following conditions are met:\n")
+    f.write("#1. Redistributions of source code must retain the above copyright notice, this list of conditions\n")
+    f.write("# and the following disclaimer.\n")
+    f.write("#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions\n")
+    f.write("# and the following disclaimer in the documentation and/or other materials provided with the distribution.\n")
+    f.write("#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse\n")
+    f.write("# or promote products derived from this software without specific prior written permission.\n")
+    f.write("\n")
+    f.write("#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES,\n")
+    f.write("# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n")
+    f.write("# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,\n")
+    f.write("# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,\n")
+    f.write("# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)\n")
+    f.write("# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,\n")
+    f.write("# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,\n")
+    f.write("# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n")
+    f.write("\n")
+    f.write("# Announce modules available in this package\n")
+    f.write("# Just extend this list for your modules and they will be automatically imported during runtime and\n")
+    f.write("# are announced to the PRTG Core\n")
+    f.write("__all__ = [\"Ping\", \"HTTP\", \"Port\", \"SNMPCustom\", \"CPULoad\", \"Memory\", \"Diskspace\", \"SNMPTraffic\", \"DS18B20\"]\n")
+    f.write("DS18B20_sensors = [" + sensors + "]\n")
+    f.close()
+
+def install_w1_module():
+    print bcolor.YELLOW + "Checking the hardware for Raspberry Pi." + bcolor.END
+    if os.uname()[4][:3] == 'arm':
+	print bcolor.GREEN + "Found hardware matching " + os.uname()[4][:3] + bcolor.END
+        tmpUseRaspberry = "%s" % str(raw_input(bcolor.GREEN + "Do you want to enable the Raspberry Pi temperature sensor [Y/n]: " + bcolor.END)).rstrip().lstrip()
+        if not tmpUseRaspberry.lower() == "n":
+	    try:
+		install_kernel_module()
+		print bcolor.GREEN + "Trying to build and install specific Raspberry Pi module(s)..." + bcolor.END
+		print subprocess.call("cd w1thermsensor && python setup.py install && cd ..", shell=True)
+		from w1thermsensor import W1ThermSensor
+		print bcolor.GREEN + "Successfully build and installed Raspberry Pi module(s)." + bcolor.END
+                return True
+	    except Exception, e:
+	        print "%s.Please install the same" % e
+        	print "Exiting"
+	        sys.exit(1)
+    else:
+        print bcolor.RED + "Found hardware matching " + os.uname()[4][:3] + bcolor.END
+        return False
+
+def install_kernel_module():
+    print bcolor.GREEN + "Checking for w1-gpio line in /boot/config.txt" + bcolor.END
+    found = False
+    f = open('/boot/config.txt','r')
+    for line in f.readlines():
+        if line.strip() == 'dtoverlay=w1-gpio':
+            print bcolor.GREEN + "Found dtoverlay line. Skipping install of w1-gpio" + bcolor.END
+            found = True
+    f.close()
+    if not found:
+        print bcolor.GREEN + "Line not found. Now adding the dtoverlay line to /boot/config.txt" + bcolor.END
+	f = open('/boot/config.txt','a')
+        f.write('\n#w1-gpio added by PRTG MiniProbe install script\n')
+        f.write('dtoverlay=w1-gpio')
+        f.close()
+        print bcolor.GREEN + "Please restart the installscript after the Raspberry Pi has been rebooted!" + bcolor.END
+        print bcolor.GREEN + "Now rebooting..." + bcolor.END
+	print subprocess.call("reboot", shell=True)
+	sys.exit(2)
+
+def get_w1_sensors():
+    sensors = ""
+    print bcolor.GREEN + "Finding all W1 sensors" + bcolor.END
+    f = open('/sys/devices/w1_bus_master1/w1_master_slaves','r')
+    for line in f.readlines():
+        print bcolor.GREEN + "Found: " + bcolor.YELLOW + line[3:].strip() + bcolor.END
+	sensors = sensors + "," + line[3:].strip()
+    f.close()
+    sens = "%s" % str(raw_input(bcolor.GREEN + "Please enter the id's of the temperature sensors you want to use from the list above, seperated with a , [" + sensors[1:] + "]: " + bcolor.END)).rstrip().lstrip()
+    if not sens == "":
+        return sens
+    else:
+	return sensors[1:]
 
 def get_config_user(default="root"):
     tmpUser = "%s" % str(raw_input(bcolor.GREEN + "Please provide the username the script should run under [" + default + "]: " + bcolor.END)).rstrip().lstrip()
@@ -186,22 +267,11 @@ def get_config():
         sys.exit(1)
     print bcolor.GREEN + "Successfully imported modules." + bcolor.END
     print ""
-    print bcolor.YELLOW + "Checking the hardware for Raspberry Pi." + bcolor.END
-    if os.uname()[4][:3] == 'arm':
-	print bcolor.GREEN + "Found hardware matching " + os.uname()[4][:3] + bcolor.END
-        tmpUseRaspberry = "%s" % str(raw_input(bcolor.GREEN + "Do you want to enable the Raspberry Pi temperature sensor [Y/n]: " + bcolor.END)).rstrip().lstrip()
-        if not tmpUseRaspberry.lower() == "n":
-	    try:
-		print bcolor.GREEN + "Trying to build and install specific Raspberry Pi module(s)..." + bcolor.END
-		print subprocess.call("cd w1thermsensor && python setup.py install && cd ..", shell=True)
-		from w1thermsensor import W1ThermSensor
-		print bcolor.GREEN + "Successfully build and installed Raspberry Pi module(s)." + bcolor.END
-	    except Exception, e:
-	        print "%s.Please install the same" % e
-        	print "Exiting"
-	        sys.exit(1)
-    else:
-	    print bcolor.RED + "Found hardware matching " + os.uname()[4][:3] + bcolor.END
+    install_w1_module()
+    sensors = get_w1_sensors()
+    if not sensors == "":
+        print bcolor.GREEN + "Adding DS18B20.pyand selected sensors to /sensors/__init__.py" + bcolor.END
+        add_sensor_to_load_list(sensors)
     print ""
     try:
         probe_user = get_config_user()
@@ -251,6 +321,7 @@ if __name__ == '__main__':
     if not os.getuid() == 0:
         print bcolor.RED + "You must run me as root user!" + bcolor.END
         print bcolor.RED + "Rerun me with sudo " + __file__ + bcolor.END
+        sys.exit(2)
     print ""
     print bcolor.CYAN + "Welcome to the Miniprobe (Python) for PRTG installer" + bcolor.END
     path = './probe.conf'

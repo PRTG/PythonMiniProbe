@@ -21,4 +21,5 @@
 # Announce modules available in this package
 # Just extend this list for your modules and they will be automatically imported during runtime and
 # are announced to the PRTG Core
-__all__ = ["Ping", "HTTP", "Port", "SNMPCustom", "CPULoad", "Memory", "Diskspace", "SNMPTraffic"]
+__all__ = ["Ping", "HTTP", "Port", "SNMPCustom", "CPULoad", "Memory", "Diskspace", "SNMPTraffic", "DS18B20"]
+DS18B20_sensors = ["000006ad5c3f"]
