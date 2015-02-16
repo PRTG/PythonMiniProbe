@@ -70,6 +70,23 @@ def logrotation(rotation_path):
     return rotate_tpl.read() % rotation_path
 
 
+def read_config(path):
+    """
+    read configuration file and write data to dict
+    """
+    config = {}
+    try:
+        conf_file = open(path)
+        for line in conf_file:
+            if not (line == '\n'):
+                if not (line.startswith('#')):
+                    config[line.split(':')[0]] = line.split(':')[1].rstrip()
+        conf_file.close()
+        return config
+    except Exception as read_error:
+        print bcolor.RED + "No config found! Error Message: %s Exiting!" + bcolor.END % read_error 
+        sys.exit()
+
 def init_script(script_path, user):
     init_script_tpl = open("./scripts/probe.tpl")
     return init_script_tpl.read() % (script_path, user)
@@ -180,13 +197,17 @@ def get_config_gid(default=str(uuid.uuid4())):
 
 def get_config_ip(default=""):
     tmpIP = "%s" % str(raw_input(bcolor.GREEN + "Please provide the IP/DNS name of the PRTG Core Server [" + default + "]: " + bcolor.END)).rstrip().lstrip()
-    if not tmpIP == "":
+    if not (tmpIP == "") or not (default == ""):
+	if (tmpIP == "") and not (default == ""):
+	    tmpIP = default
 	response = os.system("ping -c 1 " + tmpIP  + " > /dev/null")
 	if not response == 0:
 	    print bcolor.YELLOW + "PRTG Server can not be reached. Please make sure the server is reachable." + bcolor.END
 	    go_on = "%s" % str(raw_input(bcolor.YELLOW + "Do you still want to continue using this server [y/N]: " + bcolor.END)).rstrip().lstrip()
             if not go_on.lower() == "y":
 	        return get_config_ip()
+	else:
+	    print bcolor.GREEN + "PRTG Server can be reached. Continuing..." + bcolor.END
 	return tmpIP
     else:
 	print bcolor.YELLOW + "You have not provided an IP/DNS name of the PRTG Core Server." + bcolor.END
@@ -208,7 +229,9 @@ def get_config_base_interval(default="60"):
 
 def get_config_access_key(default=""):
     tmpAccessKey = "%s" % str(raw_input(bcolor.GREEN + "Please provide the Probe Access Key as defined on the PRTG Core [" + default + "]: " + bcolor.END)).rstrip().lstrip()
-    if not tmpAccessKey == "":
+    if not (tmpAccessKey == "") or not (default == ""):
+	if (tmpAccessKey == "") and not (default == ""):
+	    tmpAccessKey = default
         return tmpAccessKey
     else:
 	print bcolor.YELLOW + "You have not provided the Probe Access Key as defined on the PRTG Core." + bcolor.END
@@ -247,7 +270,7 @@ def get_config_debug(default=""):
     else:
         return "False"
 
-def get_config():
+def get_config(config_old = {}):
     print ""
     print bcolor.YELLOW + "Checking for necessary modules and Python Version" + bcolor.END
     try:
@@ -274,17 +297,17 @@ def get_config():
     print ""
     try:
         probe_user = get_config_user()
-        probe_conf['name'] = get_config_name()
-        probe_conf['gid'] = get_config_gid()
-        probe_conf['server'] = get_config_ip()
-        probe_conf['port'] = get_config_port()
-        probe_conf['baseinterval'] = get_config_base_interval()
-        probe_conf['key'] = get_config_access_key()
+        probe_conf['name'] = get_config_name(config_old['name'])
+        probe_conf['gid'] = get_config_gid(config_old['gid'])
+        probe_conf['server'] = get_config_ip(config_old['server'])
+        probe_conf['port'] = get_config_port(config_old['port'])
+        probe_conf['baseinterval'] = get_config_base_interval(config_old['baseinterval'])
+        probe_conf['key'] = get_config_access_key(config_old['key'])
         probe_path = get_config_path()
-        probe_conf['cleanmem'] = get_config_clean_memory()
-        probe_conf['announced'] = get_config_announced()
-        probe_conf['protocol'] = get_config_protocol()
-        probe_conf['debug'] = get_config_debug()
+        probe_conf['cleanmem'] = get_config_clean_memory(config_old['cleanmem'])
+        probe_conf['announced'] = get_config_announced(config_old['announced'])
+        probe_conf['protocol'] = get_config_protocol(config_old['protocol'])
+        probe_conf['debug'] = get_config_debug(config_old['debug'])
 	print ""
         file_create(path)
         write_config(probe_conf)
@@ -328,7 +351,8 @@ if __name__ == '__main__':
         print ""
         probe_config_exists = "%s" % str(raw_input(bcolor.YELLOW + "A config file was already found. Do you want to reconfigure [y/N]: " + bcolor.END)).rstrip().lstrip()
         if probe_config_exists.lower() == "y":
-	    get_config()
+            config_old = read_config(path)
+	    get_config(config_old)
 	else:
 	    print ""
             uninstall = "%s" % str(raw_input(bcolor.YELLOW + "Do you want to Uninstall or Restart the service [u/R]: " + bcolor.END)).rstrip().lstrip()
