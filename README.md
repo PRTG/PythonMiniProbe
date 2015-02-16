@@ -11,7 +11,7 @@ Python 2.7+
 Needed modules are delivered with the probe package:  
 - pyasn1 (https://pypi.python.org/pypi/pyasn1/0.1.7)  
 - pysnmp (https://pypi.python.org/pypi/pysnmp/4.2.5)  
-- requests (https://pypi.python.org/pypi/requests/2.3.0)
+- requests (https://pypi.python.org/pypi/requests/2.5.1)
 
 Installation
 ------------
