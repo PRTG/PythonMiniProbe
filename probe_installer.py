@@ -100,7 +100,7 @@ def add_sensor_to_load_list(sensors):
     f.write("# Just extend this list for your modules and they will be automatically imported during runtime and\n")
     f.write("# are announced to the PRTG Core\n")
     f.write("__all__ = [\"Ping\", \"HTTP\", \"Port\", \"SNMPCustom\", \"CPULoad\", \"Memory\", \"Diskspace\", \"SNMPTraffic\", \"DS18B20\"]\n")
-    f.write("DS18B20_sensors = [" + sensors + "]\n")
+    f.write("DS18B20_sensors = [" + str(sensors) + "]\n")
     f.close()
 
 def install_w1_module():
@@ -146,11 +146,14 @@ def get_w1_sensors():
     f = open('/sys/devices/w1_bus_master1/w1_master_slaves','r')
     for line in f.readlines():
         print bcolor.GREEN + "Found: " + bcolor.YELLOW + line[3:].strip() + bcolor.END
-	sensors = sensors + "," + line[3:].strip()
+	sensors = sensors + "," + "\"" + line[3:].strip() + "\""
     f.close()
-    sens = "%s" % str(raw_input(bcolor.GREEN + "Please enter the id's of the temperature sensors you want to use from the list above, seperated with a , [" + sensors[1:] + "]: " + bcolor.END)).rstrip().lstrip()
+    sens = "%s" % str(raw_input(bcolor.GREEN + "Please enter the id's of the temperature sensors you want to use from the list above, seperated with a , [" + sensors[1:].strip("\"") + "]: " + bcolor.END)).rstrip().lstrip()
     if not sens == "":
-        return sens
+	tmpSens = ""
+	for i in sens.split(","):
+	    tmpSens = tmpSens + ",\"" + i + "\""
+        return tmpSens[1:].strip()
     else:
 	return sensors[1:]
 
