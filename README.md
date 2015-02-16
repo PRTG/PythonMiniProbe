@@ -24,6 +24,20 @@ Installation
 
 The miniprobe should now be started. You should also be able to start/stop the same using the command /etc/init.d/probe.sh start resp. /etc/init.d/probe.sh stop  
 
+Instalation of DS18B20
+----------------------
+Requirements:
+- DS18B20
+- 4.7K Ohm resistor
+
+Setup:
+- Solder the resister between pin 2 and 3 of the DS18B20 (when the flat part of the DS18B20 is facing ou, then pin 2 and 3 is from the middle pin to the right)
+- place Pin 1 on pin 6 on the Raspberry
+- place Pin 2 on pin 7 on the Raspberry
+- place Pin 3 on pin 1 on the Raspberry
+- Run the installscript of the probe and answer Yes to the question if you want to use the Raspberry Pi temperature sensor.
+- The installscript will now make a change to the raspberry boot process to include a special library and it will reboot the Raspberry. After the reboot, run the installer again and answer the same question again. It will now (if all is correct) detect your DS18B20 (using it's own unique serial number) and just confirm that this is correct by presing <Return> on your keyboard.
+
 Debugging
 ---------
 
