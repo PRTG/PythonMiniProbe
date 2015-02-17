@@ -96,13 +96,18 @@ class DS18B20(object):
             equals_pos = lines[1].find('t=')
             if equals_pos != -1:
                 temp_string = lines[1][equals_pos+2:]
+                logging.debug("DS18B20 Debug message: Temperature from file: %s" % temp_string)
                 temp_c = float(temp_string) / 1000.0
+                logging.debug("DS18B20 Debug message: Temperature after calculations:: %s" % temp_c)
                 data.append(temp_c)
             temp.close()
         for i in range(len(data)):
-	    chandata.append({"name": sens[i],
+	    chandata.append({"name": "Sensor: " + sens[i],
 			    "mode": "float",
-			    "kind": "Custom",
+			    "unit": "Custom",
 			    "customunit": "C",
+                            "LimitMode": 1,
+                            "LimitMaxError": 40,
+                            "LimitMaxWarning": 35,
 			    "value": float(data[i])})
         return chandata
