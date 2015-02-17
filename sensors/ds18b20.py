@@ -19,12 +19,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
 import gc
 import logging
+import time
+import __init__
 
-
-class Diskspace(object):
+class DS18B20(object):
     def __init__(self):
         gc.enable()
 
@@ -33,7 +33,7 @@ class Diskspace(object):
         """
         return sensor kind
         """
-        return "mpdiskspace"
+        return "mpds18b20"
 
     @staticmethod
     def get_sensordef():
@@ -41,12 +41,12 @@ class Diskspace(object):
         Definition of the sensor and data to be shown in the PRTG WebGUI
         """
         sensordefinition = {
-            "kind": Diskspace.get_kind(),
-            "name": "Disk space",
-            "description": "Monitors disk space on the system the mini probe is running on",
+            "kind": DS18B20.get_kind(),
+            "name": "DS18B20 Temperature",
+            "description": "Returns the temperature measured by an attached DS18B20 temperature sensor on pin 4",
             "default": "yes",
-            "help": "Monitors disk space on the system the mini probe is running on",
-            "tag": "spdiskspacesensor",
+            "help": "Returns the temperature measured by an attached DS18B20 temperature sensor on pin 4",
+            "tag": "mpds18b20sensor",
             "fields": [],
             "groups": []
         }
@@ -54,72 +54,55 @@ class Diskspace(object):
 
     @staticmethod
     def get_data(data):
-        diskspace = Diskspace()
+        temperature = DS18B20()
+        logging.info("Running sensor: %s" % temperature.get_kind())
         try:
-            disk = diskspace.read_disk()
-            logging.info("Running sensor: %s" % diskspace.get_kind())
+            temp = temperature.read_temp()
         except Exception as e:
-            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (diskspace.get_kind(),
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (temperature.get_kind(),
                                                                                          data['sensorid'], e))
             data = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
                 "code": 1,
-                "message": "Disk Space Sensor failed. See log for details"
+                "message": "DS18B20 sensor failed. See log for details"
             }
             return data
-        channels = disk
+        tempdata = []
+        for element in temp:
+            tempdata.append(element)
         data = {
             "sensorid": int(data['sensorid']),
             "message": "OK",
-            "channel": channels
+            "channel": tempdata
         }
-        del diskspace
+        del temperature
         gc.collect()
         return data
 
-    def read_disk(self):
-        disks = []
-        channel_list = []
-        for line in os.popen("df -k"):
-            if line.startswith("/"):
-                disks.append(line.rstrip().split())
-        for line in disks:
-            channel1 = {"name": "Total Bytes " + str(line[0]),
-                        "mode": "integer",
-                        "kind": "BytesDisk",
-                        "value": int(line[1]) * 1024}
-            channel2 = {"name": "Used Bytes" + str(line[0]),
-                        "mode": "integer",
-                        "kind": "BytesDisk",
-                        "value": int(line[2]) * 1024}
-            channel3 = {"name": "Free Bytes " + str(line[0]),
-                        "mode": "integer",
-                        "kind": "BytesDisk",
-                        "value": int(line[3]) * 1024}
-            total = float(line[2]) + float(line[3])
-            used = float(line[2]) / total
-            free = float(line[3]) / total
-
-            channel4 = {"name": "Free Space " + str(line[0]),
-                        "mode": "float",
-                        "kind": "Percent",
-                        "value": free * 100}
-            channel5 = {"name": "Used Space" + str(line[0]),
-                        "mode": "float",
-                        "kind": "Percent",
-                        "value": used * 100}
-            channel_list.append(channel1)
-            channel_list.append(channel2)
-            channel_list.append(channel3)
-            channel_list.append(channel4)
-            channel_list.append(channel5)
-        return channel_list
-
-
-
-
-
-
-
-
+    @staticmethod
+    def read_temp():
+	data = []
+	sens = []
+        chandata = []
+	for sensor in __init__.DS18B20_sensors:
+	    sens.append(sensor)
+            temp = open("/sys/bus/w1/devices/28-" + sensor + "/w1_slave", "r")
+            lines = temp.readlines()
+            temp.close()
+#            for line in temp:
+            while lines[0].strip()[-3:] != 'YES':
+                time.sleep(0.2)
+            equals_pos = lines[1].find('t=')
+            if equals_pos != -1:
+                temp_string = lines[1][equals_pos+2:]
+                temp_c = float(temp_string) / 1000.0
+                data.append(temp_c)
+            temp.close()
+        for i in range(len(data)):
+	    chandata.append({"name": sens[i],
+			    "mode": "float",
+			    "kind": "Custom",
+			    "customunit": "C",
+			    "value": float(data[i])})
+        return chandata

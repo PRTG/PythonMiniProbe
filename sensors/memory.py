@@ -44,7 +44,7 @@ class Memory(object):
             "name": "Memory",
             "description": "Monitors memory on the system the mini probe is running on",
             "default": "yes",
-            "help": "test",
+            "help": "Monitors memory on the system the mini probe is running on",
             "tag": "mpmemorysensor",
             "fields": [],
             "groups": []

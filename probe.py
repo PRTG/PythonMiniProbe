@@ -56,6 +56,10 @@ def main():
         announce = False
         # read configuration file (existence check done in probe_controller.py)
         config = mini_probe.read_config('./probe.conf')
+	if config['debug'] == "True":
+            config['debug'] = True
+	else:
+	    config['debug'] = False
         # Doing some startup logging
         logging.info("PRTG Small Probe '%s' starting on '%s'" % (config['name'], socket.gethostname()))
         logging.info("Connecting to PRTG Core Server at %s:%s" % (config['server'], config['port']))
