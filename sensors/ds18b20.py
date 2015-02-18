@@ -20,6 +20,7 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import gc
+import os
 import logging
 import time
 import __init__
@@ -40,15 +41,19 @@ class DS18B20(object):
         """
         Definition of the sensor and data to be shown in the PRTG WebGUI
         """
+        if os.path.isdir("/sys/bus/w1/devices"):
+            default = "yes"
+        else:
+            default = "no"
         sensordefinition = {
             "kind": DS18B20.get_kind(),
             "name": "DS18B20 Temperature",
             "description": "Returns the temperature measured by an attached DS18B20 temperature sensor on pin 4",
-            "default": "yes",
+            "default": default,
             "help": "Returns the temperature measured by an attached DS18B20 temperature sensor on pin 4",
             "tag": "mpds18b20sensor",
-            "fields": [],
-            "groups": []
+            "groups": [
+		      ]
         }
         return sensordefinition
 
