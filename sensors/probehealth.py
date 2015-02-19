@@ -57,6 +57,7 @@ class Probehealth(object):
         try:
             mem = probehealth.read_memory('/proc/meminfo')
             cpu = probehealth.read_cpu('/proc/loadavg')
+            temperature = probehealth.read_temp()
             logging.info("Running sensor: %s" % probehealth.get_kind())
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (probehealth.get_kind(),
@@ -71,6 +72,8 @@ class Probehealth(object):
         probedata = []
         for element in mem:
             probedata.append(element)
+	for element in temperature:
+	    probedata.append(element)
         for element in cpu:
             probedata.append(element)
         data = {
@@ -136,3 +139,26 @@ class Probehealth(object):
             if line.startswith("/"):
                 tmp.append(line.rstrip())     
         print disks
+
+    def read_temp(self):
+        data = []
+        chandata = []
+        temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
+        lines = temp.readlines()
+        temp.close()
+        temp_string = lines[0]
+        logging.debug("CPUTemp Debug message: Temperature from file: %s" % temp_string)
+        temp_c = float(temp_string) / 1000.0
+        logging.debug("CPUTemp Debug message: Temperature after calculations:: %s" % temp_c)
+        data.append(temp_c)
+        for i in range(len(data)):
+            chandata.append({"name": "CPU Temperature",
+                             "mode": "float",
+                             "unit": "Custom",
+                             "customunit": "C",
+                             "LimitMode": 1,
+                             "LimitMaxError": 40,
+                             "LimitMaxWarning": 35,
+                             "value": float(data[i])})
+        return chandata
+

@@ -128,7 +128,7 @@ def add_sensor_to_load_list(sensors):
     f.write("# Announce modules available in this package\n")
     f.write("# Just extend this list for your modules and they will be automatically imported during runtime and\n")
     f.write("# are announced to the PRTG Core\n")
-    f.write("__all__ = [\"Ping\", \"HTTP\", \"Port\", \"SNMPCustom\", \"CPULoad\", \"Memory\", \"Diskspace\", \"SNMPTraffic\", \"DS18B20\"]\n")
+    f.write("__all__ = [\"Ping\", \"HTTP\", \"Port\", \"SNMPCustom\", \"CPULoad\", \"Memory\", \"Diskspace\", \"SNMPTraffic\", \"DS18B20\", \"CPUTemp\"]\n")
     f.write("DS18B20_sensors = [" + str(sensors) + "]\n")
     f.close()
 
