@@ -53,6 +53,23 @@ class DS18B20(object):
             "help": "Returns the temperature measured by an attached DS18B20 temperature sensor on pin 4",
             "tag": "mpds18b20sensor",
             "groups": [
+               {
+               "name":"Group",
+               "caption":"Temperature settings",
+               "fields":[
+                  {
+                       "type":"radio",
+                       "name":"celfar",
+                       "caption":"Choose between Celsius or Fahrenheit display",
+                       "help":"Choose wether you want to return the value in Celsius or Fahrenheit",
+                       "options":{
+                                               "C":"Celsius",
+                                               "F":"Fahrenheit"
+                                               },
+                       "default":"C"
+                  },
+                        ]
+               }
 		      ]
         }
         return sensordefinition
@@ -62,7 +79,7 @@ class DS18B20(object):
         temperature = DS18B20()
         logging.info("Running sensor: %s" % temperature.get_kind())
         try:
-            temp = temperature.read_temp()
+            temp = temperature.read_temp(data)
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (temperature.get_kind(),
                                                                                          data['sensorid'], e))
@@ -86,7 +103,7 @@ class DS18B20(object):
         return data
 
     @staticmethod
-    def read_temp():
+    def read_temp(config):
 	data = []
 	sens = []
         chandata = []
@@ -101,16 +118,20 @@ class DS18B20(object):
             equals_pos = lines[1].find('t=')
             if equals_pos != -1:
                 temp_string = lines[1][equals_pos+2:]
-                logging.debug("DS18B20 Debug message: Temperature from file: %s" % temp_string)
+                logging.debug("DS18B20 Debug message: Temperature from file: %s %s" % temp_string, config['celfar'])
                 temp_c = float(temp_string) / 1000.0
-                logging.debug("DS18B20 Debug message: Temperature after calculations:: %s" % temp_c)
-                data.append(temp_c)
+		temp_f = temp_c * 9.0 / 5.0 + 32.0
+                logging.debug("DS18B20 Debug message: Temperature after calculations:: %s" % temp_c, config['celfar'])
+		if config['celfar'] == "C":
+                    data.append(temp_c)
+		else:
+		    data.append(temp_f)
             temp.close()
         for i in range(len(data)):
 	    chandata.append({"name": "Sensor: " + sens[i],
 			    "mode": "float",
 			    "unit": "Custom",
-			    "customunit": "C",
+			    "customunit": config['celfar'],
                             "LimitMode": 1,
                             "LimitMaxError": 40,
                             "LimitMaxWarning": 35,

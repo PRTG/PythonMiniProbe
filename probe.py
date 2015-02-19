@@ -45,7 +45,6 @@ except Exception as e:
     print e
     #sys.exit()
 
-
 def main():
         """
         Main routine for MiniProbe (Python)

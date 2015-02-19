@@ -58,6 +58,7 @@ class Probehealth(object):
             mem = probehealth.read_memory('/proc/meminfo')
             cpu = probehealth.read_cpu('/proc/loadavg')
             temperature = probehealth.read_temp()
+            disk = probehealth.read_disk()
             logging.info("Running sensor: %s" % probehealth.get_kind())
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (probehealth.get_kind(),
@@ -76,6 +77,8 @@ class Probehealth(object):
 	    probedata.append(element)
         for element in cpu:
             probedata.append(element)
+	for element in disk:
+	    probedata.append(element)
         data = {
             "sensorid": int(data['sensorid']),
             "message": "OK",
@@ -134,11 +137,42 @@ class Probehealth(object):
        
     def read_disk(self):
         disks = []
-        tmp = []
-        for line in os.popen("df -h"):
+        channel_list = []
+        for line in os.popen("df -k"):
             if line.startswith("/"):
-                tmp.append(line.rstrip())     
-        print disks
+                disks.append(line.rstrip().split())
+        for line in disks:
+            channel1 = {"name": "Total Bytes " + str(line[0]),
+                        "mode": "integer",
+                        "kind": "BytesDisk",
+                        "value": int(line[1]) * 1024}
+            channel2 = {"name": "Used Bytes" + str(line[0]),
+                        "mode": "integer",
+                        "kind": "BytesDisk",
+                        "value": int(line[2]) * 1024}
+            channel3 = {"name": "Free Bytes " + str(line[0]),
+                        "mode": "integer",
+                        "kind": "BytesDisk",
+                        "value": int(line[3]) * 1024}
+            total = float(line[2]) + float(line[3])
+            used = float(line[2]) / total
+            free = float(line[3]) / total
+
+            channel4 = {"name": "Free Space " + str(line[0]),
+                        "mode": "float",
+                        "kind": "Percent",
+                        "value": free * 100}
+            channel5 = {"name": "Used Space" + str(line[0]),
+                        "mode": "float",
+                        "kind": "Percent",
+                        "value": used * 100}
+            channel_list.append(channel1)
+            channel_list.append(channel2)
+            channel_list.append(channel3)
+            channel_list.append(channel4)
+            channel_list.append(channel5)
+        return channel_list
+
 
     def read_temp(self):
         data = []
