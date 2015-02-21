@@ -46,8 +46,35 @@ class Probehealth(object):
             "default": "yes",
             "help": "Internal sensor used to monitor the health of a PRTG probe",
             "tag": "mpprobehealthsensor",
-            "fields": [],
-            "groups": []
+            "groups": [
+               {
+               "name":"Group",
+               "caption":"Temperature settings",
+               "fields":[
+                  {
+                       "type":"radio",
+                       "name":"celfar",
+                       "caption":"Choose between Celsius or Fahrenheit display",
+                       "help":"Choose wether you want to return the value in Celsius or Fahrenheit",
+                       "options":{
+                                               "C":"Celsius",
+                                               "F":"Fahrenheit"
+                                               },
+                       "default":"C"
+                  },
+                  {
+			"type":"integer",
+			"name":"maxtemp",
+			"caption":"Error temperature",
+			"required":"1",
+			"minimum":20,
+			"maximum":75,
+			"help":"Set the maximum temperature above which the temperature sensor will provide a error (not below 20 or above 75)",
+                        "default":45
+                  },
+                        ]
+               }
+                      ]
         }
         return sensordefinition
     
@@ -59,6 +86,7 @@ class Probehealth(object):
             cpu = probehealth.read_cpu('/proc/loadavg')
             temperature = probehealth.read_temp()
             disk = probehealth.read_disk()
+	    health = probehealth.read_probe_health(data)
             logging.info("Running sensor: %s" % probehealth.get_kind())
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (probehealth.get_kind(),
@@ -71,6 +99,8 @@ class Probehealth(object):
             }
             return data
         probedata = []
+	for element in health:
+            probedata.append(element)
         for element in mem:
             probedata.append(element)
 	for element in temperature:
@@ -196,3 +226,37 @@ class Probehealth(object):
                              "value": float(data[i])})
         return chandata
 
+    def read_probe_health(self, config):
+	health = 100
+        logging.debug("Current Health: %s percent" % health)
+        data = []
+        chandata = []
+        temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
+        lines = temp.readlines()
+        temp.close()
+        temp_float = float(lines[0]) / 1000.0
+        if temp_float > config['maxtemp']:
+	    health = health - 25
+            logging.debug("Current Health: %s percent" % health)
+        disks = []
+        for line in os.popen("df -k"):
+            if line.startswith("/"):
+                disks.append(line.rstrip().split())
+	tmpHealth = 25 / len(disks)
+        for line in disks:
+	    free = (float(line[3]) / (float(line[2]) + float(line[3]))) * 100
+            if free < 10:
+	        health = health - tmpHealth
+                logging.debug("Current Health: %s percent" % health)
+	cpu = open('/proc/loadavg', "r")
+        for line in cpu:
+            for element in line.split(" "):
+                data.append(element)
+	if float(data[1]) > 0.70:
+	    health = health - 25
+            logging.debug("Current Health: %s percent" % health)
+        chandata.append({"name": "Overall Probe Health",
+                         "mode": "integer",
+                         "unit": "percent",
+                         "value": health})
+        return chandata
