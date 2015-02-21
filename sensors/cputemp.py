@@ -49,6 +49,23 @@ class CPUTemp(object):
             "help": "Returns the CPU temperature",
             "tag": "mpcputempsensor",
             "groups": [
+               {
+               "name":"Group",
+               "caption":"Temperature settings",
+               "fields":[
+                  {
+                       "type":"radio",
+                       "name":"celfar",
+                       "caption":"Choose between Celsius or Fahrenheit display",
+                       "help":"Choose wether you want to return the value in Celsius or Fahrenheit",
+                       "options":{
+                                               "C":"Celsius",
+                                               "F":"Fahrenheit"
+                                               },
+                       "default":"C"
+                  },
+                        ]
+               }
 		      ]
         }
         return sensordefinition
@@ -58,7 +75,7 @@ class CPUTemp(object):
         temperature = CPUTemp()
         logging.info("Running sensor: %s" % temperature.get_kind())
         try:
-            temp = temperature.read_temp()
+            temp = temperature.read_temp(data)
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (temperature.get_kind(),
                                                                                          data['sensorid'], e))
@@ -82,7 +99,7 @@ class CPUTemp(object):
         return data
 
     @staticmethod
-    def read_temp():
+    def read_temp(config):
 	data = []
         chandata = []
         temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
@@ -91,13 +108,18 @@ class CPUTemp(object):
         temp_string = lines[0]
         logging.debug("CPUTemp Debug message: Temperature from file: %s" % temp_string)
         temp_c = float(temp_string) / 1000.0
+        temp_f = temp_c * 9.0 / 5.0 + 32.0
         logging.debug("CPUTemp Debug message: Temperature after calculations:: %s" % temp_c)
-        data.append(temp_c)
+        if config['celfar'] == "C":
+            data.append(temp_c)
+        else:
+            data.append(temp_f)
+#        data.append(temp_c)
         for i in range(len(data)):
             chandata.append({"name": "CPU Temperature",
 	                     "mode": "float",
 	                     "unit": "Custom",
-		             "customunit": "C",
+		             "customunit": config['celfar'],
                              "LimitMode": 1,
                              "LimitMaxError": 40,
                              "LimitMaxWarning": 35,

@@ -118,14 +118,15 @@ class DS18B20(object):
             equals_pos = lines[1].find('t=')
             if equals_pos != -1:
                 temp_string = lines[1][equals_pos+2:]
-                logging.debug("DS18B20 Debug message: Temperature from file: %s %s" % temp_string, config['celfar'])
+                logging.debug("DS18B20 Debug message: Temperature from file: %s" % temp_string)
                 temp_c = float(temp_string) / 1000.0
-		temp_f = temp_c * 9.0 / 5.0 + 32.0
-                logging.debug("DS18B20 Debug message: Temperature after calculations:: %s" % temp_c, config['celfar'])
+		temp_f = 1.8 * temp_c + 32.0
 		if config['celfar'] == "C":
                     data.append(temp_c)
+                    logging.debug("DS18B20 Debug message: Temperature after calculations:: %s %s" % (temp_c, config['celfar']))
 		else:
 		    data.append(temp_f)
+                    logging.debug("DS18B20 Debug message: Temperature after calculations:: %s %s" % (temp_f, config['celfar']))
             temp.close()
         for i in range(len(data)):
 	    chandata.append({"name": "Sensor: " + sens[i],
