@@ -48,7 +48,7 @@ class Portrange(object):
             "kind": Portrange.get_kind(),
             "name": "Port Range",
             "description": "Checks the availability of a port range on a target system",
-            "help": "test",
+            "help": "Checks the availability of a port range on a target system",
             "tag": "mpportrangesensor",
             "groups": [
                 {

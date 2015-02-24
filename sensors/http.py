@@ -45,7 +45,7 @@ class HTTP(object):
             "kind": HTTP.get_kind(),
             "name": "HTTP",
             "description": "Monitors a web server using HTTP",
-            "help": "",
+            "help": "Monitors a web server using HTTP",
             "tag": "mphttpsensor",
             "groups": [
                 {

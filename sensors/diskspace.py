@@ -45,7 +45,7 @@ class Diskspace(object):
             "name": "Disk space",
             "description": "Monitors disk space on the system the mini probe is running on",
             "default": "yes",
-            "help": "test",
+            "help": "Monitors disk space on the system the mini probe is running on",
             "tag": "spdiskspacesensor",
             "fields": [],
             "groups": []

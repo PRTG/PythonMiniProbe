@@ -44,7 +44,7 @@ class Ping(object):
             "kind": Ping.get_kind(),
             "name": "Ping",
             "description": "Monitors the availability of a target using ICMP",
-            "help": "test",
+            "help": "Monitors the availability of a target using ICMP",
             "tag": "mppingsensor",
             "groups": [
                 {

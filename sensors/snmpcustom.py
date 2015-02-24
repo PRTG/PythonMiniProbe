@@ -52,7 +52,7 @@ class SNMPCustom(object):
             "kind": SNMPCustom.get_kind(),
             "name": "SNMP Custom",
             "description": "Monitors a numerical value returned by a specific OID using SNMP",
-            "help": "",
+            "help": "Monitors a numerical value returned by a specific OID using SNMP",
             "tag": "mpsnmpcustomsensor",
             "groups": [
                 {

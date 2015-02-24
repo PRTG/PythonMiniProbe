@@ -31,6 +31,8 @@ import time
 import gc
 import logging
 import socket
+import warnings
+from requests.packages.urllib3 import exceptions
 
 # import own modules
 sys.path.append('./')
@@ -44,7 +46,6 @@ except Exception as e:
     print e
     #sys.exit()
 
-
 def main():
         """
         Main routine for MiniProbe (Python)
@@ -57,6 +58,14 @@ def main():
         announce = False
         # read configuration file (existence check done in probe_controller.py)
         config = mini_probe.read_config('./probe.conf')
+	if config['debug'] == "True":
+            config['debug'] = True
+	else:
+	    config['debug'] = False
+	if config['cleanmem'] == "True":
+            config['cleanmem'] = True
+	else:
+	    config['cleanmem'] = False
         # Doing some startup logging
         logging.info("PRTG Small Probe '%s' starting on '%s'" % (config['name'], socket.gethostname()))
         logging.info("Connecting to PRTG Core Server at %s:%s" % (config['server'], config['port']))
@@ -72,7 +81,9 @@ def main():
         while not announce:
             try:
                 # announcing the probe and all sensors
-                request_announce = requests.get(url_announce, params=data_announce, verify=False)
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
+                    request_announce = requests.get(url_announce, params=data_announce, verify=False)
                 announce = True
                 logging.info("ANNOUNCE request successfully sent to PRTG Core Server at %s:%s."
                              % (config["server"], config["port"]))
@@ -99,7 +110,12 @@ def main():
             while not task:
                 json_payload_data = []
                 try:
-                    request_task = requests.get(url_task, params=task_data, verify=False)
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
+                        request_task = requests.get(url_task, params=task_data, verify=False)
+                    if config['debug']:
+                        logging.debug(request_task.headers)
+                        logging.debug(request_task.text)
                     json_response = request_task.json()
                     request_task.close()
                     gc.collect()
@@ -172,8 +188,7 @@ def main():
 
             if config['cleanmem']:
                 # checking if the clean memory option has been chosen during install then call the method to flush mem
-                from utils import Utils
-                Utils.clean_mem()
+                mini_probe.clean_mem()
         sys.exit()
 
 if __name__ == "__main__":

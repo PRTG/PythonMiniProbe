@@ -30,7 +30,8 @@ import hashlib
 import importlib
 import gc
 import logging
-
+import subprocess
+import os
 
 # import own modules
 sys.path.append('./')
@@ -52,7 +53,8 @@ class MiniProbe(object):
         logging.basicConfig(
             filename="./logs/probe.log",
             filemode="a",
-            level=logging.DEBUG,
+#            level=logging.DEBUG,
+            level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s",
             datefmt='%m/%d/%Y %H:%M:%S'
         )
@@ -137,3 +139,12 @@ class MiniProbe(object):
         for sensor in sensor_list:
             sensors_avail.append(sensor.get_sensordef())
         return sensors_avail
+
+    @staticmethod
+    def clean_mem():
+        """Ugly brute force method to clean up Mem"""
+        subprocess.call("sync", shell=False)
+        os.popen("sysctl vm.drop_caches=1")
+        os.popen("sysctl vm.drop_caches=2")
+        os.popen("sysctl vm.drop_caches=3")
+
