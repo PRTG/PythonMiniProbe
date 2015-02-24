@@ -34,6 +34,18 @@ class bcolor:
     END = '\033[0m'
 
 probe_conf = {}
+config_old = {}
+config_old['name'] = "Python MiniProbe"
+config_old['gid'] = str(uuid.uuid4())
+config_old['server'] = ""
+config_old['port'] = "443"
+config_old['baseinterval'] = "60"
+config_old['key'] = ""
+config_old['cleanmem'] = ""
+config_old['announced'] = "0"
+config_old['protocol'] = "1"
+config_old['debug'] = ""
+
 if sys.version_info < (2, 7):
     print bcolor.RED + "Python version too old! Please install at least version 2.7" + bcolor.END
     print "Exiting"
@@ -116,7 +128,7 @@ def add_sensor_to_load_list(sensors):
     f.write("# Announce modules available in this package\n")
     f.write("# Just extend this list for your modules and they will be automatically imported during runtime and\n")
     f.write("# are announced to the PRTG Core\n")
-    f.write("__all__ = [\"Ping\", \"HTTP\", \"Port\", \"SNMPCustom\", \"CPULoad\", \"Memory\", \"Diskspace\", \"SNMPTraffic\", \"DS18B20\"]\n")
+    f.write("__all__ = [\"Ping\", \"HTTP\", \"Port\", \"SNMPCustom\", \"CPULoad\", \"Memory\", \"Diskspace\", \"SNMPTraffic\", \"DS18B20\", \"CPUTemp\", \"Probehealth\"]\n")
     f.write("DS18B20_sensors = [" + str(sensors) + "]\n")
     f.close()
 
@@ -133,6 +145,8 @@ def install_w1_module():
 	        print "%s.Please install the same" % e
         	print "Exiting"
 	        sys.exit(1)
+        else:
+            return False
     else:
         print bcolor.RED + "Found hardware matching " + os.uname()[4][:3] + bcolor.END
         return False
@@ -181,21 +195,21 @@ def get_config_user(default="root"):
     else:
 	return default
 
-def get_config_name(default="Python MiniProbe"):
+def get_config_name(default):
     tmpName = "%s" % str(raw_input(bcolor.GREEN + "Please provide the desired name of your Mini Probe [" + default + "]: " + bcolor.END)).rstrip().lstrip()
     if not tmpName == "":
         return tmpName
     else:
         return default
 
-def get_config_gid(default=str(uuid.uuid4())):
+def get_config_gid(default):
     tmpGid = "%s" % str(raw_input(bcolor.GREEN + "Please provide the Probe GID [" + default + "]: " + bcolor.END)).rstrip().lstrip()
     if not tmpGid == "":
         return tmpGid
     else:
         return default
 
-def get_config_ip(default=""):
+def get_config_ip(default):
     tmpIP = "%s" % str(raw_input(bcolor.GREEN + "Please provide the IP/DNS name of the PRTG Core Server [" + default + "]: " + bcolor.END)).rstrip().lstrip()
     if not (tmpIP == "") or not (default == ""):
 	if (tmpIP == "") and not (default == ""):
@@ -213,21 +227,21 @@ def get_config_ip(default=""):
 	print bcolor.YELLOW + "You have not provided an IP/DNS name of the PRTG Core Server." + bcolor.END
 	return get_config_ip()
 
-def get_config_port(default="443"):
+def get_config_port(default):
     tmpPort = "%s" % str(raw_input(bcolor.GREEN + "Please provide the port the PRTG web server is listening to (IMPORTANT: Only SSL is supported)[" + default + "]: " + bcolor.END)).rstrip().lstrip()
     if not tmpPort == "":
         return tmpPort 
     else:
         return default
 
-def get_config_base_interval(default="60"):
+def get_config_base_interval(default):
     tmpInterval = "%s" % str(raw_input(bcolor.GREEN + "Please provide the base interval for your sensors [" + default + "]: " + bcolor.END)).rstrip().lstrip()
     if not tmpInterval == "":
         return tmpInterval 
     else:
         return default
 
-def get_config_access_key(default=""):
+def get_config_access_key(default):
     tmpAccessKey = "%s" % str(raw_input(bcolor.GREEN + "Please provide the Probe Access Key as defined on the PRTG Core [" + default + "]: " + bcolor.END)).rstrip().lstrip()
     if not (tmpAccessKey == "") or not (default == ""):
 	if (tmpAccessKey == "") and not (default == ""):
@@ -252,14 +266,14 @@ def get_config_clean_memory(default=""):
         return "False"
 
 #For future use
-def get_config_announced(default="0"):
+def get_config_announced(default):
     return "0"
 
 #For future use
-def get_config_protocol(default="1"):
+def get_config_protocol(default):
     return "1"
 
-def get_config_debug(default=""):
+def get_config_debug(default):
     tmpDebug = "%s" % str(raw_input(bcolor.GREEN + "Do you want to enable debug logging (" + bcolor.YELLOW + "can create massive logfiles!" + bcolor.GREEN + ") [y/N]: " + bcolor.END)).rstrip().lstrip()
     if tmpDebug.lower() == "y":
 	tmpDebug1 = "%s" % str(raw_input(bcolor.YELLOW + "Are you sure you want to enable debug logging? This will create massive logfiles [y/N]: " + bcolor.END)).rstrip().lstrip()
@@ -270,7 +284,7 @@ def get_config_debug(default=""):
     else:
         return "False"
 
-def get_config(config_old = {}):
+def get_config(config_old):
     print ""
     print bcolor.YELLOW + "Checking for necessary modules and Python Version" + bcolor.END
     try:
@@ -289,11 +303,11 @@ def get_config(config_old = {}):
         sys.exit(1)
     print bcolor.GREEN + "Successfully imported modules." + bcolor.END
     print ""
-    install_w1_module()
-    sensors = get_w1_sensors()
-    if not sensors == "":
-        print bcolor.GREEN + "Adding DS18B20.py and selected sensors to /sensors/__init__.py" + bcolor.END
-        add_sensor_to_load_list(sensors)
+    if install_w1_module():
+	sensors = get_w1_sensors()
+	if not sensors == "":
+            print bcolor.GREEN + "Adding DS18B20.py and selected sensors to /sensors/__init__.py" + bcolor.END
+            add_sensor_to_load_list(sensors)
     print ""
     try:
         probe_user = get_config_user()
@@ -362,7 +376,7 @@ if __name__ == '__main__':
 	    else:
 		conf_avail = True
     else:
-	conf_avail = get_config()
+	conf_avail = get_config(config_old)
     if conf_avail:
         print subprocess.call("update-rc.d probe.sh defaults", shell=True)
         print bcolor.GREEN + "Starting Mini Probe" + bcolor.END

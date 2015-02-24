@@ -25,7 +25,7 @@ import logging
 import time
 import __init__
 
-class DS18B20(object):
+class CPUTemp(object):
     def __init__(self):
         gc.enable()
 
@@ -34,24 +34,20 @@ class DS18B20(object):
         """
         return sensor kind
         """
-        return "mpds18b20"
+        return "mpcputemp"
 
     @staticmethod
     def get_sensordef():
         """
         Definition of the sensor and data to be shown in the PRTG WebGUI
         """
-        if os.path.isdir("/sys/bus/w1/devices"):
-            default = "yes"
-        else:
-            default = "no"
         sensordefinition = {
-            "kind": DS18B20.get_kind(),
-            "name": "DS18B20 Temperature",
-            "description": "Returns the temperature measured by an attached DS18B20 temperature sensor on pin 4",
-            "default": default,
-            "help": "Returns the temperature measured by an attached DS18B20 temperature sensor on pin 4",
-            "tag": "mpds18b20sensor",
+            "kind": CPUTemp.get_kind(),
+            "name": "CPU Temperature",
+            "description": "Returns the CPU temperature",
+            "default": "yes",
+            "help": "Returns the CPU temperature",
+            "tag": "mpcputempsensor",
             "groups": [
                {
                "name":"Group",
@@ -76,7 +72,7 @@ class DS18B20(object):
 
     @staticmethod
     def get_data(data):
-        temperature = DS18B20()
+        temperature = CPUTemp()
         logging.info("Running sensor: %s" % temperature.get_kind())
         try:
             temp = temperature.read_temp(data)
@@ -87,7 +83,7 @@ class DS18B20(object):
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
                 "code": 1,
-                "message": "DS18B20 sensor failed. See log for details"
+                "message": "CPUTemp sensor failed. See log for details"
             }
             return data
         tempdata = []
@@ -105,36 +101,27 @@ class DS18B20(object):
     @staticmethod
     def read_temp(config):
 	data = []
-	sens = []
         chandata = []
-	for sensor in __init__.DS18B20_sensors:
-	    sens.append(sensor)
-            temp = open("/sys/bus/w1/devices/28-" + sensor + "/w1_slave", "r")
-            lines = temp.readlines()
-            temp.close()
-#            for line in temp:
-            while lines[0].strip()[-3:] != 'YES':
-                time.sleep(0.2)
-            equals_pos = lines[1].find('t=')
-            if equals_pos != -1:
-                temp_string = lines[1][equals_pos+2:]
-                logging.debug("DS18B20 Debug message: Temperature from file: %s" % temp_string)
-                temp_c = float(temp_string) / 1000.0
-		temp_f = 1.8 * temp_c + 32.0
-		if config['celfar'] == "C":
-                    data.append(temp_c)
-                    logging.debug("DS18B20 Debug message: Temperature after calculations:: %s %s" % (temp_c, config['celfar']))
-		else:
-		    data.append(temp_f)
-                    logging.debug("DS18B20 Debug message: Temperature after calculations:: %s %s" % (temp_f, config['celfar']))
-            temp.close()
+        temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
+        lines = temp.readlines()
+        temp.close()
+        temp_string = lines[0]
+        logging.debug("CPUTemp Debug message: Temperature from file: %s" % temp_string)
+        temp_c = float(temp_string) / 1000.0
+        temp_f = temp_c * 9.0 / 5.0 + 32.0
+        logging.debug("CPUTemp Debug message: Temperature after calculations:: %s" % temp_c)
+        if config['celfar'] == "C":
+            data.append(temp_c)
+        else:
+            data.append(temp_f)
+#        data.append(temp_c)
         for i in range(len(data)):
-	    chandata.append({"name": "Sensor: " + sens[i],
-			    "mode": "float",
-			    "unit": "Custom",
-			    "customunit": config['celfar'],
-                            "LimitMode": 1,
-                            "LimitMaxError": 40,
-                            "LimitMaxWarning": 35,
-			    "value": float(data[i])})
+            chandata.append({"name": "CPU Temperature",
+	                     "mode": "float",
+	                     "unit": "Custom",
+		             "customunit": config['celfar'],
+                             "LimitMode": 1,
+                             "LimitMaxError": 40,
+                             "LimitMaxWarning": 35,
+	                     "value": float(data[i])})
         return chandata
