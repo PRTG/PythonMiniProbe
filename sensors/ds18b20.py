@@ -70,12 +70,12 @@ class DS18B20(object):
                   },
                         ]
                }
-		      ]
+          ]
         }
         return sensordefinition
 
     @staticmethod
-    def get_data(data):
+    def get_data(data, out_queue):
         temperature = DS18B20()
         logging.info("Running sensor: %s" % temperature.get_kind())
         try:
@@ -89,7 +89,7 @@ class DS18B20(object):
                 "code": 1,
                 "message": "DS18B20 sensor failed. See log for details"
             }
-            return data
+            out_queue.put(data)
         tempdata = []
         for element in temp:
             tempdata.append(element)
@@ -100,19 +100,18 @@ class DS18B20(object):
         }
         del temperature
         gc.collect()
-        return data
+        out_queue.put(data)
 
     @staticmethod
     def read_temp(config):
-	data = []
-	sens = []
+        data = []
+        sens = []
         chandata = []
-	for sensor in __init__.DS18B20_sensors:
-	    sens.append(sensor)
+        for sensor in __init__.DS18B20_sensors:
+            sens.append(sensor)
             temp = open("/sys/bus/w1/devices/28-" + sensor + "/w1_slave", "r")
             lines = temp.readlines()
             temp.close()
-#            for line in temp:
             while lines[0].strip()[-3:] != 'YES':
                 time.sleep(0.2)
             equals_pos = lines[1].find('t=')
@@ -120,21 +119,21 @@ class DS18B20(object):
                 temp_string = lines[1][equals_pos+2:]
                 logging.debug("DS18B20 Debug message: Temperature from file: %s" % temp_string)
                 temp_c = float(temp_string) / 1000.0
-		temp_f = 1.8 * temp_c + 32.0
-		if config['celfar'] == "C":
+                temp_f = 1.8 * temp_c + 32.0
+                if config['celfar'] == "C":
                     data.append(temp_c)
                     logging.debug("DS18B20 Debug message: Temperature after calculations:: %s %s" % (temp_c, config['celfar']))
-		else:
-		    data.append(temp_f)
+                else:
+                    data.append(temp_f)
                     logging.debug("DS18B20 Debug message: Temperature after calculations:: %s %s" % (temp_f, config['celfar']))
             temp.close()
         for i in range(len(data)):
-	    chandata.append({"name": "Sensor: " + sens[i],
-			    "mode": "float",
-			    "unit": "Custom",
-			    "customunit": config['celfar'],
+            chandata.append({"name": "Sensor: " + sens[i],
+                            "mode": "float",
+                            "unit": "Custom",
+                            "customunit": config['celfar'],
                             "LimitMode": 1,
                             "LimitMaxError": 40,
                             "LimitMaxWarning": 35,
-			    "value": float(data[i])})
+                            "value": float(data[i])})
         return chandata

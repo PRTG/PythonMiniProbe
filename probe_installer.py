@@ -45,6 +45,7 @@ config_old['cleanmem'] = ""
 config_old['announced'] = "0"
 config_old['protocol'] = "1"
 config_old['debug'] = ""
+config_old['subprocs'] = "10"
 
 if sys.version_info < (2, 7):
     print bcolor.RED + "Python version too old! Please install at least version 2.7" + bcolor.END
@@ -135,16 +136,16 @@ def add_sensor_to_load_list(sensors):
 def install_w1_module():
     print bcolor.YELLOW + "Checking the hardware for Raspberry Pi." + bcolor.END
     if os.uname()[4][:3] == 'arm':
-	print bcolor.GREEN + "Found hardware matching " + os.uname()[4][:3] + bcolor.END
+        print bcolor.GREEN + "Found hardware matching " + os.uname()[4][:3] + bcolor.END
         tmpUseRaspberry = "%s" % str(raw_input(bcolor.GREEN + "Do you want to enable the Raspberry Pi temperature sensor [Y/n]: " + bcolor.END)).rstrip().lstrip()
         if not tmpUseRaspberry.lower() == "n":
-	    try:
-		install_kernel_module()
+            try:
+                install_kernel_module()
                 return True
-	    except Exception, e:
-	        print "%s.Please install the same" % e
-        	print "Exiting"
-	        sys.exit(1)
+            except Exception, e:
+                print "%s.Please install the same" % e
+                print "Exiting"
+                sys.exit(1)
         else:
             return False
     else:
@@ -162,14 +163,14 @@ def install_kernel_module():
     f.close()
     if not found:
         print bcolor.GREEN + "Line not found. Now adding the dtoverlay line to /boot/config.txt" + bcolor.END
-	f = open('/boot/config.txt','a')
+        f = open('/boot/config.txt','a')
         f.write('\n#w1-gpio added by PRTG MiniProbe install script\n')
         f.write('dtoverlay=w1-gpio')
         f.close()
         print bcolor.GREEN + "Please restart the installscript after the Raspberry Pi has been rebooted!" + bcolor.END
         print bcolor.GREEN + "Now rebooting..." + bcolor.END
-	print subprocess.call("reboot", shell=True)
-	sys.exit(2)
+        print subprocess.call("reboot", shell=True)
+        sys.exit(2)
 
 def get_w1_sensors():
     sensors = ""
@@ -177,23 +178,23 @@ def get_w1_sensors():
     f = open('/sys/devices/w1_bus_master1/w1_master_slaves','r')
     for line in f.readlines():
         print bcolor.GREEN + "Found: " + bcolor.YELLOW + line[3:].strip() + bcolor.END
-	sensors = sensors + "," + "\"" + line[3:].strip() + "\""
+    sensors = sensors + "," + "\"" + line[3:].strip() + "\""
     f.close()
     sens = "%s" % str(raw_input(bcolor.GREEN + "Please enter the id's of the temperature sensors you want to use from the list above, seperated with a , [" + sensors[1:].strip("\"") + "]: " + bcolor.END)).rstrip().lstrip()
     if not sens == "":
-	tmpSens = ""
-	for i in sens.split(","):
-	    tmpSens = tmpSens + ",\"" + i + "\""
+        tmpSens = ""
+    for i in sens.split(","):
+        tmpSens = tmpSens + ",\"" + i + "\""
         return tmpSens[1:].strip()
     else:
-	return sensors[1:]
+        return sensors[1:]
 
 def get_config_user(default="root"):
     tmpUser = "%s" % str(raw_input(bcolor.GREEN + "Please provide the username the script should run under [" + default + "]: " + bcolor.END)).rstrip().lstrip()
     if not tmpUser == "":
         return tmpUser
     else:
-	return default
+        return default
 
 def get_config_name(default):
     tmpName = "%s" % str(raw_input(bcolor.GREEN + "Please provide the desired name of your Mini Probe [" + default + "]: " + bcolor.END)).rstrip().lstrip()
@@ -212,20 +213,20 @@ def get_config_gid(default):
 def get_config_ip(default):
     tmpIP = "%s" % str(raw_input(bcolor.GREEN + "Please provide the IP/DNS name of the PRTG Core Server [" + default + "]: " + bcolor.END)).rstrip().lstrip()
     if not (tmpIP == "") or not (default == ""):
-	if (tmpIP == "") and not (default == ""):
-	    tmpIP = default
-	response = os.system("ping -c 1 " + tmpIP  + " > /dev/null")
-	if not response == 0:
-	    print bcolor.YELLOW + "PRTG Server can not be reached. Please make sure the server is reachable." + bcolor.END
-	    go_on = "%s" % str(raw_input(bcolor.YELLOW + "Do you still want to continue using this server [y/N]: " + bcolor.END)).rstrip().lstrip()
+        if (tmpIP == "") and not (default == ""):
+            tmpIP = default
+        response = os.system("ping -c 1 " + tmpIP + " > /dev/null")
+        if not response == 0:
+            print bcolor.YELLOW + "PRTG Server can not be reached. Please make sure the server is reachable." + bcolor.END
+            go_on = "%s" % str(raw_input(bcolor.YELLOW + "Do you still want to continue using this server [y/N]: " + bcolor.END)).rstrip().lstrip()
             if not go_on.lower() == "y":
-	        return get_config_ip()
-	else:
-	    print bcolor.GREEN + "PRTG Server can be reached. Continuing..." + bcolor.END
-	return tmpIP
+                return get_config_ip()
+        else:
+            print bcolor.GREEN + "PRTG Server can be reached. Continuing..." + bcolor.END
+            return tmpIP
     else:
-	print bcolor.YELLOW + "You have not provided an IP/DNS name of the PRTG Core Server." + bcolor.END
-	return get_config_ip()
+        print bcolor.YELLOW + "You have not provided an IP/DNS name of the PRTG Core Server." + bcolor.END
+        return get_config_ip()
 
 def get_config_port(default):
     tmpPort = "%s" % str(raw_input(bcolor.GREEN + "Please provide the port the PRTG web server is listening to (IMPORTANT: Only SSL is supported)[" + default + "]: " + bcolor.END)).rstrip().lstrip()
@@ -243,13 +244,11 @@ def get_config_base_interval(default):
 
 def get_config_access_key(default):
     tmpAccessKey = "%s" % str(raw_input(bcolor.GREEN + "Please provide the Probe Access Key as defined on the PRTG Core [" + default + "]: " + bcolor.END)).rstrip().lstrip()
-    if not (tmpAccessKey == "") or not (default == ""):
-	if (tmpAccessKey == "") and not (default == ""):
-	    tmpAccessKey = default
-        return tmpAccessKey
+    if (tmpAccessKey == "") and not (default == ""):
+        tmpAccessKey = default
     else:
-	print bcolor.YELLOW + "You have not provided the Probe Access Key as defined on the PRTG Core." + bcolor.END
-        return get_config_access_key()
+        print bcolor.YELLOW + "You have not provided the Probe Access Key as defined on the PRTG Core." + bcolor.END
+    return tmpAccessKey
 
 def get_config_path(default=os.path.dirname(os.path.abspath(__file__))):
     tmpPath = "%s" % str(raw_input(bcolor.GREEN + "Please provide the path where the probe files are located [" + default + "]: " + bcolor.END)).rstrip().lstrip()
@@ -265,6 +264,13 @@ def get_config_clean_memory(default=""):
     else:
         return "False"
 
+def get_config_subprocs(default="10"):
+    tmpSubprocs = "%s" % str(raw_input(bcolor.GREEN + "How much subprocesses should be spawned for scanning [" + default +"]: " + bcolor.END)).rstrip().lstrip()
+    if not tmpSubprocs == "10" or tmpSubprocs == "":
+        return tmpSubprocs
+    else:
+        return default
+
 #For future use
 def get_config_announced(default):
     return "0"
@@ -276,11 +282,11 @@ def get_config_protocol(default):
 def get_config_debug(default):
     tmpDebug = "%s" % str(raw_input(bcolor.GREEN + "Do you want to enable debug logging (" + bcolor.YELLOW + "can create massive logfiles!" + bcolor.GREEN + ") [y/N]: " + bcolor.END)).rstrip().lstrip()
     if tmpDebug.lower() == "y":
-	tmpDebug1 = "%s" % str(raw_input(bcolor.YELLOW + "Are you sure you want to enable debug logging? This will create massive logfiles [y/N]: " + bcolor.END)).rstrip().lstrip()
-	if tmpDebug1.lower() == "y":
+        tmpDebug1 = "%s" % str(raw_input(bcolor.YELLOW + "Are you sure you want to enable debug logging? This will create massive logfiles [y/N]: " + bcolor.END)).rstrip().lstrip()
+        if tmpDebug1.lower() == "y":
             return "True"
-	else:
-	    return "False"
+        else:
+            return "False"
     else:
         return "False"
 
@@ -304,8 +310,8 @@ def get_config(config_old):
     print bcolor.GREEN + "Successfully imported modules." + bcolor.END
     print ""
     if install_w1_module():
-	sensors = get_w1_sensors()
-	if not sensors == "":
+        sensors = get_w1_sensors()
+        if not sensors == "":
             print bcolor.GREEN + "Adding DS18B20.py and selected sensors to /sensors/__init__.py" + bcolor.END
             add_sensor_to_load_list(sensors)
     print ""
@@ -322,7 +328,8 @@ def get_config(config_old):
         probe_conf['announced'] = get_config_announced(config_old['announced'])
         probe_conf['protocol'] = get_config_protocol(config_old['protocol'])
         probe_conf['debug'] = get_config_debug(config_old['debug'])
-	print ""
+        probe_conf['subprocs'] = get_config_subprocs(config_old['subprocs'])
+        print ""
         file_create(path)
         write_config(probe_conf)
         logpath = "%s/logs" % probe_path
@@ -337,17 +344,17 @@ def get_config(config_old):
         print bcolor.GREEN + "Changing File Permissions" + bcolor.END
         os.chmod('%s/probe.py' % probe_path, 0755)
         os.chmod('/etc/init.d/probe.sh', 0755)
-	return True
+        return True
     except Exception, e:
         print bcolor.RED + "%s. Exiting!" % e + bcolor.END
         return False
 
 def remove_config():
     try:
-	print subprocess.call("/etc/init.d/probe.sh stop", shell=True)
-	os.remove('/etc/init.d/probe.sh')
-	os.remove('/etc/logrotate.d/MiniProbe')
-	os.remove('./probe.conf')
+        print subprocess.call("/etc/init.d/probe.sh stop", shell=True)
+        os.remove('/etc/init.d/probe.sh')
+        os.remove('/etc/logrotate.d/MiniProbe')
+        os.remove('./probe.conf')
     except Exception, e:
         print "%s. Exiting!" % e
         return False
@@ -366,22 +373,22 @@ if __name__ == '__main__':
         probe_config_exists = "%s" % str(raw_input(bcolor.YELLOW + "A config file was already found. Do you want to reconfigure [y/N]: " + bcolor.END)).rstrip().lstrip()
         if probe_config_exists.lower() == "y":
             config_old = read_config(path)
-	    get_config(config_old)
-	else:
-	    print ""
+            get_config(config_old)
+        else:
+            print ""
             uninstall = "%s" % str(raw_input(bcolor.YELLOW + "Do you want to Uninstall or Restart the service [u/R]: " + bcolor.END)).rstrip().lstrip()
-	    if uninstall.lower() == "u":
-		remove_config()
-		conf_avail = False
-	    else:
-		conf_avail = True
+            if uninstall.lower() == "u":
+                remove_config()
+                conf_avail = False
+            else:
+                conf_avail = True
     else:
-	conf_avail = get_config(config_old)
-    if conf_avail:
-        print subprocess.call("update-rc.d probe.sh defaults", shell=True)
-        print bcolor.GREEN + "Starting Mini Probe" + bcolor.END
-        print subprocess.call("/etc/init.d/probe.sh start", shell=True)
-        print bcolor.GREEN + "Done. You now can start/stop the Mini Probe using '/etc/init.d/probe.sh start' or '/etc/init.d/probe.sh stop'" + bcolor.END
-    else:
-        print "Exiting!"
-        sys.exit()
+        conf_avail = get_config(config_old)
+        if conf_avail:
+            print subprocess.call("update-rc.d probe.sh defaults", shell=True)
+            print bcolor.GREEN + "Starting Mini Probe" + bcolor.END
+            print subprocess.call("/etc/init.d/probe.sh start", shell=True)
+            print bcolor.GREEN + "Done. You now can start/stop the Mini Probe using '/etc/init.d/probe.sh start' or '/etc/init.d/probe.sh stop'" + bcolor.END
+        else:
+            print "Exiting!"
+            sys.exit()

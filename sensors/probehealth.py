@@ -63,14 +63,14 @@ class Probehealth(object):
                        "default":"C"
                   },
                   {
-			"type":"integer",
-			"name":"maxtemp",
-			"caption":"Error temperature",
-			"required":"1",
-			"minimum":20,
-			"maximum":75,
-			"help":"Set the maximum temperature above which the temperature sensor will provide a error (not below 20 or above 75)",
-                        "default":45
+                        "type":"integer",
+                        "name":"maxtemp",
+                        "caption":"Error temperature",
+                        "required":"1",
+                        "minimum":20,
+                        "maximum":75,
+                        "help":"Set the maximum temperature above which the temperature sensor will provide a error (not below 20 or above 75)",
+                                    "default":45
                   },
                         ]
                }
@@ -86,7 +86,7 @@ class Probehealth(object):
             cpu = probehealth.read_cpu('/proc/loadavg')
             temperature = probehealth.read_temp()
             disk = probehealth.read_disk()
-	    health = probehealth.read_probe_health(data)
+            health = probehealth.read_probe_health(data)
             logging.info("Running sensor: %s" % probehealth.get_kind())
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (probehealth.get_kind(),
@@ -97,18 +97,18 @@ class Probehealth(object):
                 "code": 1,
                 "message": "Probe Health sensor failed. See log for details"
             }
-            return data
+            out_queue.put(data)
         probedata = []
-	for element in health:
+        for element in health:
             probedata.append(element)
         for element in mem:
             probedata.append(element)
-	for element in temperature:
-	    probedata.append(element)
+        for element in temperature:
+            probedata.append(element)
         for element in cpu:
             probedata.append(element)
-	for element in disk:
-	    probedata.append(element)
+        for element in disk:
+            probedata.append(element)
         data = {
             "sensorid": int(data['sensorid']),
             "message": "OK",
@@ -227,7 +227,7 @@ class Probehealth(object):
         return chandata
 
     def read_probe_health(self, config):
-	health = 100
+        health = 100
         logging.debug("Current Health: %s percent" % health)
         data = []
         chandata = []
@@ -236,24 +236,24 @@ class Probehealth(object):
         temp.close()
         temp_float = float(lines[0]) / 1000.0
         if temp_float > config['maxtemp']:
-	    health = health - 25
+            health = health - 25
             logging.debug("Current Health: %s percent" % health)
         disks = []
         for line in os.popen("df -k"):
             if line.startswith("/"):
                 disks.append(line.rstrip().split())
-	tmpHealth = 25 / len(disks)
+                tmpHealth = 25 / len(disks)
         for line in disks:
-	    free = (float(line[3]) / (float(line[2]) + float(line[3]))) * 100
+            free = (float(line[3]) / (float(line[2]) + float(line[3]))) * 100
             if free < 10:
-	        health = health - tmpHealth
+                health = health - tmpHealth
                 logging.debug("Current Health: %s percent" % health)
-	cpu = open('/proc/loadavg', "r")
+        cpu = open('/proc/loadavg', "r")
         for line in cpu:
             for element in line.split(" "):
                 data.append(element)
-	if float(data[1]) > 0.70:
-	    health = health - 25
+        if float(data[1]) > 0.70:
+            health = health - 25
             logging.debug("Current Health: %s percent" % health)
         chandata.append({"name": "Overall Probe Health",
                          "mode": "integer",

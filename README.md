@@ -53,6 +53,14 @@ This will enable detailed logging to folder "logs" which is as sub folder of the
 
 Changelog
 =========
+24-02-2015
+----------
+- Added support for multiprocessing, now sensors are spawned as subprocesses (merged branch experimental with master)
+- fixed some indentation stuff (tabs instead of whitespaces) 
+- fixed function get_config_key in probe_installer.py as key was set to None type all the time, fixed some sensors to put return data in the queue rather than simply returning it. 
+- other minor fixes resp. code cleanup
+- preparation for a workflow (no direct commits to master any more)
+
 14-02-2015
 ----------
 - Added full support for the DS18B20 and a lot of cleanup and fixes

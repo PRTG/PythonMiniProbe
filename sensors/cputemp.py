@@ -71,7 +71,7 @@ class CPUTemp(object):
         return sensordefinition
 
     @staticmethod
-    def get_data(data):
+    def get_data(data, out_queue):
         temperature = CPUTemp()
         logging.info("Running sensor: %s" % temperature.get_kind())
         try:
@@ -85,7 +85,7 @@ class CPUTemp(object):
                 "code": 1,
                 "message": "CPUTemp sensor failed. See log for details"
             }
-            return data
+            return out_queue.put(data)
         tempdata = []
         for element in temp:
             tempdata.append(element)
@@ -96,11 +96,11 @@ class CPUTemp(object):
         }
         del temperature
         gc.collect()
-        return data
+        out_queue.put(data)
 
     @staticmethod
     def read_temp(config):
-	data = []
+        data = []
         chandata = []
         temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
         lines = temp.readlines()

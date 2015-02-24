@@ -58,14 +58,14 @@ def main():
         announce = False
         # read configuration file (existence check done in probe_controller.py)
         config = mini_probe.read_config('./probe.conf')
-	if config['debug'] == "True":
+        if config['debug'] == "True":
             config['debug'] = True
-	else:
-	    config['debug'] = False
-	if config['cleanmem'] == "True":
+        else:
+            config['debug'] = False
+        if config['cleanmem'] == "True":
             config['cleanmem'] = True
-	else:
-	    config['cleanmem'] = False
+        else:
+            config['cleanmem'] = False
         # Doing some startup logging
         logging.info("PRTG Small Probe '%s' starting on '%s'" % (config['name'], socket.gethostname()))
         logging.info("Connecting to PRTG Core Server at %s:%s" % (config['server'], config['port']))
@@ -84,6 +84,7 @@ def main():
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
                     request_announce = requests.get(url_announce, params=data_announce, verify=False)
+
                 announce = True
                 logging.info("ANNOUNCE request successfully sent to PRTG Core Server at %s:%s."
                              % (config["server"], config["port"]))
