@@ -138,15 +138,8 @@ def main():
                             json_payload_data.append(out)
                     except Exception as e:
                         logging.error(e)
-                        print e
                         pass
-                    #print len(json_response_chunks)
-                    #print len(json_payload_data)
-                        #p.join()
-                        #p.terminate()
-                        #del p
-                    #del out_queue
-                    #procs = []
+
                     url_data = mini_probe.create_url(config, 'data')
                     try:
                         request_data = requests.post(url_data, data=json.dumps(json_payload_data), verify=False)
@@ -173,9 +166,6 @@ def main():
                     p.join()
                     p.terminate()
                     del p
-                #p.join()
-                #p.terminate()
-                #del p
             del json_response
             del json_payload_data
             gc.collect()
