@@ -53,6 +53,10 @@ This will enable detailed logging to folder "logs" which is as sub folder of the
 
 Changelog
 =========
+10-03-2015
+----------
+- Added support for internal QA
+
 24-02-2015
 ----------
 - Added support for multiprocessing, now sensors are spawned as subprocesses (merged branch experimental with master)

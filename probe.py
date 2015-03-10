@@ -46,6 +46,12 @@ except Exception as e:
     print e
     #sys.exit()
 
+# Implemented for internal testing only. Not for public usage!
+http = False
+if sys.argv[1:] and sys.argv[1] == "http":
+    http = True
+
+
 def main():
         """
         Main routine for MiniProbe (Python)
@@ -75,7 +81,7 @@ def main():
         sensor_list = mini_probe.get_import_sensors()
         sensor_announce = mini_probe.build_announce(sensor_list)
         announce_json = json.dumps(sensor_announce)
-        url_announce = mini_probe.create_url(config, 'announce')
+        url_announce = mini_probe.create_url(config, 'announce', http)
         data_announce = mini_probe.create_parameters(config, announce_json, 'announce')
 
         while not announce:
@@ -99,7 +105,7 @@ def main():
 
         while not probe_stop:
             # creating some objects only needed in loop
-            url_task = mini_probe.create_url(config, 'tasks')
+            url_task = mini_probe.create_url(config, 'tasks', http)
             task_data = {
                 'gid': config['gid'],
                 'protocol': config['protocol'],
@@ -157,7 +163,7 @@ def main():
                         logging.error(e)
                         pass
 
-                    url_data = mini_probe.create_url(config, 'data')
+                    url_data = mini_probe.create_url(config, 'data', http)
                     try:
                         request_data = requests.post(url_data, data=json.dumps(json_payload_data), verify=False)
                         logging.info("DATA request successfully sent to PRTG Core Server at %s:%s."
