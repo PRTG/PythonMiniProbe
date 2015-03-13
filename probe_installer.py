@@ -130,7 +130,7 @@ def add_sensor_to_load_list(sensors):
     f.write("# Just extend this list for your modules and they will be automatically imported during runtime and\n")
     f.write("# are announced to the PRTG Core\n")
     f.write("__all__ = [\"Ping\", \"HTTP\", \"Port\", \"SNMPCustom\", \"CPULoad\", \"Memory\", \"Diskspace\", \"SNMPTraffic\", \"DS18B20\", \"CPUTemp\", \"Probehealth\"]\n")
-    f.write("DS18B20_sensors = [" + str(sensors) + "]\n")
+    f.write("DS18B20_sensors = " + str(sensors.split(",")) + "\n")
     f.close()
 
 def install_w1_module():
@@ -174,18 +174,16 @@ def install_kernel_module():
 
 def get_w1_sensors():
     sensors = ""
+    tmpSens = ""
     print bcolor.GREEN + "Finding all W1 sensors" + bcolor.END
     f = open('/sys/devices/w1_bus_master1/w1_master_slaves','r')
     for line in f.readlines():
         print bcolor.GREEN + "Found: " + bcolor.YELLOW + line[3:].strip() + bcolor.END
-    sensors = sensors + "," + "\"" + line[3:].strip() + "\""
+        sensors = sensors + "," + line[3:].strip()
     f.close()
-    sens = "%s" % str(raw_input(bcolor.GREEN + "Please enter the id's of the temperature sensors you want to use from the list above, seperated with a , [" + sensors[1:].strip("\"") + "]: " + bcolor.END)).rstrip().lstrip()
+    sens = "%s" % str(raw_input(bcolor.GREEN + "Please enter the id's of the temperature sensors you want to use from the list above, seperated with a , [" + sensors[1:] + "]: " + bcolor.END)).rstrip().lstrip()
     if not sens == "":
-        tmpSens = ""
-    for i in sens.split(","):
-        tmpSens = tmpSens + ",\"" + i + "\""
-        return tmpSens[1:].strip()
+        return sens
     else:
         return sensors[1:]
 
@@ -247,8 +245,11 @@ def get_config_access_key(default):
     if (tmpAccessKey == "") and not (default == ""):
         tmpAccessKey = default
     else:
-        print bcolor.YELLOW + "You have not provided the Probe Access Key as defined on the PRTG Core." + bcolor.END
-    return tmpAccessKey
+        if (tmpAccessKey == ""):
+            print bcolor.YELLOW + "You have not provided the Probe Access Key as defined on the PRTG Core." + bcolor.END
+            return get_config_access_key(default)
+        else:
+            return tmpAccessKey
 
 def get_config_path(default=os.path.dirname(os.path.abspath(__file__))):
     tmpPath = "%s" % str(raw_input(bcolor.GREEN + "Please provide the path where the probe files are located [" + default + "]: " + bcolor.END)).rstrip().lstrip()
@@ -335,15 +336,15 @@ def get_config(config_old):
         logpath = "%s/logs" % probe_path
         if not (file_check(logpath)):
             os.makedirs(logpath)
-        path_rotate = "/etc/logrotate.d/MiniProbe"
-        path_init = "/etc/init.d/probe.sh"
+        path_rotate = "/etc/logrotate.d/prtgprobe"
+        path_init = "/etc/init.d/prtgprobe"
         print bcolor.GREEN + "Creating Logrotation Config" + bcolor.END
         write_file(path_rotate, logrotation(probe_path))
         print bcolor.GREEN + "Setting up runlevel" + bcolor.END
         write_file(path_init, init_script(probe_path, probe_user))
         print bcolor.GREEN + "Changing File Permissions" + bcolor.END
         os.chmod('%s/probe.py' % probe_path, 0755)
-        os.chmod('/etc/init.d/probe.sh', 0755)
+        os.chmod(path_init, 0755)
         return True
     except Exception, e:
         print bcolor.RED + "%s. Exiting!" % e + bcolor.END
@@ -351,9 +352,9 @@ def get_config(config_old):
 
 def remove_config():
     try:
-        print subprocess.call("/etc/init.d/probe.sh stop", shell=True)
-        os.remove('/etc/init.d/probe.sh')
-        os.remove('/etc/logrotate.d/MiniProbe')
+        print subprocess.call("/etc/init.d/prtgprobe stop", shell=True)
+        os.remove('/etc/init.d/prtgprobe')
+        os.remove('/etc/logrotate.d/prtgprobe')
         os.remove('./probe.conf')
     except Exception, e:
         print "%s. Exiting!" % e
@@ -385,10 +386,10 @@ if __name__ == '__main__':
     else:
         conf_avail = get_config(config_old)
         if conf_avail:
-            print subprocess.call("update-rc.d probe.sh defaults", shell=True)
+            print subprocess.call("update-rc.d prtgprobe defaults", shell=True)
             print bcolor.GREEN + "Starting Mini Probe" + bcolor.END
-            print subprocess.call("/etc/init.d/probe.sh start", shell=True)
-            print bcolor.GREEN + "Done. You now can start/stop the Mini Probe using '/etc/init.d/probe.sh start' or '/etc/init.d/probe.sh stop'" + bcolor.END
+            print subprocess.call("/etc/init.d/prtgprobe start", shell=True)
+            print bcolor.GREEN + "Done. You now can start/stop the Mini Probe using '/etc/init.d/prtgprobe start' or '/etc/init.d/prtgprobe stop'" + bcolor.END
         else:
             print "Exiting!"
             sys.exit()
