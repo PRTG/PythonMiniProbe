@@ -83,7 +83,7 @@ def main():
                 # announcing the probe and all sensors
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
-                    request_announce = requests.get(url_announce, params=data_announce, verify=False)
+                    request_announce = requests.get(url_announce, params=data_announce, verify=False, timeout=30)
 
                 announce = True
                 logging.info("ANNOUNCE request successfully sent to PRTG Core Server at %s:%s."
@@ -93,6 +93,8 @@ def main():
                     logging.debug("Status Code: %s | Message: %s" % (request_announce.status_code,
                                                                      request_announce.text))
                 request_announce.close()
+            except requests.exceptions.Timeout:
+                logging.error("ANNOUNCE Timeout: " + str(data_announce))
             except Exception as announce_error:
                 logging.error(announce_error)
                 time.sleep(int(config['baseinterval']) / 2)
@@ -113,7 +115,7 @@ def main():
                 try:
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
-                        request_task = requests.get(url_task, params=task_data, verify=False)
+                        request_task = requests.get(url_task, params=task_data, verify=False, timeout=30)
                     if config['debug']:
                         logging.debug(request_task.headers)
                         logging.debug(request_task.text)
@@ -121,10 +123,12 @@ def main():
                     request_task.close()
                     gc.collect()
                     task = True
-                    logging.info("TASK request successfully sent to PRTG Core Server at %s:%s."
-                                 % (config["server"], config["port"]))
+                    logging.info("TASK request successfully sent to PRTG Core Server at %s:%s. Status: %s"
+                                 % (config["server"], config["port"], request_task.status_code))
                     if config['debug']:
-                        logging.debug(url_task)
+                        logging.debug("task_url: " + url_task + "\ntask_data: " + str(task_data))
+                except requests.exceptions.Timeout:
+                    logging.error("TASK Timeout: " + str(task_data))
                 except Exception as announce_error:
                     logging.error(announce_error)
                     time.sleep(int(config['baseinterval']) / 2)
@@ -159,13 +163,15 @@ def main():
 
                     url_data = mini_probe.create_url(config, 'data')
                     try:
-                        request_data = requests.post(url_data, data=json.dumps(json_payload_data), verify=False)
-                        logging.info("DATA request successfully sent to PRTG Core Server at %s:%s."
-                                     % (config["server"], config["port"]))
+                        request_data = requests.post(url_data, data=json.dumps(json_payload_data), verify=False, timeout=30)
+                        logging.info("DATA request successfully sent to PRTG Core Server at %s:%s. Status: %s"
+                                     % (config["server"], config["port"], request_data.status_code))
                         if config['debug']:
-                            logging.debug(json_payload_data)
+                            logging.debug("data_url: " + url_data + "\ndata_data: " + str(json_payload_data))
                         request_data.close()
                         json_payload_data = []
+                    except requests.exceptions.Timeout:
+                        logging.error("DATA Timeout: " + json_payload_data)
                     except Exception as announce_error:
                         logging.error(announce_error)
                     if len(json_response) > 10:

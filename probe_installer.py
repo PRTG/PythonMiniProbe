@@ -104,7 +104,10 @@ def init_script(script_path, user):
     init_script_tpl = open("./scripts/probe.tpl")
     return init_script_tpl.read() % (script_path, user)
 
-def add_sensor_to_load_list(sensors):
+def write_load_list(ds18b20_sensors, other_sensors):
+    default_sensors = "Ping,HTTP,Port,SNMPCustom,CPULoad,Memory,Diskspace,SNMPTraffic,CPUTemp,Probehealth,External_IP"
+    if not (other_sensors == ""):
+        default_sensors = default_sensors + "," + other_sensors
     f=open("./sensors/__init__.py","w")
     f.write("#Copyright (c) 2014, Paessler AG <support@paessler.com>\n")
     f.write("#All rights reserved.\n")
@@ -129,8 +132,9 @@ def add_sensor_to_load_list(sensors):
     f.write("# Announce modules available in this package\n")
     f.write("# Just extend this list for your modules and they will be automatically imported during runtime and\n")
     f.write("# are announced to the PRTG Core\n")
-    f.write("__all__ = [\"Ping\", \"HTTP\", \"Port\", \"SNMPCustom\", \"CPULoad\", \"Memory\", \"Diskspace\", \"SNMPTraffic\", \"DS18B20\", \"CPUTemp\", \"Probehealth\"]\n")
-    f.write("DS18B20_sensors = " + str(sensors.split(",")) + "\n")
+    f.write("__all__ = " + str(default_sensors.split(",")) + "\n")
+    if not (ds18b20_sensors == ""):
+        f.write("DS18B20_sensors = " + str(ds18b20_sensors.split(",")) + "\n")
     f.close()
 
 def install_w1_module():
@@ -267,7 +271,7 @@ def get_config_clean_memory(default=""):
 
 def get_config_subprocs(default="10"):
     tmpSubprocs = "%s" % str(raw_input(bcolor.GREEN + "How much subprocesses should be spawned for scanning [" + default +"]: " + bcolor.END)).rstrip().lstrip()
-    if not tmpSubprocs == "10" or tmpSubprocs == "":
+    if not tmpSubprocs == "":
         return tmpSubprocs
     else:
         return default
@@ -314,7 +318,11 @@ def get_config(config_old):
         sensors = get_w1_sensors()
         if not sensors == "":
             print bcolor.GREEN + "Adding DS18B20.py and selected sensors to /sensors/__init__.py" + bcolor.END
-            add_sensor_to_load_list(sensors)
+            write_load_list(sensors, "DS18B20")
+        else
+            write_load_list("", "")
+    else
+        write_load_list("", "")
     print ""
     try:
         probe_user = get_config_user()
