@@ -86,10 +86,11 @@ class External_IP(object):
     def get_ip(url):
         channel_list = [{"name": "IP-Address",
                         "ShowChart": 0,
+                        "ShowTable": 0,
                         "mode": "integer",
                         "kind": "Custom",
                         "customunit": "",
-                        "value": 0}]
+                        "value": 1}]
         return channel_list
 
     @staticmethod

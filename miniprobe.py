@@ -52,8 +52,7 @@ class MiniProbe(object):
         logging.basicConfig(
             filename="./logs/probe.log",
             filemode="a",
-            level=logging.DEBUG,
-#            level=logging.INFO,
+            level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s",
             datefmt='%m/%d/%Y %H:%M:%S'
         )

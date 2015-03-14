@@ -58,10 +58,15 @@ def main():
         announce = False
         # read configuration file (existence check done in probe_controller.py)
         config = mini_probe.read_config('./probe.conf')
+        logger = logging.getLogger("")
         if config['debug'] == "True":
             config['debug'] = True
+            logger.setLevel(logging.DEBUG)
+            logging.warning("DEBUG LOGGING HAS BEEN TURNED ON!!")
         else:
             config['debug'] = False
+            logger.setLevel(logging.INFO)
+            logging.info("Debug logging has been turned off!!")
         if config['cleanmem'] == "True":
             config['cleanmem'] = True
         else:
@@ -88,9 +93,8 @@ def main():
                 announce = True
                 logging.info("ANNOUNCE request successfully sent to PRTG Core Server at %s:%s."
                              % (config["server"], config["port"]))
-                if config['debug']:
-                    logging.debug("Connecting to %s:%s" % (config["server"], config["port"]))
-                    logging.debug("Status Code: %s | Message: %s" % (request_announce.status_code,
+                logging.debug("Connecting to %s:%s" % (config["server"], config["port"]))
+                logging.debug("Status Code: %s | Message: %s" % (request_announce.status_code,
                                                                      request_announce.text))
                 request_announce.close()
             except requests.exceptions.Timeout:
@@ -116,17 +120,15 @@ def main():
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
                         request_task = requests.get(url_task, params=task_data, verify=False, timeout=30)
-                    if config['debug']:
-                        logging.debug(request_task.headers)
-                        logging.debug(request_task.text)
+                    logging.debug(request_task.headers)
+                    logging.debug(request_task.text)
                     json_response = request_task.json()
                     request_task.close()
                     gc.collect()
                     task = True
                     logging.info("TASK request successfully sent to PRTG Core Server at %s:%s. Status: %s"
                                  % (config["server"], config["port"], request_task.status_code))
-                    if config['debug']:
-                        logging.debug("task_url: " + url_task + "\ntask_data: " + str(task_data))
+                    logging.debug("task_url: " + url_task + "\ntask_data: " + str(task_data))
                 except requests.exceptions.Timeout:
                     logging.error("TASK Timeout: " + str(task_data))
                 except Exception as announce_error:
@@ -142,8 +144,7 @@ def main():
                                             for i in range(0, len(json_response), 10)]
                 for element in json_response_chunks:
                     for part in element:
-                        if config['debug']:
-                            logging.debug(part)
+                        logging.debug(part)
                         for sensor in sensor_list:
                             if part['kind'] == sensor.get_kind():
                                 p = multiprocessing.Process(target=sensor.get_data, args=(part, out_queue),
@@ -166,8 +167,7 @@ def main():
                         request_data = requests.post(url_data, data=json.dumps(json_payload_data), verify=False, timeout=30)
                         logging.info("DATA request successfully sent to PRTG Core Server at %s:%s. Status: %s"
                                      % (config["server"], config["port"], request_data.status_code))
-                        if config['debug']:
-                            logging.debug("data_url: " + url_data + "\ndata_data: " + str(json_payload_data))
+                        logging.debug("data_url: " + url_data + "\ndata_data: " + str(json_payload_data))
                         request_data.close()
                         json_payload_data = []
                     except requests.exceptions.Timeout:
