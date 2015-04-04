@@ -82,6 +82,8 @@ def main():
         announce_json = json.dumps(sensor_announce)
         url_announce = mini_probe.create_url(config, 'announce')
         data_announce = mini_probe.create_parameters(config, announce_json, 'announce')
+        json_history = []
+        timeout = False
 
         while not announce:
             try:
@@ -131,11 +133,15 @@ def main():
                     logging.debug("task_url: " + url_task + "\ntask_data: " + str(task_data))
                 except requests.exceptions.Timeout:
                     logging.error("TASK Timeout: " + str(task_data))
+                    logging.debug("Timeout encountered. Need to write more code to handle timeoutzzzzz: %s" % json_history)
+                    timeout = True
                 except Exception as announce_error:
                     logging.error(announce_error)
                     time.sleep(int(config['baseinterval']) / 2)
             gc.collect()
             if str(json_response) != '[]':
+                json_history = json_response
+                logging.debug("json response: %s" % json_response)
                 if config['subprocs']:
                     json_response_chunks = [json_response[i:i + int(config['subprocs'])]
                                             for i in range(0, len(json_response), int(config['subprocs']))]

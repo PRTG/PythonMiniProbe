@@ -1,4 +1,5 @@
 *.pyc
 *.log
+*.gz
 *.conf
 sensors/__init__.py
