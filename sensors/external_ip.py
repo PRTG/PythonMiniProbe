@@ -22,6 +22,9 @@
 import gc
 import logging
 import requests
+import socket
+import fcntl
+import struct
 server = "http://icanhazip.com"
 
 class External_IP(object):
