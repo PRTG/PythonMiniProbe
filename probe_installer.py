@@ -319,9 +319,9 @@ def get_config(config_old):
         if not sensors == "":
             print bcolor.GREEN + "Adding DS18B20.py and selected sensors to /sensors/__init__.py" + bcolor.END
             write_load_list(sensors, "DS18B20")
-        else
+        else:
             write_load_list("", "")
-    else
+    else:
         write_load_list("", "")
     print ""
     try:
