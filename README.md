@@ -12,7 +12,7 @@ Needed modules are delivered with the probe package:
 - pyasn1 (https://pypi.python.org/pypi/pyasn1/0.1.7)  
 - pysnmp (https://pypi.python.org/pypi/pysnmp/4.2.5)  
 - requests (https://pypi.python.org/pypi/requests/2.5.1)
-- dnspython 1.12.0 (https://pypi.python.org/pypi/dnspython/1.12.0)
+- dnspython (https://pypi.python.org/pypi/dnspython/1.12.0)
 
 Installation
 ------------
@@ -54,6 +54,12 @@ This will enable detailed logging to folder "logs" which is as sub folder of the
 
 Changelog
 =========
+04-05-2015
+----------
+- Added dns sensor with support for A MX and SOA Records
+- Set the log message "Running Sensor: ..." to a debug message
+- Added the dnspython module for the dns sensor
+
 24-02-2015
 ----------
 - Added support for multiprocessing, now sensors are spawned as subprocesses (merged branch experimental with master)

@@ -137,7 +137,7 @@ class aDNS(object):
         else:
             data = {
                 "sensorid": int(data['sensorid']),
-                "message": "DNS: " + result,
+                "message": data['type'] + ": " + result,
                 "channel": addressdata
             }
         del result
@@ -163,15 +163,18 @@ class aDNS(object):
             resolver.nameservers = [host]
             resolver.port = port
             answers = dns.resolver.query(domain,type)
-            if type == 'A':
+            if (type == 'A') or (type == 'AAAA'):
                 for rdata in answers:
-                    result = result + str(rdata) + ", "
+                    result = result + str(rdata.address) + ", "
             elif type == 'MX':
                 for rdata in answers:
                     result = result + rdata.preference + ": " + rdata.exchange + ", "
             elif type == 'SOA':
                 for rdata in answers:
-                    result = result + "NS: " + str(rdata.mname) + ", TECH: " + str(rdata.rname) + ", S/N: " + str(rdata.serial) + ", Refresh: " + str(rdata.refresh/60) + " min, Expire: " + str(rdata.expire/60) + " min"
+                    result = result + "NS: " + str(rdata.mname) + ", TECH: " + str(rdata.rname) + ", S/N: " + str(rdata.serial) + ", Refresh: " + str(rdata.refresh/60) + " min, Expire: " + str(rdata.expire/60) + " min  "
+            elif type == 'CNAME':
+                for rdata in answers:
+                    result = result + str(rdata.target) + ", "
         except dns.resolver.NoAnswer:
             result = "DNS Error while getting %s record. This could be the result of a misconfiguration in the sensor settings" % type
         return result[:-2]
