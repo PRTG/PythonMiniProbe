@@ -106,7 +106,8 @@ class aDNS(object):
     def get_data(data, out_queue):
         adns = aDNS()
         result = ""
-        logging.info("Running sensor: %s" % adns.get_kind())
+        timed = 0
+        logging.debug("Running sensor: %s" % adns.get_kind())
         try:
             start_time = timeit.default_timer()
             result = adns.get_record(data['timeout'],data['port'],data['domain'],data['type'],data['host'])
@@ -115,22 +116,30 @@ class aDNS(object):
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (adns.get_kind(),
                                                                                          data['sensorid'], e))
-            data = {
+            data_r = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
                 "code": 1,
                 "message": "DNS sensor failed. See log for details"
             }
-            out_queue.put(data)
+            out_queue.put(data_r)
         dns_channel = adns.get_dns(int(timed*1000))
         addressdata = []
         for element in dns_channel:
             addressdata.append(element)
-        data = {
-            "sensorid": int(data['sensorid']),
-            "message": "DNS: " + result,
-            "channel": addressdata
-        }
+        if result[0:9] == "DNS Error":
+            data = {
+                "sensorid": int(data['sensorid']),
+                "error": "Exception",
+                "code": 1,
+                "message": result
+            }
+        else:
+            data = {
+                "sensorid": int(data['sensorid']),
+                "message": "DNS: " + result,
+                "channel": addressdata
+            }
         del result
         gc.collect()
         out_queue.put(data)
@@ -148,16 +157,21 @@ class aDNS(object):
 
     @staticmethod
     def get_record(timeout, port, domain, type, host):
-        result = ""
-        resolver = dns.resolver.Resolver(configure=False)
-        resolver.nameservers = [host]
-        resolver.port = port
-        answers = dns.resolver.query(domain,type)
-        if type == 'A':
-            for rdata in answers:
-                result = domain + ": " + str(rdata)
-        elif type == 'MX':
-            for rdata in answers:
-                result = result + rdata.preference + ": " + rdata.exchange + ", "
-                result = result[:-2]
-        return result
+        result = domain + ": "
+        try:
+            resolver = dns.resolver.Resolver(configure=False)
+            resolver.nameservers = [host]
+            resolver.port = port
+            answers = dns.resolver.query(domain,type)
+            if type == 'A':
+                for rdata in answers:
+                    result = result + str(rdata) + ", "
+            elif type == 'MX':
+                for rdata in answers:
+                    result = result + rdata.preference + ": " + rdata.exchange + ", "
+            elif type == 'SOA':
+                for rdata in answers:
+                    result = result + "NS: " + str(rdata.mname) + ", TECH: " + str(rdata.rname) + ", S/N: " + str(rdata.serial) + ", Refresh: " + str(rdata.refresh/60) + " min, Expire: " + str(rdata.expire/60) + " min"
+        except dns.resolver.NoAnswer:
+            result = "DNS Error while getting %s record. This could be the result of a misconfiguration in the sensor settings" % type
+        return result[:-2]

@@ -141,7 +141,7 @@ class Ping(object):
         ping = Ping()
         try:
             pingdata = ping.ping(data['host'], data['pingcount'], data['timeout'], data['packsize'])
-            logging.info("Running sensor: %s" % ping.get_kind())
+            logging.debug("Running sensor: %s" % ping.get_kind())
             logging.debug("Host: %s Pingcount: %s timeout: %s packetsize: %s" % (data['host'], data['pingcount'], data['timeout'], data['packsize']))
             data = {
                 "sensorid": int(data['sensorid']),

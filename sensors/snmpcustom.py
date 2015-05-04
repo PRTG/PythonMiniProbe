@@ -177,7 +177,7 @@ class SNMPCustom(object):
             snmp_data = snmpcustom.snmp_get(str(data['oid']), data['host'], data['value_type'],
                                             data['community'], int(data['port']), data['unit'],
                                             int(data['multiplication']), int(data['division']))
-            logging.info("Running sensor: %s" % snmpcustom.get_kind())
+            logging.debug("Running sensor: %s" % snmpcustom.get_kind())
         except Exception as get_data_error:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (snmpcustom.get_kind(),
                                                                                          data['sensorid'],

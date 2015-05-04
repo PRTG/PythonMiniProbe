@@ -56,7 +56,7 @@ class Memory(object):
         memory = Memory()
         try:
             mem = memory.read_memory('/proc/meminfo')
-            logging.info("Running sensor: %s" % memory.get_kind())
+            logging.debug("Running sensor: %s" % memory.get_kind())
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (memory.get_kind(),
                                                                                          data['sensorid'], e))
