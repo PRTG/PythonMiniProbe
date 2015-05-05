@@ -63,10 +63,12 @@ def main():
             config['debug'] = True
             logger.setLevel(logging.DEBUG)
             logging.warning("DEBUG LOGGING HAS BEEN TURNED ON!!")
+            logging.getLogger("requests").setLevel(logging.INFO)
         else:
             config['debug'] = False
             logger.setLevel(logging.INFO)
             logging.info("Debug logging has been turned off!!")
+            logging.getLogger("requests").setLevel(logging.WARNING)
         if config['cleanmem'] == "True":
             config['cleanmem'] = True
         else:

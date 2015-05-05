@@ -89,11 +89,12 @@ class aDNS(object):
                             "options": {
                                            "A":"Host address IPv4 (A)",
                                            "AAAA":"Host address IPv6 (AAAA)",
-                                           "NS":"Authoritative name server (NS)",
-                                           "SOA":"Start of a zone of authority marker (SOA)",
-                                           "PTR":"Domain name pointer (PTR)",
+                                           "CNAME":"Canonical name for an alias (CNAME)",
                                            "MX":"Mail exchange (MX)",
-                                           "CNAME":"Canonical name for an alias (CNAME)"
+                                           "NS":"Authoritative name server (NS)",
+                                           "PTR":"Domain name pointer (PTR)",
+                                           "SOA":"Start of a zone of authority marker (SOA)",
+                                           "SRV":"Service Record"
                                        },
                             "default": "A",
                         },
