@@ -23,6 +23,7 @@ import gc
 import logging
 import requests
 import dns.resolver
+import dns.reversename
 import timeit
 
 class aDNS(object):
@@ -162,7 +163,11 @@ class aDNS(object):
             resolver = dns.resolver.Resolver(configure=False)
             resolver.nameservers = [host]
             resolver.port = port
-            answers = dns.resolver.query(domain,type)
+            if type == 'PTR':
+                addr = dns.reversename.from_address(domain)
+                answers = dns.resolver.query(addr,type)
+            else:
+                answers = dns.resolver.query(domain,type)
             if (type == 'A') or (type == 'AAAA'):
                 for rdata in answers:
                     result = result + str(rdata.address) + ", "
@@ -172,7 +177,7 @@ class aDNS(object):
             elif type == 'SOA':
                 for rdata in answers:
                     result = result + "NS: " + str(rdata.mname) + ", TECH: " + str(rdata.rname) + ", S/N: " + str(rdata.serial) + ", Refresh: " + str(rdata.refresh/60) + " min, Expire: " + str(rdata.expire/60) + " min  "
-            elif type == 'CNAME':
+            elif (type == 'CNAME') or (type == 'NS') or (type == 'PTR'):
                 for rdata in answers:
                     result = result + str(rdata.target) + ", "
         except dns.resolver.NoAnswer:
