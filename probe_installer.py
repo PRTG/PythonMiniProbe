@@ -105,7 +105,7 @@ def init_script(script_path, user):
     return init_script_tpl.read() % (script_path, user)
 
 def write_load_list(ds18b20_sensors, other_sensors):
-    default_sensors = "Ping,HTTP,Port,SNMPCustom,CPULoad,Memory,Diskspace,SNMPTraffic,CPUTemp,Probehealth,External_IP,aDNS"
+    default_sensors = "Ping,HTTP,Port,SNMPCustom,CPULoad,Memory,Diskspace,SNMPTraffic,CPUTemp,Probehealth,External_IP,aDNS,APT"
     if not (other_sensors == ""):
         default_sensors = default_sensors + "," + other_sensors
     f=open("./sensors/__init__.py","w")

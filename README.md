@@ -54,6 +54,11 @@ This will enable detailed logging to folder "logs" which is as sub folder of the
 
 Changelog
 =========
+07-05-2015
+----------
+- Finished the DNS Sensor for all dns types currently available in a Windows Probe
+- Added an APT sensor to check for available updates on the system
+
 04-05-2015
 ----------
 - Added dns sensor with support for A MX and SOA Records
