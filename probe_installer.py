@@ -141,8 +141,8 @@ def install_w1_module():
     print bcolor.YELLOW + "Checking the hardware for Raspberry Pi." + bcolor.END
     if os.uname()[4][:3] == 'arm':
         print bcolor.GREEN + "Found hardware matching " + os.uname()[4][:3] + bcolor.END
-        tmpUseRaspberry = "%s" % str(raw_input(bcolor.GREEN + "Do you want to enable the Raspberry Pi temperature sensor [Y/n]: " + bcolor.END)).rstrip().lstrip()
-        if not tmpUseRaspberry.lower() == "n":
+        tmpUseRaspberry = "%s" % str(raw_input(bcolor.GREEN + "Do you want to enable the Raspberry Pi temperature sensor [y/N]: " + bcolor.END)).rstrip().lstrip()
+        if tmpUseRaspberry.lower() == "y":
             try:
                 install_kernel_module()
                 return True
