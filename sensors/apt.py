@@ -60,15 +60,17 @@ class APT(object):
         updatedata = ret.readlines()
         ret.close()
         for line in updatedata:
-            upgrade = line.split(" ")[0].lstrip()
-            install = line.split(" ")[2].lstrip()
-            remove = line.split(" ")[5].lstrip()
+            upgrade = int(line.split(" ")[0].lstrip())
+            install = int(line.split(" ")[2].lstrip())
+            remove = int(line.split(" ")[5].lstrip())
         total = upgrade + install + remove
         channel_list = [
             {
                 "name": "Total updates available",
                 "mode": "integer",
                 "unit": "Count",
+                "limitmaxwarning": 1,
+                "limitmode": 1,
                 "value": total
             },
             {
@@ -87,6 +89,8 @@ class APT(object):
                 "name": "Old to remove",
                 "mode": "integer",
                 "unit": "Count",
+                "limitmaxwarning": 1,
+                "LimitMode": 1,
                 "value": remove
             },
         ]
@@ -116,4 +120,3 @@ class APT(object):
         del apt
         gc.collect()
         out_queue.put(data_r)
-
