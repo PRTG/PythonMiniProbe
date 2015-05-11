@@ -48,7 +48,7 @@ class NMAP(object):
             "tag": "mpnmapsensor",
             "groups": [
                 {
-                    "name": " portspecific",
+                    "name": "portspecific",
                     "caption": "Port specific",
                     "fields": [
                         {
@@ -77,6 +77,19 @@ class NMAP(object):
                             "required": "1",
                             "default": "",
                             "help": "Specify the ip-address or a range of addresses using one of the following notations:[br]Single: 192.168.1.1[br]CIDR: 192.168.1.0/24[br]- separated: 192.168.1.1-192.168.1.100"
+                        }
+                    ]
+                },
+                {
+                    "name": "mail",
+                    "caption": "Mail Settings",
+                    "fields": [
+                        {
+                            "type": "edit",
+                            "name": "email",
+                            "caption": "E-Mailaddress",
+                            "required": "1",
+                            "help": "Specify the e-mailaddress to which the NMAP report should be sent to when the scanning has been finished"
                         }
                     ]
                 }
