@@ -84,6 +84,7 @@ def main():
         announce_json = json.dumps(sensor_announce)
         url_announce = mini_probe.create_url(config, 'announce')
         data_announce = mini_probe.create_parameters(config, announce_json, 'announce')
+        logging.debug("Announce Data: %s" % data_announce)
         json_history = []
         timeout = False
 
@@ -92,7 +93,7 @@ def main():
                 # announcing the probe and all sensors
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
-                    request_announce = requests.get(url_announce, params=data_announce, verify=False, timeout=30)
+                    request_announce = requests.post(url_announce, data=data_announce, verify=False, timeout=30)
 
                 announce = True
                 logging.info("ANNOUNCE request successfully sent to PRTG Core Server at %s:%s."
@@ -123,7 +124,7 @@ def main():
                 try:
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
-                        request_task = requests.get(url_task, params=task_data, verify=False, timeout=30)
+                        request_task = requests.post(url_task, data=task_data, verify=False, timeout=30)
                     logging.debug(request_task.headers)
                     logging.debug(request_task.text)
                     json_response = request_task.json()
