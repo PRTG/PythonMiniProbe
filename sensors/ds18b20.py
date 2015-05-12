@@ -77,7 +77,7 @@ class DS18B20(object):
     @staticmethod
     def get_data(data, out_queue):
         temperature = DS18B20()
-        logging.info("Running sensor: %s" % temperature.get_kind())
+        logging.debug("Running sensor: %s" % temperature.get_kind())
         try:
             temp = temperature.read_temp(data)
         except Exception as e:

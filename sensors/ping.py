@@ -22,7 +22,7 @@
 import os
 import gc
 import logging
-
+import sys
 
 class Ping(object):
     def __init__(self):
@@ -89,6 +89,7 @@ class Ping(object):
         return sensordefinition
 
     def ping(self, target, count, timeout, packetsize):
+        ping = ""
         ret = os.popen("/bin/ping -c %s -s %s -W %s %s" % (str(count), str(packetsize), str(timeout), str(target)))
         pingdata = ret.readlines()
         ret.close()
@@ -99,7 +100,10 @@ class Ping(object):
                 pack_loss = line.split(",")[2].lstrip()
                 pack_loss = pack_loss.split(' ')[0].lstrip()
                 pack_loss = pack_loss[:-1]
+        if ping == '':
+            return "Not reachable!"
         values = ping.split("/") + [pack_loss]
+        #logging.debug("Ping Sensor values: %s %s %s %s %s" % (values[0], values[1], values[2], values[3], values[4]))
         channel_list = [
             {
                 "name": "Ping Time Min",
@@ -139,22 +143,31 @@ class Ping(object):
         ping = Ping()
         try:
             pingdata = ping.ping(data['host'], data['pingcount'], data['timeout'], data['packsize'])
-            logging.info("Running sensor: %s" % ping.get_kind())
+            if pingdata == "Not reachable!":
+                data_r = {
+                    "sensorid": int(data['sensorid']),
+                    "error": "Exception",
+                    "code": 1,
+                    "message": data['host'] + " is " + pingdata
+                }
+            else:
+                data_r = {
+                    "sensorid": int(data['sensorid']),
+                    "message": "OK",
+                    "channel": pingdata
+                }
+            logging.debug("Running sensor: %s" % ping.get_kind())
+            logging.debug("Host: %s Pingcount: %s timeout: %s packetsize: %s" % (data['host'], data['pingcount'], data['timeout'], data['packsize']))
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (ping.get_kind(),
                                                                                          data['sensorid'], e))
-            data = {
+            data_r = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
                 "code": 1,
                 "message": "Ping failed. %s" % e
             }
-            out_queue.put(data)
-        data = {
-            "sensorid": int(data['sensorid']),
-            "message": "OK",
-            "channel": pingdata
-        }
+            out_queue.put(data_r)
         del ping
         gc.collect()
-        out_queue.put(data)
+        out_queue.put(data_r)

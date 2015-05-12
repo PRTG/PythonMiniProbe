@@ -1,19 +1,19 @@
 #!/usr/bin/env sh
 
 ### BEGIN INIT INFO
-# Provides:          probe.sh
+# Provides:          prtgprobe
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: will run the MiniProbe as service
-# Description:       Put a long description of the service here
+# Description:       This will run the PRTG Python Miniprobe as a service
 ### END INIT INFO
 
 # Change the next 3 lines to suit where you install your script and what you want to call it
 DIR=%s
 DAEMON=$DIR/probe.py
-DAEMON_NAME=probe.sh
+DAEMON_NAME=prtgprobe
 
 # This next line determines what user the script runs as.
 # Root generally not recommended but necessary if you are using the Raspberry Pi GPIO from Python.
@@ -47,7 +47,7 @@ case "$1" in
         ;;
 
     status)
-        status_of_proc "$DAEMON_NAME" "$DAEMON" && exit 0 || exit $?
+        status_of_proc -p $PIDFILE "$DAEMON" "$DAEMON_NAME" && exit 0 || exit $?
         ;;
     *)
         echo "Usage: /etc/init.d/$DAEMON_NAME {start|stop|restart|status}"

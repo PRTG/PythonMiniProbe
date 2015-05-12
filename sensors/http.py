@@ -179,7 +179,7 @@ class HTTP(object):
             http_data = http.request(data['url'], request_method=data["http_method"], auth_method=data["auth_method"],
                                      user=data["username"], password=data["password"],
                                      post_data=data["post_data"], timeout=data["timeout"])
-            logging.info("Running sensor: %s" % http.get_kind())
+            logging.debug("Running sensor: %s" % http.get_kind())
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s"
                           % (http.get_kind(), data['sensorid'], e))

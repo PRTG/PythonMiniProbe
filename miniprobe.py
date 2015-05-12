@@ -38,10 +38,8 @@ sys.path.append('./')
 
 try:
     import sensors
-    import requests
 except Exception as e:
     print e
-    # sys.exit()
 
 
 class MiniProbe(object):
@@ -53,7 +51,6 @@ class MiniProbe(object):
         logging.basicConfig(
             filename="./logs/probe.log",
             filemode="a",
-            # level=logging.DEBUG,
             level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s",
             datefmt='%m/%d/%Y %H:%M:%S'

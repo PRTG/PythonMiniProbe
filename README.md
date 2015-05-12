@@ -11,7 +11,8 @@ Python 2.7+
 Needed modules are delivered with the probe package:  
 - pyasn1 (https://pypi.python.org/pypi/pyasn1/0.1.7)  
 - pysnmp (https://pypi.python.org/pypi/pysnmp/4.2.5)  
-- requests (https://pypi.python.org/pypi/requests/2.5.1)
+- requests (https://pypi.python.org/pypi/requests/2.5.3)
+- dnspython (https://pypi.python.org/pypi/dnspython/1.12.0)
 
 Installation
 ------------
@@ -53,6 +54,19 @@ This will enable detailed logging to folder "logs" which is as sub folder of the
 
 Changelog
 =========
+
+=======
+07-05-2015
+----------
+- Finished the DNS Sensor for all dns types currently available in a Windows Probe
+- Added an APT sensor to check for available updates on the system
+
+04-05-2015
+----------
+- Added dns sensor with support for A MX and SOA Records
+- Set the log message "Running Sensor: ..." to a debug message
+- Added the dnspython module for the dns sensor
+
 10-03-2015
 ----------
 - Added support for internal QA
