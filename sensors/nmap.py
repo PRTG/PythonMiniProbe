@@ -29,7 +29,6 @@ import sys
 import struct
 import select
 from itertools import islice
-from multiprocessing import Process, Queue
 
 class NMAP(object):
     ICMP_ECHO_REQUEST = 8
