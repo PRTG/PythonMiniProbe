@@ -23,7 +23,14 @@ Installation
 - copy the miniprobe folder to your linux machine
 - run the probe installer (e.g. "python probe_installer.py")
 
-The miniprobe should now be started. You should also be able to start/stop the same using the command /etc/init.d/probe.sh start resp. /etc/init.d/probe.sh stop  
+The miniprobe should now be started. You should also be able to start/stop the same using the command
+
+    sudo service prtgprobe start
+
+or
+
+    sudo service prtgprobe stop
+
 
 Instalation of DS18B20
 ----------------------
