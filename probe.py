@@ -133,7 +133,10 @@ def main():
                         request_task = requests.post(url_task, data=task_data, verify=False, timeout=30)
                     logging.debug(request_task.headers)
                     logging.debug(request_task.text)
-                    json_response = request_task.json()
+                    try:
+                        json_response = request_task.json()
+                    except Exception as e:
+                        logging.info("Error: %s! Server returned: %s" % (e, request_task.text))
                     request_task.close()
                     gc.collect()
                     task = True
