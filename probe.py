@@ -186,7 +186,7 @@ def main():
                         request_data.close()
                         json_payload_data = []
                     except requests.exceptions.Timeout:
-                        logging.error("DATA Timeout: " + json_payload_data)
+                        logging.error("DATA Timeout: " + str(json_payload_data).strip('[]'))
                     except Exception as announce_error:
                         logging.error(announce_error)
                     if len(json_response) > 10:

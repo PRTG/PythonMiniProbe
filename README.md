@@ -23,7 +23,14 @@ Installation
 - copy the miniprobe folder to your linux machine
 - run the probe installer (e.g. "python probe_installer.py")
 
-The miniprobe should now be started. You should also be able to start/stop the same using the command /etc/init.d/probe.sh start resp. /etc/init.d/probe.sh stop  
+The miniprobe should now be started. You should also be able to start/stop the same using the command
+
+    sudo service prtgprobe start
+
+or
+
+    sudo service prtgprobe stop
+
 
 Instalation of DS18B20
 ----------------------
@@ -38,6 +45,23 @@ Setup:
 - place Pin 3 on pin 1 on the Raspberry
 - Run the installscript of the probe and answer Yes to the question if you want to use the Raspberry Pi temperature sensor.
 - The installscript will now make a change to the raspberry boot process to include a special library and it will reboot the Raspberry. After the reboot, run the installer again and answer the same question again. It will now (if all is correct) detect your DS18B20 (using it's own unique serial number) and just confirm that this is correct by presing <Return> on your keyboard.
+
+Current available sensors
+-------------------------
+- CPU Load (for probe only)
+- CPU Temperature (for probe only)
+- Disk Space (for probe only)
+- DNS for the following records: A, AAAA, CNAME, SRV, SOA, NS, MX, PTR
+- External IP to get the external and internal ip for the probe
+- HTTP
+- Linux Updates to check for the number of available updates (for probe only)
+- Memory (for probe only)
+- NMAP to get available systems to monitor (currently using ping only)
+- Ping to check if a host/system is up
+- Port to check if a specific port is available
+- Probe Health for overal probe health, combines several other sensors into 1
+- SNMP Custom to monitor a system using SNMP OID
+- SNMP Traffic to monitor traffic on the probe
 
 Debugging
 ---------
