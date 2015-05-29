@@ -108,7 +108,7 @@ def write_load_list(ds18b20_sensors, other_sensors):
     default_sensors = "Ping,HTTP,Port,SNMPCustom,CPULoad,Memory,Diskspace,SNMPTraffic,CPUTemp,Probehealth,External_IP,aDNS,APT,NMAP"
     if not (other_sensors == ""):
         default_sensors = default_sensors + "," + other_sensors
-    f=open("./sensors/__init__.py","w")
+    f=open("./sensors/__init__.py","a")
     f.write("#Copyright (c) 2014, Paessler AG <support@paessler.com>\n")
     f.write("#All rights reserved.\n")
     f.write("#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the\n")
