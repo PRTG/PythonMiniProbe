@@ -290,7 +290,7 @@ class InstallWSetup(_install.install):
                 return tmpAccessKey
 
     def get_config_path(self, default=os.path.dirname(os.path.abspath(__file__))):
-        default += "/miniprobe/"
+        default += "/miniprobe"
         tmpPath = "%s" % str(raw_input(bcolor.GREEN + "Please provide the path where the probe files are located [" + default + "]: " + bcolor.END)).rstrip().lstrip()
         if not tmpPath == "":
             return tmpPath

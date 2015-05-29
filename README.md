@@ -1,15 +1,14 @@
 PythonMiniProbe
 ===============
 
-IMPORTANT: Major changes in this branch. Do NOT use in production! Not guaranteed to work properly!
+IMPORTANT: Major changes in this branch. Do NOT use in production! Might not work properly!
 Installation for this branch
 ----------------------------
-- Install python-dev package
+- Install python-dev and build-essential (pr at least gcc) packages
 - Install pip as outlined here https://pip.pypa.io/en/latest/installing.html (pre Python 2.7.9)
 - Download either zip or clone repository
-- run command 'sudo pip install -r PythonMiniProbe/requirements.txt -e PythonMiniProbe' which will install all necessary packaged
-- go to folder PythonMiniProbe/miniprobe and run probe_installer.py as outlined below
-
+- run command 'sudo python setup.py install' which will install all necessary packaged
+- run command 'sudo python setup.py configure' which will start the configuration
 
 Current Status: BETA  
 MiniProbe POC for PRTG Network Monitor written in Python which accesses the MiniProbe Interface on the PRTG Core Server.  
@@ -98,6 +97,7 @@ MAJOR CHANGES:
 - added support for pip/reqirements.txt
 - for installation, see above "Installation for this branch"
 - added tests folder for future unit tests
+- dropped probe_installer.py, code moved to setup.py
 
 07-05-2015
 ----------
