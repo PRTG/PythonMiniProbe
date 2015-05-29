@@ -39,7 +39,7 @@ class bcolor:
     CYAN = '\033[96m'
     END = '\033[0m'
 
-class InstallWSetup(_install.install):
+class Configure(_install.install):
     probe_conf = {}
     config_old = {}
     config_old['name'] = "Python MiniProbe"
@@ -56,7 +56,6 @@ class InstallWSetup(_install.install):
     path = './miniprobe/probe.conf'
 
     def run(self):
-        _install.install.run(self)
         conf_avail = False
         if not os.getuid() == 0:
             print bcolor.RED + "You must run me as root user!" + bcolor.END
@@ -433,7 +432,7 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python",
     ],
-    cmdclass={'configure': InstallWSetup}
+    cmdclass={'configure': Configure}
 )
 
 
