@@ -25,9 +25,11 @@ import logging
 
 try:
     from pysnmp.entity.rfc3413.oneliner import cmdgen
+    snmp = True
 except Exception as e:
     logging.error("PySNMP could not be imported. SNMP Sensors won't work.Error: %s" % e)
-    sys.exit()
+    snmp = False
+    pass
 
 class SNMPTraffic(object):
 
@@ -116,22 +118,17 @@ class SNMPTraffic(object):
             ],
             "fields": []
         }
+        if not snmp:
+            sensordefinition = ""
         return sensordefinition
 
     def snmp_get(self, target, countertype, community, port, ifindex):
         if countertype == "1":
             data = []
-            #data2 = []
-            #oid_endings = range(1, 19)
-            #for number in oid_endings:
-                #data.append("1.3.6.1.2.1.2.2.1.%s.%s" % (str(number), str(ifindex)))
             data.append("1.3.6.1.2.1.2.2.1.10.%s" % str(ifindex))
             data.append("1.3.6.1.2.1.2.2.1.16.%s" % str(ifindex))
         else:
             data = []
-            #oid_endings = range(1, 20)
-            #for number in oid_endings:
-                #data.append("1.3.6.1.2.1.31.1.1.1.%s.%s" % (str(number), str(ifindex)))
             data.append("1.3.6.1.2.1.31.1.1.1.6.%s" % str(ifindex))
             data.append("1.3.6.1.2.1.31.1.1.1.10.%s" % str(ifindex))
         snmpget = cmdgen.CommandGenerator()
@@ -140,25 +137,12 @@ class SNMPTraffic(object):
         if error_indication:
             raise Exception(error_indication)
         if countertype == "1":
-            #print var_binding[0][1]
-            #print var_binding[1][1]
-            #sys.exit()
-            #traffic_in = str(long(var_binding[9][1]))
             traffic_in = str(long(var_binding[0][1]))
-            #traffic_out = str(long(var_binding[15][1]))
             traffic_out = str(long(var_binding[1][1]))
-            #traffic_total = str(long(var_binding[9][1]) + long(var_binding[15][1]))
             traffic_total = str(long(var_binding[0][1]) + long(var_binding[1][1]))
         else:
-            #print var_binding[0][1]
-            #print var_binding[1][1]
-
-            #sys.exit()
-            #traffic_in = str(long(var_binding[5][1]))
             traffic_in = str(long(var_binding[0][1]))
-            #traffic_out = str(long(var_binding[9][1]))
             traffic_out = str(long(var_binding[1][1]))
-            #traffic_total = str(long(var_binding[5][1]) + long(var_binding[9][1]))
             traffic_total = str(long(var_binding[0][1]) + long(var_binding[1][1]))
 
         channellist = [

@@ -138,7 +138,8 @@ class MiniProbe(object):
         """
         sensors_avail = []
         for sensor in sensor_list:
-            sensors_avail.append(sensor.get_sensordef())
+            if not sensor.get_sensordef() == "":
+                sensors_avail.append(sensor.get_sensordef())
         return sensors_avail
 
     @staticmethod

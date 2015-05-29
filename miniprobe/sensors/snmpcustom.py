@@ -26,8 +26,10 @@ import logging
 try:
     sys.path.append('../')
     from pysnmp.entity.rfc3413.oneliner import cmdgen
+    snmp = True
 except Exception as e:
     logging.error("PySNMP could not be imported. SNMP Sensors won't work.Error: %s" % e)
+    snmp = False
     pass
 
 
@@ -136,6 +138,8 @@ class SNMPCustom(object):
                 }
             ]
         }
+        if not snmp:
+            sensordefinition = ""
         return sensordefinition
 
     def snmp_get(self, oid, target, snmp_type, community, port, unit, multiplication=1, division=1):
