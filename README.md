@@ -4,10 +4,10 @@ PythonMiniProbe
 IMPORTANT: Major changes in this branch. Do NOT use in production! Might not work properly!
 Installation for this branch
 ----------------------------
-- Install python-dev and build-essential (pr at least gcc) packages
+- Install python-dev and build-essential (or at least gcc) packages
 - Install pip as outlined here https://pip.pypa.io/en/latest/installing.html (pre Python 2.7.9)
 - Download either zip or clone repository
-- run command 'sudo python setup.py install' which will install all necessary packaged
+- run command 'sudo python setup.py install' which will install all necessary packages
 - run command 'sudo python setup.py configure' which will start the configuration
 
 Current Status: BETA  
