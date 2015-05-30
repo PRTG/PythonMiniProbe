@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-#Copyright (c) 2014, Paessler AG <support@paessler.com>
-#All rights reserved.
-#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# Copyright (c) 2014, Paessler AG <support@paessler.com>
+# All rights reserved.
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 # following conditions are met:
-#1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions
 # and the following disclaimer.
-#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
 # and the following disclaimer in the documentation and/or other materials provided with the distribution.
-#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
 # or promote products derived from this software without specific prior written permission.
 
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 # A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
@@ -47,34 +47,34 @@ class Probehealth(object):
             "help": "Internal sensor used to monitor the health of a PRTG probe",
             "tag": "mpprobehealthsensor",
             "groups": [
-               {
-               "name":"Group",
-               "caption":"Temperature settings",
-               "fields":[
-                  {
-                       "type":"radio",
-                       "name":"celfar",
-                       "caption":"Choose between Celsius or Fahrenheit display",
-                       "help":"Choose wether you want to return the value in Celsius or Fahrenheit",
-                       "options":{
-                                               "C":"Celsius",
-                                               "F":"Fahrenheit"
-                                               },
-                       "default":"C"
-                  },
-                  {
-                        "type":"integer",
-                        "name":"maxtemp",
-                        "caption":"Error temperature",
-                        "required":"1",
-                        "minimum":20,
-                        "maximum":75,
-                        "help":"Set the maximum temperature above which the temperature sensor will provide a error (not below 20 or above 75)",
-                                    "default":45
-                  },
-                        ]
-               }
-                      ]
+                {
+                    "name": "Group",
+                    "caption": "Temperature settings",
+                    "fields": [
+                        {
+                            "type": "radio",
+                            "name": "celfar",
+                            "caption": "Choose between Celsius or Fahrenheit display",
+                            "help": "Choose wether you want to return the value in Celsius or Fahrenheit",
+                            "options": {
+                                "C": "Celsius",
+                                "F": "Fahrenheit"
+                            },
+                            "default": "C"
+                        },
+                        {
+                            "type": "integer",
+                            "name": "maxtemp",
+                            "caption": "Error temperature",
+                            "required": "1",
+                            "minimum": 20,
+                            "maximum": 75,
+                            "help": "Set the maximum temperature above which the temperature sensor will provide a error (not below 20 or above 75)",
+                            "default": 45
+                        },
+                    ]
+                }
+            ]
         }
         return sensordefinition
     
@@ -123,21 +123,21 @@ class Probehealth(object):
             tmp = line.split(":")[1].lstrip()
             data[line.split(":")[0].rstrip()] = tmp.split(" ")[0].rstrip()
         channel_list = [{"name": "Memory Total",
-                        "mode": "integer",
-                        "kind": "BytesMemory",
-                        "value": int(data['MemTotal']) * 1024},
+                         "mode": "integer",
+                         "kind": "BytesMemory",
+                         "value": int(data['MemTotal']) * 1024},
                         {"name": "Memory Free",
-                        "mode": "integer",
-                        "kind": "BytesMemory",
-                        "value": int(data['MemFree']) * 1024},
+                         "mode": "integer",
+                         "kind": "BytesMemory",
+                         "value": int(data['MemFree']) * 1024},
                         {"name": "Swap Total",
-                        "mode": "integer",
-                        "kind": "BytesMemory",
-                        "value": int(data['SwapTotal']) * 1024},
+                         "mode": "integer",
+                         "kind": "BytesMemory",
+                         "value": int(data['SwapTotal']) * 1024},
                         {"name": "Swap Free",
-                        "mode": "integer",
-                        "kind": "BytesMemory",
-                        "value": int(data['SwapFree']) * 1024}]
+                         "mode": "integer",
+                         "kind": "BytesMemory",
+                         "value": int(data['SwapFree']) * 1024}]
         mem.close()
         return channel_list
         
@@ -148,20 +148,20 @@ class Probehealth(object):
             for element in line.split(" "):
                 data.append(element)
         channel_list = [{"name": "Load Average 1min",
-                        "mode": "float",
-                        "kind": "Custom",
-                        "customunit": "",
-                        "value": float(data[0])},
+                         "mode": "float",
+                         "kind": "Custom",
+                         "customunit": "",
+                         "value": float(data[0])},
                         {"name": "Load Average 5min",
-                        "mode": "float",
-                        "kind": "Custom",
-                        "customunit": "",
-                        "value": float(data[1])},
+                         "mode": "float",
+                         "kind": "Custom",
+                         "customunit": "",
+                         "value": float(data[1])},
                         {"name": "Load Average 10min",
-                        "mode": "float",
-                        "kind": "Custom",
-                        "customunit": "",
-                        "value": float(data[2])}]
+                         "mode": "float",
+                         "kind": "Custom",
+                         "customunit": "",
+                         "value": float(data[2])}]
         cpu.close()
         return channel_list
        
@@ -203,14 +203,17 @@ class Probehealth(object):
             channel_list.append(channel5)
         return channel_list
 
-
     def read_temp(self):
         data = []
         chandata = []
-        temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
-        lines = temp.readlines()
-        temp.close()
-        temp_string = lines[0]
+        try:
+            temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
+            lines = temp.readlines()
+            temp.close()
+            temp_string = lines[0]
+        except Exception as e:
+            logging.debug("Could not read temp file, no data will be returned")
+            return chandata
         logging.debug("CPUTemp Debug message: Temperature from file: %s" % temp_string)
         temp_c = float(temp_string) / 1000.0
         logging.debug("CPUTemp Debug message: Temperature after calculations:: %s" % temp_c)
@@ -231,13 +234,17 @@ class Probehealth(object):
         logging.debug("Current Health: %s percent" % health)
         data = []
         chandata = []
-        temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
-        lines = temp.readlines()
-        temp.close()
-        temp_float = float(lines[0]) / 1000.0
-        if temp_float > config['maxtemp']:
-            health = health - 25
-            logging.debug("Current Health: %s percent" % health)
+        try:
+            temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
+            lines = temp.readlines()
+            temp.close()
+            temp_float = float(lines[0]) / 1000.0
+            if temp_float > config['maxtemp']:
+                health = health - 25
+                logging.debug("Current Health: %s percent" % health)
+        except Exception as e:
+            logging.debug("Health not changed, no temperature available")
+            pass
         disks = []
         for line in os.popen("df -k"):
             if line.startswith("/"):
