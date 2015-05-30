@@ -25,10 +25,10 @@ import timeit
 try:
     import dns.resolver
     import dns.reversename
-    dns = True
+    dnscheck = True
 except Exception as e:
     logging.error("PyDNS could not be imported. DNS Sensor won't work.Error: %s" % e)
-    dns = False
+    dnscheck = False
     pass
 
 
@@ -108,7 +108,7 @@ class aDNS(object):
                 }
             ]
         }
-        if not dns:
+        if not dnscheck:
             sensordefinition = ""
         return sensordefinition
 
