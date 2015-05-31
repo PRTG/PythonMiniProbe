@@ -404,12 +404,8 @@ class Configure(_install.install):
             print "%s. Exiting!" % e
             return False
 
-requires = [
-    "requests>=2.6.0",
-    "pyasn1>=0.1.7",
-    "pysnmp>=4.2.5",
-    "dnspython>=1.12"
-]
+with open('requirements.txt') as f:
+    requires = f.read().splitlines()
 
 packages = [
     "miniprobe"
