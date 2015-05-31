@@ -1,6 +1,15 @@
 PythonMiniProbe
 ===============
 
+IMPORTANT: Major changes in this branch. Do NOT use in production! Might not work properly!
+Installation for this branch
+----------------------------
+- Install python-dev and build-essential (or at least gcc) packages
+- Install pip as outlined here https://pip.pypa.io/en/latest/installing.html (pre Python 2.7.9)
+- Download either zip or clone repository
+- run command 'sudo python setup.py install' which will install all necessary packages
+- run command 'sudo python setup.py configure' which will start the configuration
+
 Current Status: BETA  
 MiniProbe POC for PRTG Network Monitor written in Python which accesses the MiniProbe Interface on the PRTG Core Server.  
 
@@ -11,7 +20,8 @@ Python 2.7+
 Needed modules are delivered with the probe package:  
 - pyasn1 (https://pypi.python.org/pypi/pyasn1/0.1.7)  
 - pysnmp (https://pypi.python.org/pypi/pysnmp/4.2.5)  
-- requests (https://pypi.python.org/pypi/requests/2.5.1)
+- requests (https://pypi.python.org/pypi/requests/2.5.3)
+- dnspython (https://pypi.python.org/pypi/dnspython/1.12.0)
 
 Installation
 ------------
@@ -22,7 +32,14 @@ Installation
 - copy the miniprobe folder to your linux machine
 - run the probe installer (e.g. "python probe_installer.py")
 
-The miniprobe should now be started. You should also be able to start/stop the same using the command /etc/init.d/probe.sh start resp. /etc/init.d/probe.sh stop  
+The miniprobe should now be started. You should also be able to start/stop the same using the command
+
+    sudo service prtgprobe start
+
+or
+
+    sudo service prtgprobe stop
+
 
 Instalation of DS18B20
 ----------------------
@@ -37,6 +54,23 @@ Setup:
 - place Pin 3 on pin 1 on the Raspberry
 - Run the installscript of the probe and answer Yes to the question if you want to use the Raspberry Pi temperature sensor.
 - The installscript will now make a change to the raspberry boot process to include a special library and it will reboot the Raspberry. After the reboot, run the installer again and answer the same question again. It will now (if all is correct) detect your DS18B20 (using it's own unique serial number) and just confirm that this is correct by presing <Return> on your keyboard.
+
+Current available sensors
+-------------------------
+- CPU Load (for probe only)
+- CPU Temperature (for probe only)
+- Disk Space (for probe only)
+- DNS for the following records: A, AAAA, CNAME, SRV, SOA, NS, MX, PTR
+- External IP to get the external and internal ip for the probe
+- HTTP
+- Linux Updates to check for the number of available updates (for probe only)
+- Memory (for probe only)
+- NMAP to get available systems to monitor (currently using ping only)
+- Ping to check if a host/system is up
+- Port to check if a specific port is available
+- Probe Health for overal probe health, combines several other sensors into 1
+- SNMP Custom to monitor a system using SNMP OID
+- SNMP Traffic to monitor traffic on the probe
 
 Debugging
 ---------
@@ -53,6 +87,33 @@ This will enable detailed logging to folder "logs" which is as sub folder of the
 
 Changelog
 =========
+
+=======
+29-05-2015
+----------
+MAJOR CHANGES:
+- restructuring project layout accoriding to pip compliance
+- removed included modules
+- added support for pip/reqirements.txt
+- for installation, see above "Installation for this branch"
+- added tests folder for future unit tests
+- dropped probe_installer.py, code moved to setup.py
+
+07-05-2015
+----------
+- Finished the DNS Sensor for all dns types currently available in a Windows Probe
+- Added an APT sensor to check for available updates on the system
+
+04-05-2015
+----------
+- Added dns sensor with support for A MX and SOA Records
+- Set the log message "Running Sensor: ..." to a debug message
+- Added the dnspython module for the dns sensor
+
+10-03-2015
+----------
+- Added support for internal QA
+
 24-02-2015
 ----------
 - Added support for multiprocessing, now sensors are spawned as subprocesses (merged branch experimental with master)
