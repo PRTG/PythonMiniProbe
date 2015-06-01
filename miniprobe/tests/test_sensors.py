@@ -227,7 +227,7 @@ def test_cputemp_get_sensordef():
             "kind": test_cputemp.get_kind(),
             "name": "CPU Temperature",
             "description": "Returns the CPU temperature",
-            "default": "no",
+            "default": "yes",
             "help": "Returns the CPU temperature",
             "tag": "mpcputempsensor",
             "groups": [
