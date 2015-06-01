@@ -499,7 +499,7 @@ def test_external_ip_get_kind():
     assert_equal(test_external_ip.get_kind(), 'mpexternalip')
 
 def test_external_ip_sensor_definition():
-    """http returns correct definition"""
+    """external_ip returns correct definition"""
     test_external_ip = external_ip.External_IP()
     test_sensordef = {
             "kind": test_external_ip.get_kind(),
