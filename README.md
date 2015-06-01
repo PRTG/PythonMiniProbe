@@ -1,6 +1,10 @@
 PythonMiniProbe
 ===============
 
+Build Status
+------------
+[![Build Status](https://travis-ci.org/PaesslerAG/PythonMiniProbe.svg?branch=development)](https://travis-ci.org/PaesslerAG/PythonMiniProbe)
+
 IMPORTANT: Major changes in this branch. Do NOT use in production! Might not work properly!
 Installation for this branch
 ----------------------------
