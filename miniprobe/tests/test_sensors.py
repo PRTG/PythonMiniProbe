@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from nose.tools import *
-from miniprobe.sensors import nmap,adns,apt,cpuload,cputemp
+from miniprobe.sensors import nmap,adns,apt,cpuload,cputemp,snmptraffic
 
 def test_nmap_get_kind():
     """nmap returns the correct kind"""
@@ -79,4 +79,10 @@ def test_cputemp_get_kind():
     """cputemp returns the correct kind"""
     test_cputemp = cputemp.CPUTemp()
     assert_equal(test_cputemp.get_kind(), 'mpcputemp')
+
+
+def test_snmptraffic_get_kind():
+    """cputemp returns the correct kind"""
+    test_snmptraffic = snmptraffic.SNMPTraffic()
+    assert_equal(test_snmptraffic.get_kind(), 'mpsnmptraffic')
 
