@@ -65,7 +65,7 @@ class MiniProbe(object):
             try:
                 sensor_objects.append(self.load_class("sensors.%s.%s" % (mod.lower(), mod)))
             except Exception as import_error:
-                print import_error
+                logging.error("Sensor Import Error! Error message: %s" % import_error)
         return sensor_objects
 
     @staticmethod
