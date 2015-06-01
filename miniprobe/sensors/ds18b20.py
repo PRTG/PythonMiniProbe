@@ -40,7 +40,7 @@ class DS18B20(object):
         return "mpds18b20"
 
     @staticmethod
-    def get_sensordef():
+    def get_sensordef(testing=False):
         """
         Definition of the sensor and data to be shown in the PRTG WebGUI
         """
@@ -75,7 +75,7 @@ class DS18B20(object):
                 }
             ]
         }
-        if not dev:
+        if not dev and not testing:
             sensordefinition = ""
         return sensordefinition
 
