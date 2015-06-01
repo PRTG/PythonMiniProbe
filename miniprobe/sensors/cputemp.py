@@ -38,7 +38,7 @@ class CPUTemp(object):
         return "mpcputemp"
 
     @staticmethod
-    def get_sensordef():
+    def get_sensordef(testing=False):
         """
         Definition of the sensor and data to be shown in the PRTG WebGUI
         """
@@ -69,7 +69,7 @@ class CPUTemp(object):
                 }
             ]
         }
-        if not temp:
+        if not temp and not testing:
             sensordefinition = ""
         return sensordefinition
 

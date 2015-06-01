@@ -227,7 +227,7 @@ def test_cputemp_get_sensordef():
             "kind": test_cputemp.get_kind(),
             "name": "CPU Temperature",
             "description": "Returns the CPU temperature",
-            "default": "yes",
+            "default": "no",
             "help": "Returns the CPU temperature",
             "tag": "mpcputempsensor",
             "groups": [
@@ -250,7 +250,7 @@ def test_cputemp_get_sensordef():
                 }
             ]
     }
-    assert_equal(test_cputemp.get_sensordef(), test_sensordef)
+    assert_equal(test_cputemp.get_sensordef(testing=True), test_sensordef)
 
 # SNMP Traffic
 def test_snmptraffic_get_kind():
@@ -490,7 +490,7 @@ def test_ds18b20_sensor_definition():
                 }
             ]
     }
-    assert_equal(test_ds18b20.get_sensordef(), test_sensordef)
+    assert_equal(test_ds18b20.get_sensordef(testing=True), test_sensordef)
 
 # External IP
 def test_external_ip_get_kind():
