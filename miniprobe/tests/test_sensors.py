@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from nose.tools import *
-from miniprobe.sensors import nmap,adns,apt,cpuload,cputemp,snmptraffic
+from miniprobe.sensors import adns,apt,cpuload,cputemp,diskspace,ds18b20,external_ip,http,memory,nmap,ping,port,portrange,probehealth,snmpcustom,snmptraffic
 
 def test_nmap_get_kind():
     """nmap returns the correct kind"""
@@ -80,9 +80,58 @@ def test_cputemp_get_kind():
     test_cputemp = cputemp.CPUTemp()
     assert_equal(test_cputemp.get_kind(), 'mpcputemp')
 
-
 def test_snmptraffic_get_kind():
-    """cputemp returns the correct kind"""
+    """snmptraffic returns the correct kind"""
     test_snmptraffic = snmptraffic.SNMPTraffic()
     assert_equal(test_snmptraffic.get_kind(), 'mpsnmptraffic')
+
+def test_snmpcustom_get_kind():
+    """snmpcustom returns the correct kind"""
+    test_snmpcustom = snmpcustom.SNMPCustom()
+    assert_equal(test_snmpcustom.get_kind(), 'mpsnmpcustom')
+
+def test_diskspace_get_kind():
+    """diskspace returns the correct kind"""
+    test_diskspace = diskspace.Diskspace()
+    assert_equal(test_diskspace.get_kind(), 'mpdiskspace')
+
+def test_ds18b20_get_kind():
+    """ds18b20 returns the correct kind"""
+    test_ds18b20 = ds18b20.DS18B20()
+    assert_equal(test_ds18b20.get_kind(), 'mpds18b20')
+
+def test_external_ip_get_kind():
+    """external_ip returns the correct kind"""
+    test_external_ip = external_ip.External_IP()
+    assert_equal(test_external_ip.get_kind(), 'mpexternalip')
+
+def test_http_get_kind():
+    """http returns the correct kind"""
+    test_http = http.HTTP()
+    assert_equal(test_http.get_kind(), 'mphttp')
+
+def test_memory_get_kind():
+    """memory returns the correct kind"""
+    test_memory = memory.Memory()
+    assert_equal(test_memory.get_kind(), 'mpmemory')
+
+def test_ping_get_kind():
+    """ping returns the correct kind"""
+    test_ping = ping.Ping()
+    assert_equal(test_ping.get_kind(), 'mpping')
+
+def test_port_get_kind():
+    """port returns the correct kind"""
+    test_port = port.Port()
+    assert_equal(test_port.get_kind(), 'mpport')
+
+def test_portrange_get_kind():
+    """portrange returns the correct kind"""
+    test_portrange = portrange.Portrange()
+    assert_equal(test_portrange.get_kind(), 'mpportrange')
+
+def test_probehealth_get_kind():
+    """probehealth returns the correct kind"""
+    test_probehealth = probehealth.Probehealth()
+    assert_equal(test_probehealth.get_kind(), 'mpprobehealth')
 
