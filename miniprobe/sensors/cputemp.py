@@ -26,6 +26,7 @@ temp = True
 if not os.path.exists("/sys/class/thermal/thermal_zone0/temp"):
     temp = False
 
+
 class CPUTemp(object):
     def __init__(self):
         gc.enable()
@@ -78,7 +79,7 @@ class CPUTemp(object):
         temperature = CPUTemp()
         logging.debug("Running sensor: %s" % temperature.get_kind())
         try:
-            temp = temperature.read_temp(data)
+            tmp = temperature.read_temp(data)
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (temperature.get_kind(),
                                                                                          data['sensorid'], e))
@@ -91,7 +92,7 @@ class CPUTemp(object):
             out_queue.put(data)
             return 1
         tempdata = []
-        for element in temp:
+        for element in tmp:
             tempdata.append(element)
         data = {
             "sensorid": int(data['sensorid']),
@@ -107,9 +108,9 @@ class CPUTemp(object):
     def read_temp(config):
         data = []
         chandata = []
-        temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
-        lines = temp.readlines()
-        temp.close()
+        tmp = open("/sys/class/thermal/thermal_zone0/temp", "r")
+        lines = tmp.readlines()
+        tmp.close()
         temp_string = lines[0]
         logging.debug("CPUTemp Debug message: Temperature from file: %s" % temp_string)
         temp_c = float(temp_string) / 1000.0

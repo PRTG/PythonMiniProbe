@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-#Copyright (c) 2014, Paessler AG <support@paessler.com>
-#All rights reserved.
-#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# Copyright (c) 2014, Paessler AG <support@paessler.com>
+# All rights reserved.
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 # following conditions are met:
-#1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions
 # and the following disclaimer.
-#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
 # and the following disclaimer in the documentation and/or other materials provided with the distribution.
-#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
 # or promote products derived from this software without specific prior written permission.
 
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 # A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
@@ -20,9 +20,9 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-### PRTG Python Miniprobe
-### Miniprobe needs at least Python 2.7 because of "importlib"
-### If older python version is used you will have to install "importlib"
+# PRTG Python Miniprobe
+# Miniprobe needs at least Python 2.7 because of "importlib"
+# If older python version is used you will have to install "importlib"
 
 # import general modules
 import sys
@@ -46,7 +46,6 @@ try:
     import multiprocessing
 except Exception as e:
     print e
-    #sys.exit()
 
 # Implemented for internal testing only. Not for public usage!
 http = False
@@ -94,8 +93,6 @@ def main():
         data_announce = mini_probe.create_parameters(config, announce_json, 'announce')
         logging.debug("Announce Data: %s" % data_announce)
         json_history = []
-        timeout = False
-
         while not announce:
             try:
                 # announcing the probe and all sensors
@@ -107,8 +104,7 @@ def main():
                 logging.info("ANNOUNCE request successfully sent to PRTG Core Server at %s:%s."
                              % (config["server"], config["port"]))
                 logging.debug("Connecting to %s:%s" % (config["server"], config["port"]))
-                logging.debug("Status Code: %s | Message: %s" % (request_announce.status_code,
-                                                                     request_announce.text))
+                logging.debug("Status Code: %s | Message: %s" % (request_announce.status_code, request_announce.text))
                 request_announce.close()
             except requests.exceptions.Timeout:
                 logging.error("ANNOUNCE Timeout: " + str(data_announce))
@@ -137,8 +133,8 @@ def main():
                     logging.debug(request_task.text)
                     try:
                         json_response = request_task.json()
-                    except Exception as e:
-                        logging.info("Error: %s! Server returned: %s" % (e, request_task.text))
+                    except Exception as ex:
+                        logging.info("Error: %s! Server returned: %s" % (ex, request_task.text))
                     request_task.close()
                     gc.collect()
                     task = True
@@ -147,8 +143,8 @@ def main():
                     logging.debug("task_url: " + url_task + "\ntask_data: " + str(task_data))
                 except requests.exceptions.Timeout:
                     logging.error("TASK Timeout: " + str(task_data))
-                    logging.debug("Timeout encountered. Need to write more code to handle timeoutzzzzz: %s" % json_history)
-                    timeout = True
+                    logging.debug("Timeout encountered. Need to write more code to handle timeoutzzzzz: %s"
+                                  % json_history)
                 except Exception as announce_error:
                     logging.error(announce_error)
                     time.sleep(int(config['baseinterval']) / 2)
@@ -178,13 +174,14 @@ def main():
                         while len(json_payload_data) < len(element):
                             out = out_queue.get()
                             json_payload_data.append(out)
-                    except Exception as e:
-                        logging.error(e)
+                    except Exception as ex:
+                        logging.error(ex)
                         pass
 
                     url_data = mini_probe.create_url(config, 'data', http)
                     try:
-                        request_data = requests.post(url_data, data=json.dumps(json_payload_data), verify=False, timeout=30)
+                        request_data = requests.post(url_data, data=json.dumps(json_payload_data),
+                                                     verify=False, timeout=30)
                         logging.info("DATA request successfully sent to PRTG Core Server at %s:%s. Status: %s"
                                      % (config["server"], config["port"], request_data.status_code))
                         logging.debug("data_url: " + url_data + "\ndata_data: " + str(json_payload_data))

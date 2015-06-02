@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-#Copyright (c) 2014, Paessler AG <support@paessler.com>
-#All rights reserved.
-#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# Copyright (c) 2014, Paessler AG <support@paessler.com>
+# All rights reserved.
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 # following conditions are met:
-#1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions
 # and the following disclaimer.
-#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
 # and the following disclaimer in the documentation and/or other materials provided with the distribution.
-#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
 # or promote products derived from this software without specific prior written permission.
 
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 # A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,8 @@ import fcntl
 import struct
 server = "http://icanhazip.com"
 
-class External_IP(object):
+
+class ExternalIP(object):
     def __init__(self):
         gc.enable()
 
@@ -44,7 +45,7 @@ class External_IP(object):
         Definition of the sensor and data to be shown in the PRTG WebGUI
         """
         sensordefinition = {
-            "kind": External_IP.get_kind(),
+            "kind": ExternalIP.get_kind(),
             "name": "External IP",
             "description": "Returns the external ip address of the probe",
             "default": "yes",
@@ -57,8 +58,8 @@ class External_IP(object):
 
     @staticmethod
     def get_data(data, out_queue):
-        ip = External_IP()
-        address = ""
+        ip = ExternalIP()
+        # address = ""
         logging.debug("Running sensor: %s" % ip.get_kind())
         try:
             address = ip.get_ip(server)
@@ -89,13 +90,16 @@ class External_IP(object):
 
     @staticmethod
     def get_ip(url):
-        channel_list = [{"name": "IP-Address",
-                        "ShowChart": 0,
-                        "ShowTable": 0,
-                        "mode": "integer",
-                        "kind": "Custom",
-                        "customunit": "",
-                        "value": 1}]
+        channel_list = [
+            {
+                "name": "IP-Address",
+                "ShowChart": 0,
+                "ShowTable": 0,
+                "mode": "integer",
+                "kind": "Custom",
+                "customunit": "",
+                "value": 1
+            }]
         return channel_list
 
     @staticmethod
@@ -105,7 +109,7 @@ class External_IP(object):
         ip.close
         return address
 
-    def local_ip(url, ifname):
+    def local_ip(self, ifname):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return socket.inet_ntoa(fcntl.ioctl(
             s.fileno(),

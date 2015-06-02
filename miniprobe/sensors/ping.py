@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-#Copyright (c) 2014, Paessler AG <support@paessler.com>
-#All rights reserved.
-#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# Copyright (c) 2014, Paessler AG <support@paessler.com>
+# All rights reserved.
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 # following conditions are met:
-#1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions
 # and the following disclaimer.
-#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
 # and the following disclaimer in the documentation and/or other materials provided with the distribution.
-#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
 # or promote products derived from this software without specific prior written permission.
 
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 # A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
@@ -22,7 +22,7 @@
 import os
 import gc
 import logging
-import sys
+
 
 class Ping(object):
     def __init__(self):
@@ -103,7 +103,6 @@ class Ping(object):
         if ping == '':
             return "Not reachable!"
         values = ping.split("/") + [pack_loss]
-        #logging.debug("Ping Sensor values: %s %s %s %s %s" % (values[0], values[1], values[2], values[3], values[4]))
         channel_list = [
             {
                 "name": "Ping Time Min",
@@ -157,7 +156,8 @@ class Ping(object):
                     "channel": pingdata
                 }
             logging.debug("Running sensor: %s" % ping.get_kind())
-            logging.debug("Host: %s Pingcount: %s timeout: %s packetsize: %s" % (data['host'], data['pingcount'], data['timeout'], data['packsize']))
+            logging.debug("Host: %s Pingcount: %s timeout: %s packetsize: %s" % (data['host'], data['pingcount'],
+                                                                                 data['timeout'], data['packsize']))
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (ping.get_kind(),
                                                                                          data['sensorid'], e))
@@ -165,7 +165,7 @@ class Ping(object):
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
                 "code": 1,
-                "message": "Ping failed." #%s" % e
+                "message": "Ping failed."
             }
             out_queue.put(data_r)
             return 1

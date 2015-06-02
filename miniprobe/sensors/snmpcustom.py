@@ -145,11 +145,12 @@ class SNMPCustom(object):
         try:
             sys.path.append('./')
             from pysnmp.entity.rfc3413.oneliner import cmdgen
+            snmpget = cmdgen.CommandGenerator()
+            error_indication, error_status, error_index, var_binding = snmpget.getCmd(
+                cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), oid)
         except Exception as import_error:
             logging.error(import_error)
-        snmpget = cmdgen.CommandGenerator()
-        error_indication, error_status, error_index, var_binding = snmpget.getCmd(
-            cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), oid)
+            raise
 
         if snmp_type == "1":
             channellist = [
@@ -176,7 +177,6 @@ class SNMPCustom(object):
     @staticmethod
     def get_data(data, out_queue):
         snmpcustom = SNMPCustom()
-        snmp_data = []
         try:
             snmp_data = snmpcustom.snmp_get(str(data['oid']), data['host'], data['value_type'],
                                             data['community'], int(data['port']), data['unit'],
