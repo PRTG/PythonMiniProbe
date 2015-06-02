@@ -124,7 +124,7 @@ class NMAP(object):
                 "message": "Port check failed or ports closed. See log for details"
             }
             out_queue.put(sensor_data)
-            return
+            return 1
         sensor_data = {
             "sensorid": int(data['sensorid']),
             "message": alive_str[:-2],
@@ -133,6 +133,7 @@ class NMAP(object):
         del nmap
         gc.collect()
         out_queue.put(sensor_data)
+        return 0
 
     def ip2bin(self,ip):
         b = ""

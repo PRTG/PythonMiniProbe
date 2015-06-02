@@ -73,6 +73,7 @@ class External_IP(object):
                 "message": "External IP sensor failed. See log for details"
             }
             out_queue.put(data)
+            return 1
         addressdata = []
         for element in address:
             addressdata.append(element)
@@ -84,6 +85,7 @@ class External_IP(object):
         del address
         gc.collect()
         out_queue.put(data)
+        return 0
 
     @staticmethod
     def get_ip(url):

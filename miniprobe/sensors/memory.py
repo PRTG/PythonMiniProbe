@@ -67,6 +67,7 @@ class Memory(object):
                 "message": "Memory sensor failed. See log for details"
             }
             out_queue.put(data)
+            return 1
         memorydata = []
         for element in mem:
             memorydata.append(element)
@@ -78,6 +79,7 @@ class Memory(object):
         del memory
         gc.collect()
         out_queue.put(data)
+        return 0
 
     def read_memory(self, path):
         mem = open(path, "r")

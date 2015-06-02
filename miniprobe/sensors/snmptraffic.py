@@ -169,6 +169,7 @@ class SNMPTraffic(object):
     @staticmethod
     def get_data(data, out_queue):
         snmptraffic = SNMPTraffic()
+        snmp_data = []
         try:
             snmp_data = snmptraffic.snmp_get(data['host'], data['snmp_counter'],
                                              data['community'], int(data['port']), data['ifindex'])
@@ -185,6 +186,7 @@ class SNMPTraffic(object):
                 "message": "SNMP Request failed. See log for details"
             }
             out_queue.put(data)
+            return 1
 
         data = {
             "sensorid": int(data['sensorid']),
@@ -194,3 +196,4 @@ class SNMPTraffic(object):
         del snmptraffic
         gc.collect()
         out_queue.put(data)
+        return 0

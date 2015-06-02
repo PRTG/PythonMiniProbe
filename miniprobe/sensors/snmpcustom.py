@@ -176,6 +176,7 @@ class SNMPCustom(object):
     @staticmethod
     def get_data(data, out_queue):
         snmpcustom = SNMPCustom()
+        snmp_data = []
         try:
             snmp_data = snmpcustom.snmp_get(str(data['oid']), data['host'], data['value_type'],
                                             data['community'], int(data['port']), data['unit'],
@@ -192,6 +193,7 @@ class SNMPCustom(object):
                 "message": "SNMP Request failed. See log for details"
             }
             out_queue.put(data)
+            return 1
 
         data = {
             "sensorid": int(data['sensorid']),
@@ -201,3 +203,4 @@ class SNMPCustom(object):
         del snmpcustom
         gc.collect()
         out_queue.put(data)
+        return 0

@@ -67,6 +67,7 @@ class CPULoad(object):
                 "message": "CPU load sensor failed. See log for details"
             }
             out_queue.put(data)
+            return 1
         cpudata = []
         for element in cpu:
             cpudata.append(element)
@@ -78,6 +79,7 @@ class CPULoad(object):
         del cpuload
         gc.collect()
         out_queue.put(data)
+        return 0
 
     @staticmethod
     def read_cpu(path):

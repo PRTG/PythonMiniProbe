@@ -3,6 +3,7 @@
 
 from nose.tools import *
 from miniprobe.sensors import adns,apt,cpuload,cputemp,diskspace,ds18b20,external_ip,http,memory,nmap,ping,port,portrange,probehealth,snmpcustom,snmptraffic
+import multiprocessing
 
 class TestSensors:
     @classmethod
@@ -23,6 +24,8 @@ class TestSensors:
         cls.test_port = port.Port()
         cls.test_portrange = portrange.Portrange()
         cls.test_probehealth = probehealth.Probehealth()
+        cls.test_out_queue = multiprocessing.Queue()
+        cls.test_sens_data = {'sensorid': '4567'}
 
     # NMAP
     def test_nmap_get_kind(self):
@@ -255,6 +258,17 @@ class TestSensors:
         }
         assert_equal(self.test_cputemp.get_sensordef(testing=True), test_sensordef)
 
+    def test_cputemp_get_data_error(self):
+        """cputemp returns error data in expected format"""
+        test_sensor_error_data = {
+                "sensorid": int(self.test_sens_data['sensorid']),
+                "error": "Exception",
+                "code": 1,
+                "message": "CPUTemp sensor failed. See log for details"
+        }
+        self.test_cputemp.get_data(self.test_sens_data, self.test_out_queue)
+        assert_equal(self.test_out_queue.get(), test_sensor_error_data)
+
     # SNMP Traffic
     def test_snmptraffic_get_kind(self):
         """snmptraffic returns the correct kind"""
@@ -333,6 +347,17 @@ class TestSensors:
                 "fields": []
         }
         assert_equal(self.test_snmptraffic.get_sensordef(), test_sensordef)
+
+    def test_snmptraffic_get_data_error(self):
+        """snmptraffic returns error data in expected format"""
+        test_sensor_error_data = {
+                    "sensorid": int(self.test_sens_data['sensorid']),
+                    "error": "Exception",
+                    "code": 1,
+                    "message": "SNMP Request failed. See log for details"
+        }
+        self.test_snmptraffic.get_data(self.test_sens_data, self.test_out_queue)
+        assert_equal(self.test_out_queue.get(), test_sensor_error_data)
 
     # SNMP Custom
     def test_snmpcustom_get_kind(self):
@@ -430,6 +455,17 @@ class TestSensors:
                 ]
         }
         assert_equal(self.test_snmpcustom.get_sensordef(), test_sensordef)
+
+    def test_snmptcustom_get_data_error(self):
+        """snmpcustom returns error data in expected format"""
+        test_sensor_error_data = {
+                    "sensorid": int(self.test_sens_data['sensorid']),
+                    "error": "Exception",
+                    "code": 1,
+                    "message": "SNMP Request failed. See log for details"
+        }
+        self.test_snmpcustom.get_data(self.test_sens_data, self.test_out_queue)
+        assert_equal(self.test_out_queue.get(), test_sensor_error_data)
 
     # Diskspace
     def test_diskspace_get_kind(self):
@@ -672,6 +708,17 @@ class TestSensors:
                 ]
         }
         assert_equal(self.test_ping.get_sensordef(), test_sensordef)
+
+    def test_ping_get_data_error(self):
+        """ping returns error data in expected format"""
+        test_sensor_error_data = {
+                "sensorid": int(self.test_sens_data['sensorid']),
+                "error": "Exception",
+                "code": 1,
+                "message": "Ping failed."
+        }
+        self.test_ping.get_data(self.test_sens_data, self.test_out_queue)
+        assert_equal(self.test_out_queue.get(), test_sensor_error_data)
 
     # Port
     def test_port_get_kind(self):

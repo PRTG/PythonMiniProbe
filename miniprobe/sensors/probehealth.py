@@ -98,6 +98,7 @@ class Probehealth(object):
                 "message": "Probe Health sensor failed. See log for details"
             }
             out_queue.put(data)
+            return 1
         probedata = []
         for element in health:
             probedata.append(element)
@@ -115,6 +116,7 @@ class Probehealth(object):
             "channel": probedata
         }
         out_queue.put(data)
+        return 0
 
     def read_memory(self, path):
         mem = open(path, "r")
