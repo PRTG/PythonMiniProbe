@@ -160,15 +160,6 @@ class HTTP(object):
         except Exception as e:
             logging.error(e)
             raise
-        #channel_list = [{"name": "Status Code",
-        #                "mode": "integer",
-        #                "kind": "Custom",
-        #                "customunit": "",
-        #                "value": int(code)},
-        #                {"name": "Response Time",
-        #                "mode": "float",
-        #                "kind": "TimeResponse",
-        #                "value": float(response_time)}]
         data = [int(code), float(response_time)]
         return data
 

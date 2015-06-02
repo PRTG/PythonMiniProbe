@@ -184,6 +184,17 @@ class TestSensors:
         }
         assert_equal(self.test_adns.get_sensordef(), test_sensordef)
 
+    def test_adns_get_data_error(self):
+        """adns returns error data in expected format"""
+        test_sensor_error_data = {
+                "sensorid": int(self.test_sens_data['sensorid']),
+                "error": "Exception",
+                "code": 1,
+                "message": "DNS sensor failed. See log for details"
+        }
+        self.test_adns.get_data(self.test_sens_data, self.test_out_queue)
+        assert_equal(self.test_out_queue.get(), test_sensor_error_data)
+
     #APT
     def test_apt_get_kind(self):
         """apt returns the correct kind"""
@@ -522,6 +533,17 @@ class TestSensors:
         }
         assert_equal(self.test_ds18b20.get_sensordef(testing=True), test_sensordef)
 
+    def test_ds18b20_get_data_error(self):
+        """ds18b20 returns error data in expected format"""
+        test_sensor_error_data =  {
+                "sensorid": int(self.test_sens_data['sensorid']),
+                "error": "Exception",
+                "code": 1,
+                "message": "DS18B20 sensor failed. See log for details"
+        }
+        self.test_ds18b20.get_data(self.test_sens_data, self.test_out_queue)
+        assert_equal(self.test_out_queue.get(), test_sensor_error_data)
+
     # External IP
     def test_external_ip_get_kind(self):
         """external_ip returns the correct kind"""
@@ -540,6 +562,17 @@ class TestSensors:
                 "groups": []
         }
         assert_equal(self.test_external_ip.get_sensordef(), test_sensordef)
+
+    # def test_external_ip_get_data_error(self):
+    #    """external_ip returns error data in expected format"""
+    #    test_sensor_error_data = {
+    #            "sensorid": int(self.test_sens_data['sensorid']),
+    #            "error": "Exception",
+    #            "code": 1,
+    #            "message": "External IP sensor failed. See log for details"
+    #    }
+    #    self.test_external_ip.get_data(self.test_sens_data, self.test_out_queue)
+    #    assert_equal(self.test_out_queue.get(), test_sensor_error_data)
 
     # HTTP
     def test_http_get_kind(self):
@@ -764,6 +797,17 @@ class TestSensors:
                 ]
         }
         assert_equal(self.test_port.get_sensordef(), test_sensordef)
+
+    def test_port_get_data_error(self):
+        """port returns error data in expected format"""
+        test_sensor_error_data = {
+                "sensorid": int(self.test_sens_data['sensorid']),
+                "error": "Exception",
+                "code": 1,
+                "message": "Port check failed. See log for details"
+        }
+        self.test_port.get_data(self.test_sens_data, self.test_out_queue)
+        assert_equal(self.test_out_queue.get(), test_sensor_error_data)
 
     # Portrange
     def test_portrange_get_kind(self):
