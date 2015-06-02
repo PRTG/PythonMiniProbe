@@ -25,6 +25,7 @@ case "$(python --version 2>&1)" in
 esac
 
 if [ ! -f ./README.md ]
+then
     read -p "Use git to install the miniprobe (y|n)? " -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]
