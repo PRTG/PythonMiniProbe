@@ -165,9 +165,11 @@ class Ping(object):
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
                 "code": 1,
-                "message": "Ping failed. %s" % e
+                "message": "Ping failed." #%s" % e
             }
             out_queue.put(data_r)
+            return 1
         del ping
         gc.collect()
         out_queue.put(data_r)
+        return 0
