@@ -95,6 +95,7 @@ class DS18B20(object):
                 "message": "DS18B20 sensor failed. See log for details"
             }
             out_queue.put(data)
+            return 1
         tempdata = []
         for element in temp:
             tempdata.append(element)
@@ -106,6 +107,7 @@ class DS18B20(object):
         del temperature
         gc.collect()
         out_queue.put(data)
+        return 0
 
     @staticmethod
     def read_temp(config):

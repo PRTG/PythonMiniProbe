@@ -117,6 +117,8 @@ class APT(object):
                 "message": "APT failed. %s" % e
             }
             out_queue.put(data_r)
+            return 1
         del apt
         gc.collect()
         out_queue.put(data_r)
+        return 0

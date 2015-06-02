@@ -127,6 +127,7 @@ class Port(object):
                 "message": "Port check failed. See log for details"
             }
             out_queue.put(data)
+            return 1
         data = {
             "sensorid": int(data['sensorid']),
             "message": "OK Port %s available" % data['targetport'],
@@ -135,3 +136,4 @@ class Port(object):
         del port
         gc.collect()
         out_queue.put(data)
+        return 0

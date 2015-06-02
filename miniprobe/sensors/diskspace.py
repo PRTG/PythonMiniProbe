@@ -68,6 +68,7 @@ class Diskspace(object):
                 "message": "Disk Space Sensor failed. See log for details"
             }
             out_queue.put(data)
+            return 1
         channels = disk
         data = {
             "sensorid": int(data['sensorid']),
@@ -77,6 +78,7 @@ class Diskspace(object):
         del diskspace
         gc.collect()
         out_queue.put(data)
+        return 0
 
     def read_disk(self):
         disks = []

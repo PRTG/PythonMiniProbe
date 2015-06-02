@@ -133,6 +133,7 @@ class aDNS(object):
                 "message": "DNS sensor failed. See log for details"
             }
             out_queue.put(data_r)
+            return 1
         dns_channel = adns.get_dns(int(timed*1000))
         addressdata = []
         for element in dns_channel:
@@ -153,6 +154,7 @@ class aDNS(object):
         del result
         gc.collect()
         out_queue.put(data)
+        return 0
 
     @staticmethod
     def get_dns(time):

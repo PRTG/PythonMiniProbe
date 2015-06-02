@@ -88,7 +88,8 @@ class CPUTemp(object):
                 "code": 1,
                 "message": "CPUTemp sensor failed. See log for details"
             }
-            return out_queue.put(data)
+            out_queue.put(data)
+            return 1
         tempdata = []
         for element in temp:
             tempdata.append(element)
@@ -100,6 +101,7 @@ class CPUTemp(object):
         del temperature
         gc.collect()
         out_queue.put(data)
+        return 1
 
     @staticmethod
     def read_temp(config):
