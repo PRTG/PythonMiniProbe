@@ -138,7 +138,7 @@ class Configure(_install.install):
         return init_script_tpl.read() % (script_path, user)
 
     def write_load_list(self, ds18b20_sensors, other_sensors):
-        default_sensors = "Ping,HTTP,Port,SNMPCustom,CPULoad,Memory,Diskspace,SNMPTraffic,CPUTemp,Probehealth,External_IP,aDNS,APT,NMAP"
+        default_sensors = "Ping,HTTP,Port,SNMPCustom,CPULoad,Memory,Diskspace,SNMPTraffic,CPUTemp,Probehealth,ExternalIP,ADNS,APT,NMAP"
         if not (other_sensors == ""):
             default_sensors = default_sensors + "," + other_sensors
         f=open("./miniprobe/sensors/__init__.py","a")

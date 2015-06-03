@@ -210,10 +210,13 @@ class Probehealth(object):
         data = []
         chandata = []
         try:
-            temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
-            lines = temp.readlines()
-            temp.close()
-            temp_string = lines[0]
+            if os.path.exists("/sys/class/thermal/thermal_zone0/temp"):
+                temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
+                lines = temp.readlines()
+                temp.close()
+                temp_string = lines[0]
+            else:
+                return chandata
         except OSError:
             logging.debug("Could not read temp file, no data will be returned")
             return chandata
@@ -238,13 +241,16 @@ class Probehealth(object):
         data = []
         chandata = []
         try:
-            temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
-            lines = temp.readlines()
-            temp.close()
-            temp_float = float(lines[0]) / 1000.0
-            if temp_float > config['maxtemp']:
-                health -= 25
-                logging.debug("Current Health: %s percent" % health)
+            if os.path.exists("/sys/class/thermal/thermal_zone0/temp"):
+                temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
+                lines = temp.readlines()
+                temp.close()
+                temp_float = float(lines[0]) / 1000.0
+                if temp_float > config['maxtemp']:
+                    health -= 25
+                    logging.debug("Current Health: %s percent" % health)
+            else:
+                return chandata
         except OSError:
             logging.debug("Health not changed, no temperature available")
             pass
