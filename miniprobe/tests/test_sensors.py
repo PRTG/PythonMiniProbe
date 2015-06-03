@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
-
 from nose.tools import *
-from miniprobe.sensors import adns,apt,cpuload,cputemp,diskspace,ds18b20,external_ip,http,memory,nmap,ping,port,portrange,probehealth,snmpcustom,snmptraffic
+from miniprobe.sensors import adns,apt,cpuload,cputemp,diskspace,ds18b20,externalip,http,memory,nmap,ping,port,portrange,probehealth,snmpcustom,snmptraffic
 import multiprocessing
 
 class TestSensors:
     @classmethod
     def setup_class(cls):
         cls.test_nmap = nmap.NMAP()
-        cls.test_adns = adns.aDNS()
+        cls.test_adns = adns.ADNS()
         cls.test_apt = apt.APT()
         cls.test_cpuload = cpuload.CPULoad()
         cls.test_cputemp = cputemp.CPUTemp()
@@ -17,7 +16,7 @@ class TestSensors:
         cls.test_snmpcustom = snmpcustom.SNMPCustom()
         cls.test_diskspace = diskspace.Diskspace()
         cls.test_ds18b20 = ds18b20.DS18B20()
-        cls.test_external_ip = external_ip.External_IP()
+        cls.test_external_ip = externalip.ExternalIP()
         cls.test_http = http.HTTP()
         cls.test_memory = memory.Memory()
         cls.test_ping = ping.Ping()
@@ -38,7 +37,8 @@ class TestSensors:
                 "kind": self.test_nmap.get_kind(),
                 "name": "NMAP",
                 "description": "Checks the availability of systems.",
-                "help": "Checks the availability of systems on a network and logs this to a separate logfile on the miniprobe.",
+                "help": "Checks the availability of systems on a network and logs this to a separate "
+                        "logfile on the miniprobe.",
                 "tag": "mpnmapsensor",
                 "groups": [
                     {

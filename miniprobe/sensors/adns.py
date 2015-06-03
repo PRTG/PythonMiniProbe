@@ -32,7 +32,7 @@ except Exception as e:
     pass
 
 
-class aDNS(object):
+class ADNS(object):
     def __init__(self):
         gc.enable()
 
@@ -49,10 +49,12 @@ class aDNS(object):
         Definition of the sensor and data to be shown in the PRTG WebGUI
         """
         sensordefinition = {
-            "kind": aDNS.get_kind(),
+            "kind": ADNS.get_kind(),
             "name": "DNS",
-            "description": "Monitors a DNS server (Domain Name Service), resolves a domain name, and compares it to an IP address",
-            "help": "The DNS sensor monitors a Domain Name Service (DNS) server. It resolves a domain name and compares it to a given IP address.",
+            "description": "Monitors a DNS server (Domain Name Service), "
+                           "resolves a domain name, and compares it to an IP address",
+            "help": "The DNS sensor monitors a Domain Name Service (DNS) server. "
+                    "It resolves a domain name and compares it to a given IP address.",
             "tag": "mpdnssensor",
             "groups": [
                 {
@@ -114,18 +116,16 @@ class aDNS(object):
 
     @staticmethod
     def get_data(data, out_queue):
-        adns = aDNS()
-        result = ""
-        timed = 0
+        adns = ADNS()
         logging.debug("Running sensor: %s" % adns.get_kind())
         try:
             start_time = timeit.default_timer()
-            result = adns.get_record(data['timeout'],data['port'],data['domain'],data['type'],data['host'])
+            result = adns.get_record(data['timeout'], data['port'], data['domain'], data['type'], data['host'])
             timed = timeit.default_timer() - start_time
             logging.debug("DNS: %s" % result)
-        except Exception as e:
+        except Exception as ex:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (adns.get_kind(),
-                                                                                         data['sensorid'], e))
+                                                                                         data['sensorid'], ex))
             data_r = {
                 "sensorid": int(data['sensorid']),
                 "error": "Exception",
@@ -134,7 +134,7 @@ class aDNS(object):
             }
             out_queue.put(data_r)
             return 1
-        dns_channel = adns.get_dns(int(timed*1000))
+        dns_channel = adns.get_dns(int(timed * 1000))
         addressdata = []
         for element in dns_channel:
             addressdata.append(element)
@@ -176,9 +176,9 @@ class aDNS(object):
             resolver.port = port
             if type == 'PTR':
                 addr = dns.reversename.from_address(domain)
-                answers = dns.resolver.query(addr,type)
+                answers = dns.resolver.query(addr, type)
             else:
-                answers = dns.resolver.query(domain,type)
+                answers = dns.resolver.query(domain, type)
             if (type == 'A') or (type == 'AAAA'):
                 for rdata in answers:
                     result = result + str(rdata.address) + ", "
@@ -187,10 +187,12 @@ class aDNS(object):
                     result = result + rdata.preference + ": " + rdata.exchange + ", "
             elif type == 'SOA':
                 for rdata in answers:
-                    result = result + "NS: " + str(rdata.mname) + ", TECH: " + str(rdata.rname) + ", S/N: " + str(rdata.serial) + ", Refresh: " + str(rdata.refresh/60) + " min, Expire: " + str(rdata.expire/60) + " min  "
+                    result = result + "NS: " + str(rdata.mname) + ", TECH: " + str(rdata.rname) + ", S/N: " + str(rdata.serial) + ", Refresh: " + str(rdata.refresh / 60) + " min, Expire: " \
+                             + str(rdata.expire / 60) + " min  "
             elif (type == 'CNAME') or (type == 'NS') or (type == 'PTR'):
                 for rdata in answers:
                     result = result + str(rdata.target) + ", "
         except dns.resolver.NoAnswer:
-            result = "DNS Error while getting %s record. This could be the result of a misconfiguration in the sensor settings" % type
+            result = "DNS Error while getting %s record. " \
+                     "This could be the result of a misconfiguration in the sensor settings" % type
         return result[:-2]
