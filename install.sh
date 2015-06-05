@@ -53,5 +53,4 @@ if [ "$DOWNLOADED" = true ]
 then
     echo "Starting to install the miniprobe and requirements"
     python setup.py install
-    python setup.py configure
 fi
