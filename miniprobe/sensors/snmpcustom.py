@@ -145,11 +145,12 @@ class SNMPCustom(object):
         try:
             sys.path.append('./')
             from pysnmp.entity.rfc3413.oneliner import cmdgen
+            snmpget = cmdgen.CommandGenerator()
+            error_indication, error_status, error_index, var_binding = snmpget.getCmd(
+                cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), oid)
         except Exception as import_error:
             logging.error(import_error)
-        snmpget = cmdgen.CommandGenerator()
-        error_indication, error_status, error_index, var_binding = snmpget.getCmd(
-            cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), oid)
+            raise
 
         if snmp_type == "1":
             channellist = [
@@ -192,6 +193,7 @@ class SNMPCustom(object):
                 "message": "SNMP Request failed. See log for details"
             }
             out_queue.put(data)
+            return 1
 
         data = {
             "sensorid": int(data['sensorid']),
@@ -201,3 +203,4 @@ class SNMPCustom(object):
         del snmpcustom
         gc.collect()
         out_queue.put(data)
+        return 0

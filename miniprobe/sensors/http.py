@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-#Copyright (c) 2014, Paessler AG <support@paessler.com>
-#All rights reserved.
-#Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# Copyright (c) 2014, Paessler AG <support@paessler.com>
+# All rights reserved.
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
 # following conditions are met:
-#1. Redistributions of source code must retain the above copyright notice, this list of conditions
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions
 # and the following disclaimer.
-#2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions
 # and the following disclaimer in the documentation and/or other materials provided with the distribution.
-#3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse
 # or promote products derived from this software without specific prior written permission.
 
-#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 # A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
 # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
@@ -151,24 +151,16 @@ class HTTP(object):
                     req = requests.head(url, auth=(user, password), timeout=timeout, verify=False)
                 else:
                     req = requests.head(url, timeout=timeout, verify=False)
+            time = req.elapsed
         except Exception as e:
             logging.error(e)
-        time = req.elapsed
+            raise
         try:
             code = req.status_code
             response_time = time.microseconds / 1000
         except Exception as e:
             logging.error(e)
             raise
-        #channel_list = [{"name": "Status Code",
-        #                "mode": "integer",
-        #                "kind": "Custom",
-        #                "customunit": "",
-        #                "value": int(code)},
-        #                {"name": "Response Time",
-        #                "mode": "float",
-        #                "kind": "TimeResponse",
-        #                "value": float(response_time)}]
         data = [int(code), float(response_time)]
         return data
 
@@ -190,6 +182,7 @@ class HTTP(object):
                 "message": "HTTP Request failed. See log for details"
             }
             out_queue.put(data)
+            return 1
         
         data = {
             "sensorid": int(data['sensorid']),
@@ -205,3 +198,4 @@ class HTTP(object):
         del http
         gc.collect()
         out_queue.put(data)
+        return 0

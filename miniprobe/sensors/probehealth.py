@@ -69,7 +69,8 @@ class Probehealth(object):
                             "required": "1",
                             "minimum": 20,
                             "maximum": 75,
-                            "help": "Set the maximum temperature above which the temperature sensor will provide a error (not below 20 or above 75)",
+                            "help": "Set the maximum temperature above which the temperature sensor will "
+                                    "provide a error (not below 20 or above 75)",
                             "default": 45
                         },
                     ]
@@ -98,6 +99,7 @@ class Probehealth(object):
                 "message": "Probe Health sensor failed. See log for details"
             }
             out_queue.put(data)
+            return 1
         probedata = []
         for element in health:
             probedata.append(element)
@@ -115,6 +117,7 @@ class Probehealth(object):
             "channel": probedata
         }
         out_queue.put(data)
+        return 0
 
     def read_memory(self, path):
         mem = open(path, "r")
@@ -207,11 +210,14 @@ class Probehealth(object):
         data = []
         chandata = []
         try:
-            temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
-            lines = temp.readlines()
-            temp.close()
-            temp_string = lines[0]
-        except Exception as e:
+            if os.path.exists("/sys/class/thermal/thermal_zone0/temp"):
+                temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
+                lines = temp.readlines()
+                temp.close()
+                temp_string = lines[0]
+            else:
+                return chandata
+        except OSError:
             logging.debug("Could not read temp file, no data will be returned")
             return chandata
         logging.debug("CPUTemp Debug message: Temperature from file: %s" % temp_string)
@@ -235,32 +241,35 @@ class Probehealth(object):
         data = []
         chandata = []
         try:
-            temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
-            lines = temp.readlines()
-            temp.close()
-            temp_float = float(lines[0]) / 1000.0
-            if temp_float > config['maxtemp']:
-                health = health - 25
-                logging.debug("Current Health: %s percent" % health)
-        except Exception as e:
+            if os.path.exists("/sys/class/thermal/thermal_zone0/temp"):
+                temp = open("/sys/class/thermal/thermal_zone0/temp", "r")
+                lines = temp.readlines()
+                temp.close()
+                temp_float = float(lines[0]) / 1000.0
+                if temp_float > config['maxtemp']:
+                    health -= 25
+                    logging.debug("Current Health: %s percent" % health)
+            else:
+                return chandata
+        except OSError:
             logging.debug("Health not changed, no temperature available")
             pass
         disks = []
         for line in os.popen("df -k"):
             if line.startswith("/"):
                 disks.append(line.rstrip().split())
-                tmpHealth = 25 / len(disks)
+                tmphealth = 25 / len(disks)
         for line in disks:
             free = (float(line[3]) / (float(line[2]) + float(line[3]))) * 100
             if free < 10:
-                health = health - tmpHealth
+                health -= tmphealth
                 logging.debug("Current Health: %s percent" % health)
         cpu = open('/proc/loadavg', "r")
         for line in cpu:
             for element in line.split(" "):
                 data.append(element)
         if float(data[1]) > 0.70:
-            health = health - 25
+            health -= 25
             logging.debug("Current Health: %s percent" % health)
         chandata.append({"name": "Overall Probe Health",
                          "mode": "integer",
