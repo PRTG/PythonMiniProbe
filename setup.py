@@ -55,12 +55,11 @@ class Configure(_install):
 
     def run(self):
         conf_avail = False
-        print dir(_install)
-        _install.do_egg_install(self)
         if not os.getuid() == 0:
             print bcolor.RED + "You must run me as root user!" + bcolor.END
             print bcolor.RED + "Rerun me with sudo " + __file__ + bcolor.END
             sys.exit(2)
+        _install.do_egg_install(self)
         print ""
         print bcolor.CYAN + "Welcome to the Miniprobe (Python) for PRTG installer" + bcolor.END
         if self.file_check(self.path):
