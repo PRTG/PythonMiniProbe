@@ -33,7 +33,7 @@ Installation
 - make sure you can reach the PRTG web interface from the machine the mini probe should run on (e.g. wget https://YOUR_PRTG_SERVER)
   - This is tested during the setup
 - copy the miniprobe folder to your linux machine
-- run the probe installer (e.g. "python probe_installer.py")
+- run the probe installer (e.g. "sudo python setup.py install")
 
 The miniprobe should now be started. You should also be able to start/stop the same using the command
 
