@@ -64,6 +64,8 @@ class ExternalIP(object):
         try:
             address = ip.get_ip(server)
             logging.debug("IP-Address: %s" % address)
+            localip = ip.local_ip('eth0')
+            remoteip = ip.remote_ip(server)
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (ip.get_kind(),
                                                                                          data['sensorid'], e))
@@ -80,7 +82,7 @@ class ExternalIP(object):
             addressdata.append(element)
         data = {
             "sensorid": int(data['sensorid']),
-            "message": "External IP: " + ip.remote_ip(server) + "  Internal IP: " + ip.local_ip('eth0'),
+            "message": "External IP: " + remoteip + "  Internal IP: " + localip,
             "channel": addressdata
         }
         del address
