@@ -24,13 +24,11 @@ import subprocess
 import uuid
 
 from setuptools import setup, find_packages
-from setuptools.command import install as _install
-
+from setuptools.command.install import install as _install
 
 def read(path):
     with open(path, 'r') as f:
         return f.read()
-
 
 class bcolor:
     GREEN = '\033[92m'
@@ -39,7 +37,7 @@ class bcolor:
     CYAN = '\033[96m'
     END = '\033[0m'
 
-class Configure(_install.install):
+class Configure(_install):
     probe_conf = {}
     config_old = {}
     config_old['name'] = "Python MiniProbe"
@@ -61,6 +59,7 @@ class Configure(_install.install):
             print bcolor.RED + "You must run me as root user!" + bcolor.END
             print bcolor.RED + "Rerun me with sudo " + __file__ + bcolor.END
             sys.exit(2)
+        _install.do_egg_install(self)
         print ""
         print bcolor.CYAN + "Welcome to the Miniprobe (Python) for PRTG installer" + bcolor.END
         if self.file_check(self.path):
@@ -87,6 +86,7 @@ class Configure(_install.install):
             else:
                 print "Exiting!"
                 sys.exit()
+        pass
 
     def file_check(self, check_path):
     # Check if a give file exists
@@ -333,8 +333,6 @@ class Configure(_install.install):
         print ""
         print bcolor.YELLOW + "Checking for necessary modules and Python Version" + bcolor.END
         try:
-            sys.path.append('./')
-            sys.path.append('./miniprobe')
             import hashlib
             import string
             import json
@@ -428,7 +426,7 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python",
     ],
-    cmdclass={'configure': Configure}
+    cmdclass={'install': Configure}
 )
 
 

@@ -12,7 +12,6 @@ Installation for this branch
 - Install pip as outlined here https://pip.pypa.io/en/latest/installing.html (pre Python 2.7.9)
 - Download either zip or clone repository
 - run command 'sudo python setup.py install' which will install all necessary packages
-- run command 'sudo python setup.py configure' which will start the configuration
 
 Current Status: BETA  
 MiniProbe POC for PRTG Network Monitor written in Python which accesses the MiniProbe Interface on the PRTG Core Server.  
@@ -21,7 +20,7 @@ Prerequisites
 -----------------
 Debian based system (tested on Ubuntu, Debian, Raspbian)  
 Python 2.7+  
-Needed modules are delivered with the probe package:  
+Needed modules are installed using the setup.py install phase:  
 - pyasn1 (https://pypi.python.org/pypi/pyasn1/0.1.7)  
 - pysnmp (https://pypi.python.org/pypi/pysnmp/4.2.5)  
 - requests (https://pypi.python.org/pypi/requests/2.5.3)
@@ -34,7 +33,7 @@ Installation
 - make sure you can reach the PRTG web interface from the machine the mini probe should run on (e.g. wget https://YOUR_PRTG_SERVER)
   - This is tested during the setup
 - copy the miniprobe folder to your linux machine
-- run the probe installer (e.g. "python probe_installer.py")
+- run the probe installer (e.g. "sudo python setup.py install")
 
 The miniprobe should now be started. You should also be able to start/stop the same using the command
 

@@ -25,6 +25,7 @@ case "$(python --version 2>&1)" in
 esac
 
 if [ ! -f ./README.md ]
+then
     read -p "Use git to install the miniprobe (y|n)? " -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]
@@ -52,5 +53,4 @@ if [ "$DOWNLOADED" = true ]
 then
     echo "Starting to install the miniprobe and requirements"
     python setup.py install
-    python setup.py configure
 fi
