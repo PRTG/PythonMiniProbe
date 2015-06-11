@@ -1,0 +1,22 @@
+language: python
+python:
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
+os:
+  - linux
+matrix:
+  allow_failures:
+    - python: "3.2"
+    - python: "3.3"
+    - python: "3.4"
+branches:
+  only:
+    - master
+    - development
+install:
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
+script: 
+  - nosetests -v
