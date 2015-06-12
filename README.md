@@ -35,8 +35,9 @@ IMPORTANT: If replacing the new probe.conf with the old one, make sure the line 
 Prerequisites
 -----------------
 Debian based system (tested on Ubuntu, Debian, Raspbian)  
-Python 2.7+  
+Python 2.7+ (preferred 2.9)
 Needed modules are installed using the setup.py install phase:  
+Module list deprecated as pip will resolve dependencies!
 - pyasn1 (https://pypi.python.org/pypi/pyasn1/0.1.7)  
 - pysnmp (https://pypi.python.org/pypi/pysnmp/4.2.5)  
 - requests (https://pypi.python.org/pypi/requests/2.5.3)
@@ -48,8 +49,10 @@ Installation
 - allow MiniProbes to connect (Setup -> Probes -> Allow MiniProbes to connect)
 - make sure you can reach the PRTG web interface from the machine the mini probe should run on (e.g. wget https://YOUR_PRTG_SERVER)
   - This is tested during the setup
-- copy the miniprobe folder to your linux machine
-- run the probe installer (e.g. "sudo python setup.py install")
+- Install python-dev and build-essential (or at least gcc) packages
+- Install pip as outlined here https://pip.pypa.io/en/latest/installing.html (pre Python 2.7.9)
+- Download either zip or clone repository
+- run command 'sudo python setup.py install' which will install all necessary packages
 
 The miniprobe should now be started. You should also be able to start/stop the same using the command
 
