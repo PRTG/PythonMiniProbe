@@ -30,6 +30,7 @@ except Exception as e:
     snmp = False
     pass
 
+
 class SNMPTraffic(object):
 
     def __init__(self):
@@ -124,12 +125,8 @@ class SNMPTraffic(object):
     def snmp_get(self, target, countertype, community, port, ifindex):
         if countertype == "1":
             data = ["1.3.6.1.2.1.2.2.1.10.%s" % str(ifindex), "1.3.6.1.2.1.2.2.1.16.%s" % str(ifindex)]
-            # data.append("1.3.6.1.2.1.2.2.1.10.%s" % str(ifindex))
-            # data.append("1.3.6.1.2.1.2.2.1.16.%s" % str(ifindex))
         else:
             data = ["1.3.6.1.2.1.31.1.1.1.6.%s" % str(ifindex), "1.3.6.1.2.1.31.1.1.1.10.%s" % str(ifindex)]
-            # data.append("1.3.6.1.2.1.31.1.1.1.6.%s" % str(ifindex))
-            # data.append("1.3.6.1.2.1.31.1.1.1.10.%s" % str(ifindex))
         snmpget = cmdgen.CommandGenerator()
         error_indication, error_status, error_index, var_binding = snmpget.getCmd(
             cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), *data)
@@ -185,6 +182,7 @@ class SNMPTraffic(object):
                 "message": "SNMP Request failed. See log for details"
             }
             out_queue.put(data)
+            return 1
 
         data = {
             "sensorid": int(data['sensorid']),
@@ -194,3 +192,4 @@ class SNMPTraffic(object):
         del snmptraffic
         gc.collect()
         out_queue.put(data)
+        return 0

@@ -9,7 +9,7 @@ fi
 echo "This script will guide you to install the PythonMiniProbe"
 
 echo "installing python-dev and build-essentials"
-apt-get -y install python-dev build-essential 2>&1 >> /dev/null
+apt-get -y install python-dev build-essential 2>&1 >> /tmp/probe_install.log
 
 case "$(python --version 2>&1)" in
     *" 2.7.9"*)
@@ -20,7 +20,7 @@ case "$(python --version 2>&1)" in
         ;;
     *)
         echo "Installing PIP!"
-        apt-get -y install python-pip 2>&1 >> /dev/null
+        apt-get -y install python-pip 2>&1 >> /tmp/probe_install.log
         ;;
 esac
 
@@ -53,5 +53,4 @@ if [ "$DOWNLOADED" = true ]
 then
     echo "Starting to install the miniprobe and requirements"
     python setup.py install
-    python setup.py configure
 fi
