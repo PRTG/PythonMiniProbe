@@ -23,6 +23,7 @@ class TestSensors:
         cls.test_port = port.Port()
         cls.test_portrange = portrange.Portrange()
         cls.test_probehealth = probehealth.Probehealth()
+        cls.test_blacklist = blacklist.Blacklist()
         cls.test_out_queue = multiprocessing.Queue()
         cls.test_sens_data = {'sensorid': '4567'}
 
