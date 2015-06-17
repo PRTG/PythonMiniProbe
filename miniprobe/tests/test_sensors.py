@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from nose.tools import *
-from miniprobe.sensors import adns,apt,cpuload,cputemp,diskspace,ds18b20,externalip,http,memory,nmap,ping,port,portrange,probehealth,snmpcustom,snmptraffic
+from miniprobe.sensors import adns,apt,cpuload,cputemp,diskspace,ds18b20,externalip,http,memory,nmap,ping,port,portrange,probehealth,snmpcustom,snmptraffic,blacklist
 import multiprocessing
 
 class TestSensors:
@@ -23,6 +23,7 @@ class TestSensors:
         cls.test_port = port.Port()
         cls.test_portrange = portrange.Portrange()
         cls.test_probehealth = probehealth.Probehealth()
+        cls.test_blacklist = blacklist.Blacklist()
         cls.test_out_queue = multiprocessing.Queue()
         cls.test_sens_data = {'sensorid': '4567'}
 
@@ -910,6 +911,72 @@ class TestSensors:
         }
         assert_equal(self.test_probehealth.get_sensordef(), test_sensordef)
 
+    #blacklist
+    def test_blacklist_get_kind(self):
+        """blacklist returns the correct kind"""
+        assert_equal(self.test_blacklist.get_kind(), 'mpblacklist')
 
+    def test_blacklist_get_sensor_def(self):
+        """blacklist returns correct definition"""
+        test_sensordef = {
+            "kind": self.test_blacklist.get_kind(),
+            "name": "Blacklist",
+            "description": "Monitors a server for blacklisting",
+            "help": "The Blacklist sensor monitors a server for blacklisting",
+            "tag": "mpblacklist",
+            "groups": [
+                {
+                    "name": "Blacklist Specific",
+                    "caption": "Blacklist Specific",
+                    "fields": [
+                        {
+                            "type": "integer",
+                            "name": "timeout",
+                            "caption": "Timeout (in s)",
+                            "required": "1",
+                            "default": 5,
+                            "minimum": 1,
+                            "maximum": 900,
+                            "help": "Timeout in seconds. A maximum value of 900 is allowed."
+                        },
+                        {
+                            "type": "edit",
+                            "name": "domain",
+                            "caption": "Domain",
+                            "required": "1",
+                            "help": "Enter a DNS name or IP address to check for blacklisting."
+                        }
+                    ]
+                }
+            ]
+        }
+        assert_equal(self.test_blacklist.get_sensordef(), test_sensordef)
 
-
+    def test_blacklist_get_channel(self):
+        """blacklist returns the correct channel"""
+        test_channel = [{"name": "Listed Count",
+                         "ShowChart": 0,
+                         "ShowTable": 0,
+                         "mode": "integer",
+                         "kind": "Custom",
+                         "customunit": "",
+                         "limitmaxerror": 0,
+                         "limitmode": 1,
+                         "value": 0},
+                         {"name": "Not Listed Count",
+                         "ShowChart": 0,
+                         "ShowTable": 0,
+                         "mode": "integer",
+                         "kind": "Custom",
+                         "customunit": "",
+                         "value": 0},
+                         {"name": "No Answer Count",
+                         "ShowChart": 0,
+                         "ShowTable": 0,
+                         "mode": "integer",
+                         "kind": "Custom",
+                         "customunit": "",
+                         "limitmaxwarning": 0,
+                         "limitmode": 1,
+                         "value": 0}]
+        assert_equal(self.test_blacklist.get_blacklist(['', 0, 0, 0]), test_channel)
