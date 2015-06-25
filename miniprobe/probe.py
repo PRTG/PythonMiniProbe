@@ -45,176 +45,175 @@ try:
     import requests
     import multiprocessing
 except Exception as e:
-    print e
+    print(e)
 
 # Implemented for internal testing only. Not for public usage!
 http = False
 if sys.argv[1:] and sys.argv[1] == "http":
     http = True
 
-
-def main():
-        """
-        Main routine for MiniProbe (Python)
-        """
-        # Enable Garbage Collection
+class Probe(object):
+    def __init__(self):
         gc.enable()
-        # make sure the probe will not stop
-        probe_stop = False
-        # make sure probe is announced at every start
-        announce = False
-        # read configuration file (existence check done in probe_controller.py)
-        config = mini_probe.read_config('./probe.conf')
-        logger = logging.getLogger("")
-        if config['debug'] == "True":
-            config['debug'] = True
-            logger.setLevel(logging.DEBUG)
+        self.mini_probe = MiniProbe()
+        self.probe_stop = False
+        self.announce = False
+        self.config = self.mini_probe.read_config('./probe.conf')
+        self.key_sha1 = self.mini_probe.hash_access_key(self.config['key'])
+        self.out_queue = multiprocessing.Queue()
+        # Set up debug logging
+        self.logger = logging.getLogger("")
+        if self.config['debug'] == "True":
+            self.config['debug'] = True
+            self.logger.setLevel(logging.DEBUG)
             logging.warning("DEBUG LOGGING HAS BEEN TURNED ON!!")
             logging.getLogger("requests").setLevel(logging.INFO)
         else:
-            config['debug'] = False
-            logger.setLevel(logging.INFO)
+            self.config['debug'] = False
+            self.logger.setLevel(logging.INFO)
             logging.info("Debug logging has been turned off!!")
             logging.getLogger("requests").setLevel(logging.WARNING)
-        if config['cleanmem'] == "True":
-            config['cleanmem'] = True
+        if self.config['cleanmem'] == "True":
+            self.config['cleanmem'] = True
         else:
-            config['cleanmem'] = False
-        # Doing some startup logging
-        logging.info("PRTG Small Probe '%s' starting on '%s'" % (config['name'], socket.gethostname()))
-        logging.info("Connecting to PRTG Core Server at %s:%s" % (config['server'], config['port']))
-        # create hash of probe access key
-        key_sha1 = mini_probe.hash_access_key(config['key'])
-        # get list of all sensors announced in __init__.py in package sensors
-        sensor_list = mini_probe.get_import_sensors()
-        sensor_announce = mini_probe.build_announce(sensor_list)
-        announce_json = json.dumps(sensor_announce)
-        url_announce = mini_probe.create_url(config, 'announce', http)
-        data_announce = mini_probe.create_parameters(config, announce_json, 'announce')
-        logging.debug("Announce Data: %s" % data_announce)
-        json_history = []
-        while not announce:
-            try:
-                # announcing the probe and all sensors
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
-                    request_announce = requests.post(url_announce, data=data_announce, verify=False, timeout=30)
+            self.config['cleanmem'] = False
 
-                announce = True
-                logging.info("ANNOUNCE request successfully sent to PRTG Core Server at %s:%s."
-                             % (config["server"], config["port"]))
-                logging.debug("Connecting to %s:%s" % (config["server"], config["port"]))
-                logging.debug("Status Code: %s | Message: %s" % (request_announce.status_code, request_announce.text))
-                request_announce.close()
-            except requests.exceptions.Timeout:
-                logging.error("ANNOUNCE Timeout: " + str(data_announce))
-            except Exception as announce_error:
-                logging.error(announce_error)
-                time.sleep(int(config['baseinterval']) / 2)
-
-        while not probe_stop:
-            # creating some objects only needed in loop
-            url_task = mini_probe.create_url(config, 'tasks', http)
-            task_data = {
-                'gid': config['gid'],
-                'protocol': config['protocol'],
-                'key': key_sha1
-            }
-            procs = []
-            out_queue = multiprocessing.Queue()
-            task = False
-            while not task:
-                json_payload_data = []
+    def main(self):
+            """
+            Main routine for MiniProbe (Python)
+            """
+            # Doing some startup logging
+            logging.info("PRTG Small Probe '%s' starting on '%s'" % (self.config['name'], socket.gethostname()))
+            logging.info("Connecting to PRTG Core Server at %s:%s" % (self.config['server'], self.config['port']))
+            # create hash of probe access key
+            # key_sha1 = mini_probe.hash_access_key(self.config['key'])
+            # get list of all sensors announced in __init__.py in package sensors
+            sensor_list = self.mini_probe.get_import_sensors()
+            # sensor_announce = mini_probe.build_announce(sensor_list)
+            announce_json = json.dumps(self.mini_probe.build_announce(sensor_list))
+            url_announce = self.mini_probe.create_url(self.config, 'announce', http)
+            data_announce = self.mini_probe.create_parameters(self.config, announce_json, 'announce')
+            logging.debug("Announce Data: %s" % data_announce)
+            json_history = []
+            while not self.announce:
                 try:
+                    # announcing the probe and all sensors
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
-                        request_task = requests.post(url_task, data=task_data, verify=False, timeout=30)
-                    logging.debug(request_task.headers)
-                    logging.debug(request_task.text)
-                    try:
-                        json_response = request_task.json()
-                    except Exception as ex:
-                        logging.info("Error: %s! Server returned: %s" % (ex, request_task.text))
-                    request_task.close()
-                    gc.collect()
-                    task = True
-                    logging.info("TASK request successfully sent to PRTG Core Server at %s:%s. Status: %s"
-                                 % (config["server"], config["port"], request_task.status_code))
-                    logging.debug("task_url: " + url_task + "\ntask_data: " + str(task_data))
+                        request_announce = requests.post(url_announce, data=data_announce, verify=False, timeout=30)
+
+                    self.announce = True
+                    logging.info("ANNOUNCE request successfully sent to PRTG Core Server at %s:%s."
+                                 % (self.config["server"], self.config["port"]))
+                    logging.debug("Connecting to %s:%s" % (self.config["server"], self.config["port"]))
+                    logging.debug("Status Code: %s | Message: %s" % (request_announce.status_code, request_announce.text))
+                    request_announce.close()
                 except requests.exceptions.Timeout:
-                    logging.error("TASK Timeout: " + str(task_data))
-                    logging.debug("Timeout encountered. Need to write more code to handle timeoutzzzzz: %s"
-                                  % json_history)
+                    logging.error("ANNOUNCE Timeout: " + str(data_announce))
                 except Exception as announce_error:
                     logging.error(announce_error)
-                    time.sleep(int(config['baseinterval']) / 2)
-            gc.collect()
-            if str(json_response) != '[]':
-                json_history = json_response
-                logging.debug("json response: %s" % json_response)
-                if config['subprocs']:
-                    json_response_chunks = [json_response[i:i + int(config['subprocs'])]
-                                            for i in range(0, len(json_response), int(config['subprocs']))]
-                else:
-                    json_response_chunks = [json_response[i:i + 10]
-                                            for i in range(0, len(json_response), 10)]
-                for element in json_response_chunks:
-                    for part in element:
-                        logging.debug(part)
-                        for sensor in sensor_list:
-                            if part['kind'] == sensor.get_kind():
-                                p = multiprocessing.Process(target=sensor.get_data, args=(part, out_queue),
-                                                            name=part['kind'])
-                                procs.append(p)
-                                p.start()
-                            else:
-                                pass
-                        gc.collect()
-                    try:
-                        while len(json_payload_data) < len(element):
-                            out = out_queue.get()
-                            json_payload_data.append(out)
-                    except Exception as ex:
-                        logging.error(ex)
-                        pass
+                    time.sleep(int(self.config['baseinterval']) / 2)
 
-                    url_data = mini_probe.create_url(config, 'data', http)
+            while not self.probe_stop:
+                # creating some objects only needed in loop
+                url_task = self.mini_probe.create_url(self.config, 'tasks', http)
+                task_data = self.mini_probe.build_task(self.config)
+                procs = []
+                # out_queue = multiprocessing.Queue()
+                task = False
+                while not task:
+                    json_payload_data = []
                     try:
-                        request_data = requests.post(url_data, data=json.dumps(json_payload_data),
-                                                     verify=False, timeout=30)
-                        logging.info("DATA request successfully sent to PRTG Core Server at %s:%s. Status: %s"
-                                     % (config["server"], config["port"], request_data.status_code))
-                        logging.debug("data_url: " + url_data + "\ndata_data: " + str(json_payload_data))
-                        request_data.close()
-                        json_payload_data = []
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
+                            request_task = requests.post(url_task, data=task_data, verify=False, timeout=30)
+                        logging.debug(request_task.headers)
+                        logging.debug(request_task.text)
+                        try:
+                            json_response = request_task.json()
+                        except Exception as ex:
+                            logging.info("Error: %s! Server returned: %s" % (ex, request_task.text))
+                        request_task.close()
+                        gc.collect()
+                        task = True
+                        logging.info("TASK request successfully sent to PRTG Core Server at %s:%s. Status: %s"
+                                     % (self.config["server"], self.config["port"], request_task.status_code))
+                        logging.debug("task_url: " + url_task + "\ntask_data: " + str(task_data))
                     except requests.exceptions.Timeout:
-                        logging.error("DATA Timeout: " + str(json_payload_data).strip('[]'))
+                        logging.error("TASK Timeout: " + str(task_data))
+                        logging.debug("Timeout encountered. Need to write more code to handle timeoutzzzzz: %s"
+                                      % json_history)
                     except Exception as announce_error:
                         logging.error(announce_error)
-                    if len(json_response) > 10:
-                        time.sleep((int(config['baseinterval']) * (9 / len(json_response))))
+                        time.sleep(int(self.config['baseinterval']) / 2)
+                gc.collect()
+                if str(json_response) != '[]':
+                    json_history = json_response
+                    logging.debug("json response: %s" % json_response)
+                    if self.config['subprocs']:
+                        json_response_chunks = [json_response[i:i + int(self.config['subprocs'])]
+                                                for i in range(0, len(json_response), int(self.config['subprocs']))]
                     else:
-                        time.sleep(int(config['baseinterval']) / 2)
+                        json_response_chunks = [json_response[i:i + 10]
+                                                for i in range(0, len(json_response), 10)]
+                    for element in json_response_chunks:
+                        for part in element:
+                            logging.debug(part)
+                            for sensor in sensor_list:
+                                if part['kind'] == sensor.get_kind():
+                                    p = multiprocessing.Process(target=sensor.get_data, args=(part, self.out_queue),
+                                                                name=part['kind'])
+                                    procs.append(p)
+                                    p.start()
+                                else:
+                                    pass
+                            gc.collect()
+                        try:
+                            while len(json_payload_data) < len(element):
+                                out = self.out_queue.get()
+                                json_payload_data.append(out)
+                        except Exception as ex:
+                            logging.error(ex)
+                            pass
 
-            else:
-                logging.info("Nothing to do. Waiting for %s seconds." % (int(config['baseinterval']) / 3))
-                time.sleep(int(config['baseinterval']) / 3)
+                        url_data = self.mini_probe.create_url(self.config, 'data', http)
+                        try:
+                            request_data = requests.post(url_data, data=json.dumps(json_payload_data),
+                                                         verify=False, timeout=30)
+                            logging.info("DATA request successfully sent to PRTG Core Server at %s:%s. Status: %s"
+                                         % (self.config["server"], self.config["port"], request_data.status_code))
+                            logging.debug("data_url: " + url_data + "\ndata_data: " + str(json_payload_data))
+                            request_data.close()
+                            json_payload_data = []
+                        except requests.exceptions.Timeout:
+                            logging.error("DATA Timeout: " + str(json_payload_data).strip('[]'))
+                        except Exception as announce_error:
+                            logging.error(announce_error)
+                        if len(json_response) > 10:
+                            time.sleep((int(self.config['baseinterval']) * (9 / len(json_response))))
+                        else:
+                            time.sleep(int(self.config['baseinterval']) / 2)
 
-            # Delete some stuff used in the loop and run the garbage collector
-            for p in procs:
-                if not p.is_alive():
-                    p.join()
-                    p.terminate()
-                    del p
-            del json_response
-            del json_payload_data
-            gc.collect()
+                else:
+                    logging.info("Nothing to do. Waiting for %s seconds." % (int(self.config['baseinterval']) / 3))
+                    time.sleep(int(self.config['baseinterval']) / 3)
 
-            if config['cleanmem']:
-                # checking if the clean memory option has been chosen during install then call the method to flush mem
-                mini_probe.clean_mem()
-        sys.exit()
+                # Delete some stuff used in the loop and run the garbage collector
+                for p in procs:
+                    if not p.is_alive():
+                        p.join()
+                        p.terminate()
+                        del p
+                del json_response
+                del json_payload_data
+                gc.collect()
+
+                if self.config['cleanmem']:
+                    # checking if clean memory option has been chosen during install then call the method to flush mem
+                    self.mini_probe.clean_mem()
+            sys.exit()
 
 if __name__ == "__main__":
-    mini_probe = MiniProbe()
-    main()
+    #mini_probe = MiniProbe()
+    probe = Probe()
+    probe.main()

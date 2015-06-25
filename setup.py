@@ -426,7 +426,7 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python",
     ],
-    cmdclass={'install': Configure}
+    cmdclass={'configure': Configure}
 )
 
 
