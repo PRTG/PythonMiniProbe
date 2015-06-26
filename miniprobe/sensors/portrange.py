@@ -105,11 +105,11 @@ class Portrange(object):
                 result = conn.connect_ex((remote_server, int(port)))
                 conn.close()
             except socket.gaierror as e:
-                print e
+                logging.error(e)
             except socket.timeout as e:
-                print e
+                logging.error(e)
             except Exception as e:
-                print "test %s" % e
+                logging.error(e)
             if result == 0:
                 a += 1
             else:
