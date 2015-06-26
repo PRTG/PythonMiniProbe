@@ -106,6 +106,7 @@ class MiniProbe(object):
         """
         create hash of probes access key
         """
+        key = key.encode('utf-8')
         return hashlib.sha1(key).hexdigest()
 
     def create_parameters(self, config, jsondata, i=None):
@@ -153,6 +154,7 @@ class MiniProbe(object):
             'protocol': config['protocol'],
             'key': self.hash_access_key(config['key'])
         }
+        return task
  # --------------------------------------------------------------------
     def send_announce(self, config, http):
         """

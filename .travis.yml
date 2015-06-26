@@ -15,6 +15,7 @@ branches:
   only:
     - master
     - development
+    - feature_capsuling
 install:
   - pip install --upgrade pip
   - pip install -r requirements.txt

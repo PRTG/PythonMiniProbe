@@ -284,7 +284,7 @@ class NMAP(object):
         icmp = socket.getprotobyname("icmp")
         try:
             my_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp)
-        except socket.error, (errno, msg):
+        except socket.error as (errno, msg):
             if errno == 1:
                 # Operation not permitted
                 msg = msg + (
