@@ -15,7 +15,6 @@ branches:
   only:
     - master
     - development
-    - feature_capsuling
     - python3_compat
 install:
   - pip install --upgrade pip

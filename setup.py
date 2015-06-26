@@ -413,7 +413,11 @@ class Configure(_install):
             print("%s. Exiting!" % e)
             return False
 
-with open('requirements.txt') as f:
+if sys.version > (3, 0):
+    py_requires = 'requirements3.txt'
+else:
+    py_requires = 'requirements.txt'
+with open(py_requires) as f:
     requires = f.read().splitlines()
 
 packages = [

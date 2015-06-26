@@ -155,39 +155,6 @@ class MiniProbe(object):
             'key': self.hash_access_key(config['key'])
         }
         return task
- # --------------------------------------------------------------------
-    def send_announce(self, config, http):
-        """
-        sending the announce request and returning the request object
-        """
-        sensor_list = self.get_import_sensors()
-        announce_json = json.dumps(self.build_announce(sensor_list))
-        url_announce = self.create_url(config, 'announce', http)
-        data_announce = self.create_parameters(config, announce_json, 'announce')
-        try:
-                # announcing the probe and all sensors
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
-                    request_announce = requests.post(url_announce, data=data_announce, verify=False, timeout=30)
-
-                announce = True
-                logging.info("ANNOUNCE request successfully sent to PRTG Core Server at %s:%s."
-                             % (config["server"], config["port"]))
-                logging.debug("Connecting to %s:%s" % (config["server"], config["port"]))
-                logging.debug("Status Code: %s | Message: %s" % (request_announce.status_code, request_announce.text))
-                request_announce.close()
-        except requests.exceptions.Timeout:
-                logging.error("ANNOUNCE Timeout: " + str(data_announce))
-        except Exception as announce_error:
-                logging.error(announce_error)
-
-        pass
-
-    def send_task(self):
-        pass
-
-    def send_data(self):
-        pass
 
     @staticmethod
     def clean_mem():

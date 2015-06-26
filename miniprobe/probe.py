@@ -214,6 +214,5 @@ class Probe(object):
             sys.exit()
 
 if __name__ == "__main__":
-    #mini_probe = MiniProbe()
     probe = Probe()
     probe.main()
