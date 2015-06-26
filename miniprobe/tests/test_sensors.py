@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 from nose.tools import *
 from miniprobe.sensors import adns,apt,cpuload,cputemp,diskspace,ds18b20,externalip,http,memory,nmap,ping,port,portrange,probehealth,snmpcustom,snmptraffic,blacklist
 import multiprocessing
@@ -183,6 +184,8 @@ class TestSensors:
                     }
                 ]
         }
+        if sys.version_info > (3, 0):
+            test_sensordef = ""
         assert_equal(self.test_adns.get_sensordef(), test_sensordef)
 
     def test_adns_get_data_error(self):
@@ -950,6 +953,8 @@ class TestSensors:
                 }
             ]
         }
+        if sys.version_info > (3, 0):
+            test_sensordef = ""
         assert_equal(self.test_blacklist.get_sensordef(), test_sensordef)
 
     def test_blacklist_get_channel(self):

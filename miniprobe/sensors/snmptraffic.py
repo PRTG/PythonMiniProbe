@@ -171,7 +171,7 @@ class SNMPTraffic(object):
                                              data['community'], int(data['port']), data['ifindex'])
             logging.debug("Running sensor: %s" % snmptraffic.get_kind())
         except Exception as get_data_error:
-            print get_data_error
+            logging.error(get_data_error)
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (snmptraffic.get_kind(),
                                                                                          data['sensorid'],
                                                                                          get_data_error))
