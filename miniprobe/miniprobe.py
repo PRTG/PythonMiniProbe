@@ -32,6 +32,11 @@ import gc
 import logging
 import subprocess
 import os
+import json
+import requests
+import warnings
+
+from requests.packages.urllib3 import exceptions
 
 # import own modules
 sys.path.append('./')
@@ -39,7 +44,7 @@ sys.path.append('./')
 try:
     import sensors
 except Exception as e:
-    print e
+    print(e)
 
 
 class MiniProbe(object):
@@ -101,6 +106,7 @@ class MiniProbe(object):
         """
         create hash of probes access key
         """
+        key = key.encode('utf-8')
         return hashlib.sha1(key).hexdigest()
 
     def create_parameters(self, config, jsondata, i=None):
@@ -141,6 +147,14 @@ class MiniProbe(object):
             if not sensor.get_sensordef() == "":
                 sensors_avail.append(sensor.get_sensordef())
         return sensors_avail
+
+    def build_task(self, config):
+        task = {
+            'gid': config['gid'],
+            'protocol': config['protocol'],
+            'key': self.hash_access_key(config['key'])
+        }
+        return task
 
     @staticmethod
     def clean_mem():
