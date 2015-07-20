@@ -6,8 +6,8 @@ from miniprobe import miniprobe
 class TestMiniProbe():
     @classmethod
     def setup_class(cls):
+        cls.http = False
         cls.config = {}
-        cls.mp = miniprobe.MiniProbe()
         cls.config['gid'] = 'testgid'
         cls.config['key'] = 'testkey'
         cls.config['protocol'] = 'testprotocol'
@@ -15,6 +15,7 @@ class TestMiniProbe():
         cls.config['baseinterval'] = 'testbaseinterval'
         cls.config['server'] = 'testserver'
         cls.config['port'] = 'testport'
+        cls.mp = miniprobe.MiniProbe(cls.config, cls.http)
 
     def test_miniprobe_hash_access_key(self):
         """miniprobe returns the correct hash_access_key"""

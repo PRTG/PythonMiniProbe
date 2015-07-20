@@ -51,8 +51,13 @@ class MiniProbe(object):
     """
     Main class for the Python Mini Probe
     """
-    def __init__(self):
+    def __init__(self, http):
         gc.enable()
+        self.http = http
+        self.config = self.read_config("./probe.conf")
+        self.url_announce = self.create_url(self.config, 'announce', http)
+        self.url_task = self.create_url(self.config, 'tasks', http)
+        self.url_data = self.create_url(self.config, 'data', http)
         logging.basicConfig(
             filename="./logs/probe.log",
             filemode="a",
@@ -155,6 +160,34 @@ class MiniProbe(object):
             'key': self.hash_access_key(config['key'])
         }
         return task
+
+    def request_to_core(self, req_type, data):
+        if req_type == "announce":
+            url = self.url_announce
+        elif req_type == "task":
+            url = self.url_task
+        else:
+            url = self.url_data
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
+                request_to_core = requests.post(url, data=data, verify=False, timeout=30)
+                logging.info("%s request successfully sent to PRTG Core Server at %s:%s."
+                             % (req_type, self.config["server"], self.config["port"]))
+                logging.debug("Connecting to %s:%s" % (self.config["server"], self.config["port"]))
+                logging.debug("Status Code: %s | Message: %s" % (request_to_core.status_code, request_to_core.text))
+                return request_to_core
+        except requests.exceptions.Timeout:
+            logging.error("%s Timeout: %s" % (req_type, str(data)))
+            raise
+        except Exception as req_except:
+            logging.error("Exception %s!" % req_except)
+            raise
+
+    def split_json_response(self, json_response, size=None):
+        if not size:
+            size = "10"
+        return [json_response[i:i + int(size)] for i in range(0, len(json_response), int(size))]
 
     @staticmethod
     def clean_mem():
