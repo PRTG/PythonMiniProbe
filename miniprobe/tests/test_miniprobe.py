@@ -15,7 +15,7 @@ class TestMiniProbe():
         cls.config['baseinterval'] = 'testbaseinterval'
         cls.config['server'] = 'testserver'
         cls.config['port'] = 'testport'
-        cls.mp = miniprobe.MiniProbe(cls.config, cls.http)
+        cls.mp = miniprobe.MiniProbe(cls.http, cls.config)
 
     def test_miniprobe_hash_access_key(self):
         """miniprobe returns the correct hash_access_key"""

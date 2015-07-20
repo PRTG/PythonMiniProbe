@@ -51,10 +51,10 @@ class MiniProbe(object):
     """
     Main class for the Python Mini Probe
     """
-    def __init__(self, http):
+    def __init__(self, http, config):
         gc.enable()
         self.http = http
-        self.config = self.read_config("./probe.conf")
+        self.config = config
         self.url_announce = self.create_url(self.config, 'announce', http)
         self.url_task = self.create_url(self.config, 'tasks', http)
         self.url_data = self.create_url(self.config, 'data', http)
@@ -89,7 +89,8 @@ class MiniProbe(object):
         module = importlib.import_module(module_path)
         return getattr(module, class_str)
 
-    def read_config(self, path):
+    @staticmethod
+    def read_config(path):
         """
         read configuration file and write data to dict
         """

@@ -52,11 +52,11 @@ if sys.argv[1:] and sys.argv[1] == "http":
 class Probe(object):
     def __init__(self):
         gc.enable()
-        self.mini_probe = MiniProbe(http)
+        self.config = MiniProbe.read_config('./probe.conf')
+        self.mini_probe = MiniProbe(http, self.config)
         self.probe_stop = False
         self.announce = False
         self.task = False
-        self.config = self.mini_probe.read_config('./probe.conf')
         self.key_sha1 = self.mini_probe.hash_access_key(self.config['key'])
         self.out_queue = multiprocessing.Queue()
         self.sensor_list = self.mini_probe.get_import_sensors()
