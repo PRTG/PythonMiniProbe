@@ -15,7 +15,7 @@ branches:
   only:
     - master
     - development
-    - python3_compat
+    - feature_api_interface_fix
 install:
   - pip install --upgrade pip
   - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then pip install -r requirements.txt; fi
