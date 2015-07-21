@@ -51,13 +51,9 @@ class MiniProbe(object):
     """
     Main class for the Python Mini Probe
     """
-    def __init__(self, http, config):
+    def __init__(self, http):
         gc.enable()
         self.http = http
-        self.config = config
-        self.url_announce = self.create_url(self.config, 'announce', http)
-        self.url_task = self.create_url(self.config, 'tasks', http)
-        self.url_data = self.create_url(self.config, 'data', http)
         logging.basicConfig(
             filename="./logs/probe.log",
             filemode="a",
@@ -89,8 +85,7 @@ class MiniProbe(object):
         module = importlib.import_module(module_path)
         return getattr(module, class_str)
 
-    @staticmethod
-    def read_config(path):
+    def read_config(self, path):
         """
         read configuration file and write data to dict
         """
@@ -155,6 +150,9 @@ class MiniProbe(object):
         return sensors_avail
 
     def build_task(self, config):
+        """
+        build data payload for task request.
+        """
         task = {
             'gid': config['gid'],
             'protocol': config['protocol'],
@@ -162,20 +160,18 @@ class MiniProbe(object):
         }
         return task
 
-    def request_to_core(self, req_type, data):
-        if req_type == "announce":
-            url = self.url_announce
-        elif req_type == "task":
-            url = self.url_task
-        else:
-            url = self.url_data
+    def request_to_core(self, req_type, data, config):
+        """
+        perform different request types to the core
+        """
+        url = self.create_url(config, req_type, self.http)
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
                 request_to_core = requests.post(url, data=data, verify=False, timeout=30)
                 logging.info("%s request successfully sent to PRTG Core Server at %s:%s."
-                             % (req_type, self.config["server"], self.config["port"]))
-                logging.debug("Connecting to %s:%s" % (self.config["server"], self.config["port"]))
+                             % (req_type, config["server"], config["port"]))
+                logging.debug("Connecting to %s:%s" % (config["server"], config["port"]))
                 logging.debug("Status Code: %s | Message: %s" % (request_to_core.status_code, request_to_core.text))
                 return request_to_core
         except requests.exceptions.Timeout:

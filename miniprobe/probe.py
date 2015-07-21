@@ -52,8 +52,8 @@ if sys.argv[1:] and sys.argv[1] == "http":
 class Probe(object):
     def __init__(self):
         gc.enable()
-        self.config = MiniProbe.read_config('./probe.conf')
-        self.mini_probe = MiniProbe(http, self.config)
+        self.mini_probe = MiniProbe(http)
+        self.config = self.mini_probe.read_config('./probe.conf')
         self.probe_stop = False
         self.announce = False
         self.task = False
@@ -94,7 +94,7 @@ class Probe(object):
             logging.debug("Announce Data: %s" % self.announce_data)
             while not self.announce:
                 try:
-                    announce_request = self.mini_probe.request_to_core("announce", self.announce_data)
+                    announce_request = self.mini_probe.request_to_core("announce", self.announce_data, self.config)
                     if announce_request.status_code == requests.codes.ok:
                         self.announce = True
                         logging.info("Announce success.")
@@ -110,23 +110,32 @@ class Probe(object):
 
             while not self.probe_stop:
                 # creating some objects only needed in loop
+                self.task = False
                 while not self.task:
                     json_payload_data = []
+                    has_json_content = False
                     try:
-                        task_request = self.mini_probe.request_to_core("task", self.task_data)
-                        if task_request.status_code == requests.codes.ok:
-                            self.task = True
-                            logging.info("Task success.")
-                        else:
-                            logging.info("Task issue. Details: HTTP Status %s, Message: %s"
+                        task_request = self.mini_probe.request_to_core("tasks", self.task_data, self.config)
+                        try:
+                            if str(task_request.json()) != "[]":
+                                json_response = task_request.json()
+                                has_json_content = True
+                                self.task = True
+                                logging.info("Task success.")
+                            else:
+                                logging.info("Task has no JSON content. Details: HTTP Status %s, Message: %s"
+                                             % (task_request.status_code, task_request.text))
+                                time.sleep(int(self.config['baseinterval']) / 2)
+                        except Exception as json_exception:
+                            logging.info(json_exception)
+                            logging.info("No JSON. HTTP Status: %s, Message: %s"
                                          % (task_request.status_code, task_request.text))
                     except Exception as request_exception:
                         logging.error(request_exception)
                         time.sleep(int(self.config['baseinterval']) / 2)
 
                 gc.collect()
-                if task_request.status_code == requests.codes.ok and task_request.json():
-                    json_response = task_request.json()
+                if task_request.status_code == requests.codes.ok and has_json_content:
                     logging.debug("JSON response: %s" % json_response)
                     if self.config['subprocs']:
                         json_response_chunks = self.mini_probe.split_json_response(json_response, self.config['subprocs'])
@@ -153,7 +162,7 @@ class Probe(object):
                             pass
 
                         try:
-                            data_request = self.mini_probe.request_to_core("data", json.dumps(json_payload_data))
+                            data_request = self.mini_probe.request_to_core("data", json.dumps(json_payload_data), self.config)
                             if data_request.status_code == requests.codes.ok:
                                 logging.info("Data success")
                                 json_payload_data = []
@@ -169,6 +178,8 @@ class Probe(object):
                             time.sleep(int(self.config['baseinterval']) / 2)
 
                 else:
+                    logging.info("Task issue. Details: HTTP Status %s, Message: %s"
+                                 % (task_request.status_code, task_request.text))
                     logging.info("Nothing to do. Waiting for %s seconds." % (int(self.config['baseinterval']) / 3))
                     time.sleep(int(self.config['baseinterval']) / 3)
 
