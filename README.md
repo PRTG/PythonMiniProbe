@@ -4,7 +4,7 @@ PythonMiniProbe
 Current Status: BETA  
 MiniProbe POC for PRTG Network Monitor written in Python which accesses the MiniProbe Interface on the PRTG Core Server.
   
-DO NOT USE THIS BRANCH! NOT FUNCTIONAL!
+DO NOT USE THIS BRANCH IN PRODUCTION! Development!
 
 Build Status
 ------------
@@ -114,6 +114,15 @@ Changelog
 =========
 
 =======
+
+23-07-2015
+----------
+MAJOR CHANGES:
+- added Python 3 compatibility
+MINOR CHANGES:
+- code cleanup in preparation for further capsuling
+- adjusted travis config to run nose tests for python 3
+
 11-06-2015
 ----------
 MAJOR CHANGES:
