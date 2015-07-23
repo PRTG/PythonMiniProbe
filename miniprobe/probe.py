@@ -83,127 +83,126 @@ class Probe(object):
             self.config['cleanmem'] = False
 
     def main(self):
-            """
-            Main routine for MiniProbe (Python)
-            """
-            # Doing some startup logging
-            logging.info("PRTG Small Probe '%s' starting on '%s'" % (self.config['name'], socket.gethostname()))
-            logging.info("Connecting to PRTG Core Server at %s:%s" % (self.config['server'], self.config['port']))
-            while not self.announce:
+        """
+        Main routine for MiniProbe (Python)
+        """
+        # Doing some startup logging
+        logging.info("PRTG Small Probe '%s' starting on '%s'" % (self.config['name'], socket.gethostname()))
+        logging.info("Connecting to PRTG Core Server at %s:%s" % (self.config['server'], self.config['port']))
+        while not self.announce:
+            try:
+                announce_request = self.mini_probe.request_to_core("announce", self.announce_data, self.config)
+                if announce_request.status_code == requests.codes.ok:
+                    self.announce = True
+                    logging.info("Announce success.")
+                    logging.debug("Announce success. Details: HTTP Status %s, Message: %s"
+                                  % (announce_request.status_code, announce_request.text))
+                else:
+                    logging.info("Announce pending. Trying again in %s seconds"
+                                 % str(int(self.config['baseinterval']) / 2))
+                    logging.debug("Announce pending. Details: HTTP Status %s, Message: %s"
+                                  % (announce_request.status_code, announce_request.text))
+                    time.sleep(int(self.config['baseinterval']) / 2)
+            except Exception as request_exception:
+                logging.error(request_exception)
+                time.sleep(int(self.config['baseinterval']) / 2)
+
+        while not self.probe_stop:
+            self.task = False
+            while not self.task:
+                json_payload_data = []
+                has_json_content = False
                 try:
-                    announce_request = self.mini_probe.request_to_core("announce", self.announce_data, self.config)
-                    if announce_request.status_code == requests.codes.ok:
-                        self.announce = True
-                        logging.info("Announce success.")
-                        logging.debug("Announce success. Details: HTTP Status %s, Message: %s"
-                                      % (announce_request.status_code, announce_request.text))
-                    else:
-                        logging.info("Announce pending. Trying again in %s seconds"
-                                     % str(int(self.config['baseinterval']) / 2))
-                        logging.debug("Announce pending. Details: HTTP Status %s, Message: %s"
-                                      % (announce_request.status_code, announce_request.text))
-                        time.sleep(int(self.config['baseinterval']) / 2)
+                    task_request = self.mini_probe.request_to_core("tasks", self.task_data, self.config)
+                    try:
+                        if str(task_request.json()) != "[]":
+                            json_response = task_request.json()
+                            has_json_content = True
+                            self.task = True
+                            logging.info("Task success.")
+                            logging.debug("Task success. HTTP Status %s, Message: %s"
+                                          % (task_request.status_code, task_request.text))
+                        else:
+                            logging.info("Task has no JSON content. Trying again in %s seconds"
+                                         % (int(self.config['baseinterval']) / 2))
+                            logging.debug("Task has no JSON content. Details: HTTP Status %s, Message: %s"
+                                          % (task_request.status_code, task_request.text))
+                            time.sleep(int(self.config['baseinterval']) / 2)
+                    except Exception as json_exception:
+                        logging.info(json_exception)
+                        logging.info("No JSON. HTTP Status: %s, Message: %s"
+                                     % (task_request.status_code, task_request.text))
                 except Exception as request_exception:
                     logging.error(request_exception)
+                    logging.error("Exception. Trying again in %s seconds." % str(int(self.config['baseinterval']) / 3))
                     time.sleep(int(self.config['baseinterval']) / 2)
-
-            while not self.probe_stop:
-                self.task = False
-                while not self.task:
-                    json_payload_data = []
-                    has_json_content = False
-                    try:
-                        task_request = self.mini_probe.request_to_core("tasks", self.task_data, self.config)
-                        try:
-                            if str(task_request.json()) != "[]":
-                                json_response = task_request.json()
-                                has_json_content = True
-                                self.task = True
-                                logging.info("Task success.")
-                                logging.debug("Task success. HTTP Status %s, Message: %s"
-                                              % (task_request.status_code, task_request.text))
+            gc.collect()
+            if task_request.status_code == requests.codes.ok and has_json_content:
+                logging.debug("JSON response: %s" % json_response)
+                if self.config['subprocs']:
+                    json_response_chunks = self.mini_probe.split_json_response(json_response, self.config['subprocs'])
+                else:
+                    json_response_chunks = self.mini_probe.split_json_response(json_response)
+                for element in json_response_chunks:
+                    for part in element:
+                        logging.debug(part)
+                        for sensor in self.sensor_list:
+                            if part['kind'] == sensor.get_kind():
+                                p = multiprocessing.Process(target=sensor.get_data, args=(part, self.out_queue),
+                                                            name=part['kind'])
+                                self.procs.append(p)
+                                p.start()
                             else:
-                                logging.info("Task has no JSON content. Trying again in %s seconds"
-                                             % (time.sleep(int(self.config['baseinterval']) / 2)))
-                                logging.debug("Task has no JSON content. Details: HTTP Status %s, Message: %s"
-                                              % (task_request.status_code, task_request.text))
-                                time.sleep(int(self.config['baseinterval']) / 2)
-                        except Exception as json_exception:
-                            logging.info(json_exception)
-                            logging.info("No JSON. HTTP Status: %s, Message: %s"
-                                         % (task_request.status_code, task_request.text))
+                                pass
+                        gc.collect()
+                    try:
+                        while len(json_payload_data) < len(element):
+                            out = self.out_queue.get()
+                            json_payload_data.append(out)
+                    except Exception as data_queue_exception:
+                        logging.error(data_queue_exception)
+                        pass
+
+                    try:
+                        data_request = self.mini_probe.request_to_core("data", json.dumps(json_payload_data),
+                                                                       self.config)
+                        if data_request.status_code == requests.codes.ok:
+                            logging.info("Data success.")
+                            logging.debug("Data success. Details: HTTP Status %s, Message: %s"
+                                          % (data_request.status_code, data_request.text))
+                            json_payload_data = []
+                        else:
+                            logging.info("Data issue. Current data might be dropped, please turn on debug logging")
+                            logging.debug("Data issue. Details: HTTP Status %s, Message: %s"
+                                          % (data_request.status_code, data_request.text))
                     except Exception as request_exception:
                         logging.error(request_exception)
-                        time.sleep(int(self.config['baseinterval']) / 2)
 
-                gc.collect()
-                if task_request.status_code == requests.codes.ok and has_json_content:
-                    logging.debug("JSON response: %s" % json_response)
-                    if self.config['subprocs']:
-                        json_response_chunks = self.mini_probe.split_json_response(json_response,
-                                                                                   self.config['subprocs'])
+                    if len(json_response) > 10:
+                        time.sleep((int(self.config['baseinterval']) * (9 / len(json_response))))
                     else:
-                        json_response_chunks = self.mini_probe.split_json_response(json_response)
-                    for element in json_response_chunks:
-                        for part in element:
-                            logging.debug(part)
-                            for sensor in self.sensor_list:
-                                if part['kind'] == sensor.get_kind():
-                                    p = multiprocessing.Process(target=sensor.get_data, args=(part, self.out_queue),
-                                                                name=part['kind'])
-                                    self.procs.append(p)
-                                    p.start()
-                                else:
-                                    pass
-                            gc.collect()
-                        try:
-                            while len(json_payload_data) < len(element):
-                                out = self.out_queue.get()
-                                json_payload_data.append(out)
-                        except Exception as data_queue_exception:
-                            logging.error(data_queue_exception)
-                            pass
+                        time.sleep(int(self.config['baseinterval']) / 2)
+            elif task_request.status_code != requests.codes.ok:
+                logging.info("Task issue. Request returning incorrect status code. Turn on debugging for details")
+                logging.debug("Task issue. Details: HTTP Status %s, Message: %s"
+                              % (task_request.status_code, task_request.text))
+            else:
+                logging.info("Task has no JSON content. Nothing to do. Waiting for %s seconds."
+                             % str(int(self.config['baseinterval']) / 3))
+                time.sleep(int(self.config['baseinterval']) / 3)
 
-                        try:
-                            data_request = self.mini_probe.request_to_core("data", json.dumps(json_payload_data),
-                                                                           self.config)
-                            if data_request.status_code == requests.codes.ok:
-                                logging.info("Data success.")
-                                logging.debug("Data success. Details: HTTP Status %s, Message: %s"
-                                              % (data_request.status_code, data_request.text))
-                                json_payload_data = []
-                            else:
-                                logging.info("Data issue. Current data might be dropped, please turn on debug logging")
-                                logging.debug("Data issue. Details: HTTP Status %s, Message: %s"
-                                              % (data_request.status_code, data_request.text))
-                        except Exception as request_exception:
-                            logging.error(request_exception)
+            # Delete some stuff used in the loop and run the garbage collector
+            for p in self.procs:
+                if not p.is_alive():
+                    p.join()
+                    p.terminate()
+                    del p
+            gc.collect()
 
-                        if len(json_response) > 10:
-                            time.sleep((int(self.config['baseinterval']) * (9 / len(json_response))))
-                        else:
-                            time.sleep(int(self.config['baseinterval']) / 2)
-                elif task_request.status_code != requests.codes.ok:
-                    logging.info("Task issue. Request returning incorrect status code. Turn on debugging for details")
-                    logging.debug("Task issue. Details: HTTP Status %s, Message: %s"
-                                  % (task_request.status_code, task_request.text))
-                else:
-                    logging.info("Task has no JSON content. Nothing to do. Waiting for %s seconds."
-                                 % (int(self.config['baseinterval']) / 3))
-                    time.sleep(int(self.config['baseinterval']) / 3)
-
-                # Delete some stuff used in the loop and run the garbage collector
-                for p in self.procs:
-                    if not p.is_alive():
-                        p.join()
-                        p.terminate()
-                        del p
-                gc.collect()
-
-                if self.config['cleanmem']:
-                    # checking if clean memory option has been chosen during install then call the method to flush mem
-                    self.mini_probe.clean_mem()
-            sys.exit()
+            if self.config['cleanmem']:
+                # checking if clean memory option has been chosen during install then call the method to flush mem
+                self.mini_probe.clean_mem()
+        sys.exit()
 
 if __name__ == "__main__":
     probe = Probe()
