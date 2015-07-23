@@ -30,9 +30,7 @@ import time
 import gc
 import logging
 import socket
-import warnings
 
-from requests.packages.urllib3 import exceptions
 # import own modules
 sys.path.append('./')
 try:
@@ -109,7 +107,6 @@ class Probe(object):
                     time.sleep(int(self.config['baseinterval']) / 2)
 
             while not self.probe_stop:
-                # creating some objects only needed in loop
                 self.task = False
                 while not self.task:
                     json_payload_data = []
@@ -123,8 +120,10 @@ class Probe(object):
                                 self.task = True
                                 logging.info("Task success.")
                             else:
-                                logging.info("Task has no JSON content. Details: HTTP Status %s, Message: %s"
-                                             % (task_request.status_code, task_request.text))
+                                logging.info("Task has no JSON content. Trying again in %s seconds"
+                                             % (time.sleep(int(self.config['baseinterval']) / 2)))
+                                logging.debug("Task has no JSON content. Details: HTTP Status %s, Message: %s"
+                                              % (task_request.status_code, task_request.text))
                                 time.sleep(int(self.config['baseinterval']) / 2)
                         except Exception as json_exception:
                             logging.info(json_exception)
@@ -138,7 +137,8 @@ class Probe(object):
                 if task_request.status_code == requests.codes.ok and has_json_content:
                     logging.debug("JSON response: %s" % json_response)
                     if self.config['subprocs']:
-                        json_response_chunks = self.mini_probe.split_json_response(json_response, self.config['subprocs'])
+                        json_response_chunks = self.mini_probe.split_json_response(json_response,
+                                                                                   self.config['subprocs'])
                     else:
                         json_response_chunks = self.mini_probe.split_json_response(json_response)
                     for element in json_response_chunks:
@@ -162,7 +162,8 @@ class Probe(object):
                             pass
 
                         try:
-                            data_request = self.mini_probe.request_to_core("data", json.dumps(json_payload_data), self.config)
+                            data_request = self.mini_probe.request_to_core("data", json.dumps(json_payload_data),
+                                                                           self.config)
                             if data_request.status_code == requests.codes.ok:
                                 logging.info("Data success")
                                 json_payload_data = []

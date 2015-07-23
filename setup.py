@@ -59,9 +59,8 @@ class Configure(_install):
     #try:
     #    import __builtin__
     #    input = getattr(__builtin__, 'raw_input')
-    #except (ImportError, AttributeError):
+    # except (ImportError, AttributeError):
     #    pass
-
 
     def run(self):
         conf_avail = False
@@ -99,7 +98,7 @@ class Configure(_install):
         pass
 
     def file_check(self, check_path):
-    # Check if a give file exists
+        # Check if a give file exists
         return os.path.exists(check_path)
 
     def file_create(self, create_path):
