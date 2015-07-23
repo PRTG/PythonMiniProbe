@@ -32,7 +32,6 @@ import gc
 import logging
 import subprocess
 import os
-import json
 import requests
 import warnings
 
@@ -182,6 +181,9 @@ class MiniProbe(object):
             raise
 
     def split_json_response(self, json_response, size=None):
+        """
+        split up response from task request into predefined chunk sizes
+        """
         if not size:
             size = "10"
         return [json_response[i:i + int(size)] for i in range(0, len(json_response), int(size))]

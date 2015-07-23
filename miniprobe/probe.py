@@ -55,6 +55,7 @@ class Probe(object):
         self.probe_stop = False
         self.announce = False
         self.task = False
+        self.has_json_content = False
         self.key_sha1 = self.mini_probe.hash_access_key(self.config['key'])
         self.out_queue = multiprocessing.Queue()
         self.sensor_list = self.mini_probe.get_import_sensors()
@@ -82,6 +83,37 @@ class Probe(object):
         else:
             self.config['cleanmem'] = False
 
+    def do_announce(self):
+        try:
+            announce_request = self.mini_probe.request_to_core("announce", self.announce_data, self.config)
+            if announce_request.status_code == requests.codes.ok:
+                self.announce = True
+                logging.info("Announce success.")
+                logging.debug("Announce success. Details: HTTP Status %s, Message: %s"
+                              % (announce_request.status_code, announce_request.text))
+            else:
+                logging.info("Announce pending. Trying again in %s seconds"
+                             % str(int(self.config['baseinterval']) / 2))
+                logging.debug("Announce pending. Details: HTTP Status %s, Message: %s"
+                              % (announce_request.status_code, announce_request.text))
+                time.sleep(int(self.config['baseinterval']) / 2)
+        except Exception as request_exception:
+            logging.error(request_exception)
+            time.sleep(int(self.config['baseinterval']) / 2)
+
+    def do_task(self):
+        pass
+
+    def do_data(self):
+        pass
+
+    def kill_procs(self):
+        for p in self.procs:
+            if not p.is_alive():
+                p.join()
+                p.terminate()
+                del p
+
     def main(self):
         """
         Main routine for MiniProbe (Python)
@@ -90,34 +122,19 @@ class Probe(object):
         logging.info("PRTG Small Probe '%s' starting on '%s'" % (self.config['name'], socket.gethostname()))
         logging.info("Connecting to PRTG Core Server at %s:%s" % (self.config['server'], self.config['port']))
         while not self.announce:
-            try:
-                announce_request = self.mini_probe.request_to_core("announce", self.announce_data, self.config)
-                if announce_request.status_code == requests.codes.ok:
-                    self.announce = True
-                    logging.info("Announce success.")
-                    logging.debug("Announce success. Details: HTTP Status %s, Message: %s"
-                                  % (announce_request.status_code, announce_request.text))
-                else:
-                    logging.info("Announce pending. Trying again in %s seconds"
-                                 % str(int(self.config['baseinterval']) / 2))
-                    logging.debug("Announce pending. Details: HTTP Status %s, Message: %s"
-                                  % (announce_request.status_code, announce_request.text))
-                    time.sleep(int(self.config['baseinterval']) / 2)
-            except Exception as request_exception:
-                logging.error(request_exception)
-                time.sleep(int(self.config['baseinterval']) / 2)
+            self.do_announce()
 
         while not self.probe_stop:
             self.task = False
             while not self.task:
                 json_payload_data = []
-                has_json_content = False
+                self.has_json_content = False
                 try:
                     task_request = self.mini_probe.request_to_core("tasks", self.task_data, self.config)
                     try:
                         if str(task_request.json()) != "[]":
                             json_response = task_request.json()
-                            has_json_content = True
+                            self.has_json_content = True
                             self.task = True
                             logging.info("Task success.")
                             logging.debug("Task success. HTTP Status %s, Message: %s"
@@ -137,7 +154,7 @@ class Probe(object):
                     logging.error("Exception. Trying again in %s seconds." % str(int(self.config['baseinterval']) / 3))
                     time.sleep(int(self.config['baseinterval']) / 2)
             gc.collect()
-            if task_request.status_code == requests.codes.ok and has_json_content:
+            if task_request.status_code == requests.codes.ok and self.has_json_content:
                 logging.debug("JSON response: %s" % json_response)
                 if self.config['subprocs']:
                     json_response_chunks = self.mini_probe.split_json_response(json_response, self.config['subprocs'])
@@ -191,12 +208,7 @@ class Probe(object):
                              % str(int(self.config['baseinterval']) / 3))
                 time.sleep(int(self.config['baseinterval']) / 3)
 
-            # Delete some stuff used in the loop and run the garbage collector
-            for p in self.procs:
-                if not p.is_alive():
-                    p.join()
-                    p.terminate()
-                    del p
+            self.kill_procs()
             gc.collect()
 
             if self.config['cleanmem']:
