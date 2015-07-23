@@ -89,18 +89,19 @@ class Probe(object):
             # Doing some startup logging
             logging.info("PRTG Small Probe '%s' starting on '%s'" % (self.config['name'], socket.gethostname()))
             logging.info("Connecting to PRTG Core Server at %s:%s" % (self.config['server'], self.config['port']))
-            logging.debug("Announce Data: %s" % self.announce_data)
             while not self.announce:
                 try:
                     announce_request = self.mini_probe.request_to_core("announce", self.announce_data, self.config)
                     if announce_request.status_code == requests.codes.ok:
                         self.announce = True
                         logging.info("Announce success.")
+                        logging.debug("Announce success. Details: HTTP Status %s, Message: %s"
+                                      % (announce_request.status_code, announce_request.text))
                     else:
-                        logging.info("Announce pending. Details: HTTP Status %s, Message: %s"
-                                     % (announce_request.status_code, announce_request.text))
-                        logging.info("Trying again in %s seconds"
-                                     % str(time.sleep(int(self.config['baseinterval']) / 2)))
+                        logging.info("Announce pending. Trying again in %s seconds"
+                                     % str(int(self.config['baseinterval']) / 2))
+                        logging.debug("Announce pending. Details: HTTP Status %s, Message: %s"
+                                      % (announce_request.status_code, announce_request.text))
                         time.sleep(int(self.config['baseinterval']) / 2)
                 except Exception as request_exception:
                     logging.error(request_exception)
@@ -119,6 +120,8 @@ class Probe(object):
                                 has_json_content = True
                                 self.task = True
                                 logging.info("Task success.")
+                                logging.debug("Task success. HTTP Status %s, Message: %s"
+                                              % (task_request.status_code, task_request.text))
                             else:
                                 logging.info("Task has no JSON content. Trying again in %s seconds"
                                              % (time.sleep(int(self.config['baseinterval']) / 2)))
@@ -165,11 +168,14 @@ class Probe(object):
                             data_request = self.mini_probe.request_to_core("data", json.dumps(json_payload_data),
                                                                            self.config)
                             if data_request.status_code == requests.codes.ok:
-                                logging.info("Data success")
+                                logging.info("Data success.")
+                                logging.debug("Data success. Details: HTTP Status %s, Message: %s"
+                                              % (data_request.status_code, data_request.text))
                                 json_payload_data = []
                             else:
-                                logging.info("Data issue. Details: HTTP Status %s, Message: %s"
-                                             % (data_request.status_code, data_request.text))
+                                logging.info("Data issue. Current data might be dropped, please turn on debug logging")
+                                logging.debug("Data issue. Details: HTTP Status %s, Message: %s"
+                                              % (data_request.status_code, data_request.text))
                         except Exception as request_exception:
                             logging.error(request_exception)
 
@@ -177,11 +183,13 @@ class Probe(object):
                             time.sleep((int(self.config['baseinterval']) * (9 / len(json_response))))
                         else:
                             time.sleep(int(self.config['baseinterval']) / 2)
-
+                elif task_request.status_code != requests.codes.ok:
+                    logging.info("Task issue. Request returning incorrect status code. Turn on debugging for details")
+                    logging.debug("Task issue. Details: HTTP Status %s, Message: %s"
+                                  % (task_request.status_code, task_request.text))
                 else:
-                    logging.info("Task issue. Details: HTTP Status %s, Message: %s"
-                                 % (task_request.status_code, task_request.text))
-                    logging.info("Nothing to do. Waiting for %s seconds." % (int(self.config['baseinterval']) / 3))
+                    logging.info("Task has no JSON content. Nothing to do. Waiting for %s seconds."
+                                 % (int(self.config['baseinterval']) / 3))
                     time.sleep(int(self.config['baseinterval']) / 3)
 
                 # Delete some stuff used in the loop and run the garbage collector
