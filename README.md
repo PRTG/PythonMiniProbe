@@ -119,6 +119,7 @@ Changelog
 ----------
 MAJOR CHANGES:
 - added Python 3 compatibility
+
 MINOR CHANGES:
 - code cleanup in preparation for further capsuling
 - adjusted travis config to run nose tests for python 3
