@@ -56,6 +56,8 @@ class Probe(object):
         self.announce = False
         self.task = False
         self.has_json_content = False
+        self.data_request_payload_json = []
+        self.task_request_response_json = []
         self.key_sha1 = self.mini_probe.hash_access_key(self.config['key'])
         self.out_queue = multiprocessing.Queue()
         self.sensor_list = self.mini_probe.get_import_sensors()
@@ -83,7 +85,10 @@ class Probe(object):
         else:
             self.config['cleanmem'] = False
 
-    def do_announce(self):
+    def send_announce(self):
+        """
+        send announce request to core
+        """
         try:
             announce_request = self.mini_probe.request_to_core("announce", self.announce_data, self.config)
             if announce_request.status_code == requests.codes.ok:
@@ -101,13 +106,59 @@ class Probe(object):
             logging.error(request_exception)
             time.sleep(int(self.config['baseinterval']) / 2)
 
-    def do_task(self):
-        pass
+    def get_tasks(self):
+        """
+        get tasks from core
+        """
+        self.data_request_payload_json = []
+        self.has_json_content = False
+        try:
+            task_request = self.mini_probe.request_to_core("tasks", self.task_data, self.config)
+            try:
+                if str(task_request.json()) != "[]":
+                    self.has_json_content = True
+                    self.task = True
+                    logging.info("Task success.")
+                    logging.debug("Task success. HTTP Status %s, Message: %s"
+                                  % (task_request.status_code, task_request.text))
+                    return task_request
+                else:
+                    logging.info("Task has no JSON content. Trying again in %s seconds"
+                                 % (int(self.config['baseinterval']) / 2))
+                    logging.debug("Task has no JSON content. Details: HTTP Status %s, Message: %s"
+                                  % (task_request.status_code, task_request.text))
+                    return None
+            except Exception as json_exception:
+                logging.info(json_exception)
+                logging.info("No JSON. HTTP Status: %s, Message: %s" % (task_request.status_code, task_request.text))
+                return None
+        except Exception as request_exception:
+            logging.error(request_exception)
+            logging.error("Exception. Trying again in %s seconds." % str(int(self.config['baseinterval']) / 3))
+            return None
 
-    def do_data(self):
-        pass
+    def send_data(self):
+        """
+        send processed data to the core
+        """
+        try:
+            data_request = self.mini_probe.request_to_core("data", json.dumps(self.data_request_payload_json), self.config)
+            if data_request.status_code == requests.codes.ok:
+                logging.info("Data success.")
+                logging.debug("Data success. Details: HTTP Status %s, Message: %s"
+                              % (data_request.status_code, data_request.text))
+                self.data_request_payload_json = []
+            else:
+                logging.info("Data issue. Current data might be dropped, please turn on debug logging")
+                logging.debug("Data issue. Details: HTTP Status %s, Message: %s"
+                              % (data_request.status_code, data_request.text))
+        except Exception as request_exception:
+            logging.error(request_exception)
 
     def kill_procs(self):
+        """
+        killing processes in worker pool when finished
+        """
         for p in self.procs:
             if not p.is_alive():
                 p.join()
@@ -122,44 +173,23 @@ class Probe(object):
         logging.info("PRTG Small Probe '%s' starting on '%s'" % (self.config['name'], socket.gethostname()))
         logging.info("Connecting to PRTG Core Server at %s:%s" % (self.config['server'], self.config['port']))
         while not self.announce:
-            self.do_announce()
+            self.send_announce()
 
         while not self.probe_stop:
             self.task = False
             while not self.task:
-                json_payload_data = []
-                self.has_json_content = False
-                try:
-                    task_request = self.mini_probe.request_to_core("tasks", self.task_data, self.config)
-                    try:
-                        if str(task_request.json()) != "[]":
-                            json_response = task_request.json()
-                            self.has_json_content = True
-                            self.task = True
-                            logging.info("Task success.")
-                            logging.debug("Task success. HTTP Status %s, Message: %s"
-                                          % (task_request.status_code, task_request.text))
-                        else:
-                            logging.info("Task has no JSON content. Trying again in %s seconds"
-                                         % (int(self.config['baseinterval']) / 2))
-                            logging.debug("Task has no JSON content. Details: HTTP Status %s, Message: %s"
-                                          % (task_request.status_code, task_request.text))
-                            time.sleep(int(self.config['baseinterval']) / 2)
-                    except Exception as json_exception:
-                        logging.info(json_exception)
-                        logging.info("No JSON. HTTP Status: %s, Message: %s"
-                                     % (task_request.status_code, task_request.text))
-                except Exception as request_exception:
-                    logging.error(request_exception)
-                    logging.error("Exception. Trying again in %s seconds." % str(int(self.config['baseinterval']) / 3))
+                task_request = self.get_tasks()
+                if not task_request:
                     time.sleep(int(self.config['baseinterval']) / 2)
+
             gc.collect()
             if task_request.status_code == requests.codes.ok and self.has_json_content:
-                logging.debug("JSON response: %s" % json_response)
+                self.task_request_response_json = task_request.json()
+                logging.debug("JSON response: %s" % self.task_request_response_json)
                 if self.config['subprocs']:
-                    json_response_chunks = self.mini_probe.split_json_response(json_response, self.config['subprocs'])
+                    json_response_chunks = self.mini_probe.split_json_response(self.task_request_response_json, self.config['subprocs'])
                 else:
-                    json_response_chunks = self.mini_probe.split_json_response(json_response)
+                    json_response_chunks = self.mini_probe.split_json_response(self.task_request_response_json)
                 for element in json_response_chunks:
                     for part in element:
                         logging.debug(part)
@@ -173,30 +203,17 @@ class Probe(object):
                                 pass
                         gc.collect()
                     try:
-                        while len(json_payload_data) < len(element):
+                        while len(self.data_request_payload_json) < len(element):
                             out = self.out_queue.get()
-                            json_payload_data.append(out)
+                            self.data_request_payload_json.append(out)
                     except Exception as data_queue_exception:
                         logging.error(data_queue_exception)
                         pass
 
-                    try:
-                        data_request = self.mini_probe.request_to_core("data", json.dumps(json_payload_data),
-                                                                       self.config)
-                        if data_request.status_code == requests.codes.ok:
-                            logging.info("Data success.")
-                            logging.debug("Data success. Details: HTTP Status %s, Message: %s"
-                                          % (data_request.status_code, data_request.text))
-                            json_payload_data = []
-                        else:
-                            logging.info("Data issue. Current data might be dropped, please turn on debug logging")
-                            logging.debug("Data issue. Details: HTTP Status %s, Message: %s"
-                                          % (data_request.status_code, data_request.text))
-                    except Exception as request_exception:
-                        logging.error(request_exception)
+                    self.send_data()
 
-                    if len(json_response) > 10:
-                        time.sleep((int(self.config['baseinterval']) * (9 / len(json_response))))
+                    if len(self.task_request_response_json) > 10:
+                        time.sleep((int(self.config['baseinterval']) * (9 / len(self.task_request_response_json))))
                     else:
                         time.sleep(int(self.config['baseinterval']) / 2)
             elif task_request.status_code != requests.codes.ok:
