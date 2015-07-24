@@ -23,7 +23,7 @@ import gc
 import os
 import logging
 import time
-import __init__
+#import __init__
 dev = True
 if not os.path.isdir("/sys/bus/w1/devices"):
     dev = False

@@ -17,6 +17,10 @@ branches:
     - development
 install:
   - pip install --upgrade pip
-  - pip install -r requirements.txt
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then pip install -r requirements.txt; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install -r requirements3.txt; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then pip install -r requirements3.txt; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then pip install -r requirements3.txt; fi
+
 script: 
   - nosetests -v
