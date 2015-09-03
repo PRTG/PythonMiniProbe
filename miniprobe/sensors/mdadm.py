@@ -4,7 +4,7 @@
 # Thanks to Paessler for providing the free PRTG Python Probe and the API
 
 import os
-#import re for use of re.split; explained below
+# import re for use of re.split; explained below
 import re
 import gc
 import logging
@@ -49,15 +49,15 @@ class MDADM(object):
 
         ret = os.popen("cat /proc/mdstat").readlines()
         mdstat = ' '.join([line.strip() for line in ret])
-        #Using re.split to split output instead of split to prevent cutting the leading "md"
+        # Using re.split to split output instead of split to prevent cutting the leading "md"
         raidArrayList = re.split(' (?=md)', mdstat)
 
         for index in range(len(raidArrayList)):
-            #Searching for list entries beginning with "md"
+            # Searching for list entries beginning with "md"
             if re.match('^md', raidArrayList[index]):
                     print raidArrayList[index]
                     if '_' in raidArrayList[index]:
-                            #a drive missing can also be a defect drive. Defect or missing drives are marked with an "_" instead of an "U" in the drive list
+                            # adrive missing can also be a defect drive. Defect or missing drives are marked with an "_" instead of an "U" in the drive list
                             arraysMissingDrives += 1
                     if 'recovering' in raidArrayList[index]:
                             arraysRecovering += 1
@@ -79,7 +79,7 @@ class MDADM(object):
                 "name": "RAID arrays with missing drives",
                 "mode": "integer",
                 "unit": "count",
-                #setting this channel to error if arraysMissingDrives is > 0
+                # setting this channel to error if arraysMissingDrives is > 0
                 "limitmaxerror": 0,
                 "limitmode": 1,
                 "value": arraysMissingDrives
@@ -104,7 +104,7 @@ class MDADM(object):
                 "name": "RAID arrays in automatic checking task",
                 "mode": "integer",
                 "unit": "count",
-                #In many linux distributions an array check is performed automatically once a day or week. So we should not warn about this
+                # In many linux distributions an array check is performed automatically once a day or week. So we should not warn about this
                 "limitmaxwarning": 0,
                 "limitmode": 0,
                 "value": arraysChecking
