@@ -3,7 +3,7 @@
 import sys
 from nose.tools import *
 from miniprobe.sensors import adns, apt, cpuload, cputemp, diskspace, ds18b20, externalip, http, memory, nmap, ping, \
-    port, portrange, probehealth, snmpcustom, snmptraffic, blacklist
+    port, portrange, probehealth, snmpcustom, snmptraffic, blacklist, snmpcustomstring
 import multiprocessing
 
 class TestSensors:
@@ -16,6 +16,7 @@ class TestSensors:
         cls.test_cputemp = cputemp.CPUTemp()
         cls.test_snmptraffic = snmptraffic.SNMPTraffic()
         cls.test_snmpcustom = snmpcustom.SNMPCustom()
+        cls.test_snmpcustomstring = snmpcustomstring.SNMPCustomString()
         cls.test_diskspace = diskspace.Diskspace()
         cls.test_ds18b20 = ds18b20.DS18B20()
         cls.test_external_ip = externalip.ExternalIP()
@@ -483,6 +484,83 @@ class TestSensors:
         self.test_snmpcustom.get_data(self.test_sens_data, self.test_out_queue)
         assert_equal(self.test_out_queue.get(), test_sensor_error_data)
 
+    # SNMP Custom String
+    def test_snmpcustomstring_get_kind(self):
+        """snmpcustomstring returns the correct kind"""
+        assert_equal(self.test_snmpcustomstring.get_kind(), 'mpsnmpcustomstring')
+
+    def test_snmpcustomstring_get_sensordef(self):
+        """snmpcustomstring returns correct definition"""
+        test_sensordef = {
+                "kind": self.test_snmpcustomstring.get_kind(),
+                "name": "SNMP Custom String",
+                "description": "Monitors a string value returned by a specific OID using SNMP",
+                "help": "Monitors a string value returned by a specific OID using SNMP",
+                "tag": "mpsnmpcustomstringsensor",
+                "groups": [
+                    {
+                        "name": "OID values",
+                        "caption": "OID values",
+                        "fields": [
+                            {
+                                "type": "edit",
+                                "name": "oid",
+                                "caption": "OID Value",
+                                "required": "1",
+                                "help": "Please enter the OID value."
+                            },
+                            {
+                                "type": "edit",
+                                "name": "unit",
+                                "caption": "Unit String",
+                                "default": "#",
+                                "help": "Enter a 'unit' string, e.g. 'ms', 'Kbyte' (for display purposes only)."
+                            },
+                            {
+                                "type": "radio",
+                                "name": "snmp_version",
+                                "caption": "SNMP Version",
+                                "required": "1",
+                                "help": "Choose your SNMP Version",
+                                "options": {
+                                    "1": "V1",
+                                    "2": "V2c",
+                                    "3": "V3"
+                                },
+                                "default": 2
+                            },
+                            {
+                                "type": "edit",
+                                "name": "community",
+                                "caption": "Community String",
+                                "required": "1",
+                                "help": "Please enter the community string."
+                            },
+                            {
+                                "type": "integer",
+                                "name": "port",
+                                "caption": "Port",
+                                "required": "1",
+                                "default": 161,
+                                "help": "Provide the SNMP port"
+                            }
+                        ]
+                    }
+                ]
+        }
+        assert_equal(self.test_snmpcustomstring.get_sensordef(), test_sensordef)
+
+    def test_snmptcustomstring_get_data_error(self):
+        """snmpcustomstring returns error data in expected format"""
+        test_sensor_error_data = {
+                    "sensorid": int(self.test_sens_data['sensorid']),
+                    "error": "Exception",
+                    "code": 1,
+                    "message": "SNMP Request failed. See log for details"
+        }
+        self.test_snmpcustomstring.get_data(self.test_sens_data, self.test_out_queue)
+        assert_equal(self.test_out_queue.get(), test_sensor_error_data)
+
     # Diskspace
     def test_diskspace_get_kind(self):
         """diskspace returns the correct kind"""
@@ -879,9 +957,11 @@ class TestSensors:
         test_sensordef = {
                 "kind": self.test_probehealth.get_kind(),
                 "name": "Probe Health",
-                "description": "Internal sensor used to monitor the health of a PRTG probe",
+                "description": "Internal sensor used to monitor the health of a PRTG probe on the system the mini "
+                               "probe is running on",
                 "default": "yes",
-                "help": "Internal sensor used to monitor the health of a PRTG probe",
+                "help": "Internal sensor used to monitor the health of a PRTG probe on the system the "
+                        "mini probe is running on",
                 "tag": "mpprobehealthsensor",
                 "groups": [
                     {
