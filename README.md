@@ -66,7 +66,7 @@ or
     sudo service prtgprobe stop
 
 
-Instalation of DS18B20
+Installation of DS18B20
 ----------------------
 Requirements:
 - DS18B20
