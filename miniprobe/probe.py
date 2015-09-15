@@ -142,7 +142,8 @@ class Probe(object):
         send processed data to the core
         """
         try:
-            data_request = self.mini_probe.request_to_core("data", json.dumps(self.data_request_payload_json), self.config)
+            data_request = self.mini_probe.request_to_core("data", json.dumps(self.data_request_payload_json),
+                                                           self.config)
             if data_request.status_code == requests.codes.ok:
                 logging.info("Data success.")
                 logging.debug("Data success. Details: HTTP Status %s, Message: %s"
@@ -187,7 +188,8 @@ class Probe(object):
                 self.task_request_response_json = task_request.json()
                 logging.debug("JSON response: %s" % self.task_request_response_json)
                 if self.config['subprocs']:
-                    json_response_chunks = self.mini_probe.split_json_response(self.task_request_response_json, self.config['subprocs'])
+                    json_response_chunks = self.mini_probe.split_json_response(self.task_request_response_json,
+                                                                               self.config['subprocs'])
                 else:
                     json_response_chunks = self.mini_probe.split_json_response(self.task_request_response_json)
                 for element in json_response_chunks:
@@ -198,6 +200,7 @@ class Probe(object):
                                 p = multiprocessing.Process(target=sensor.get_data, args=(part, self.out_queue),
                                                             name=part['kind'])
                                 self.procs.append(p)
+                                logging.debug("Spawning sensor %s." % p.name)
                                 p.start()
                             else:
                                 pass
