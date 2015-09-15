@@ -56,12 +56,7 @@ class APT(object):
         upgrade = 0
         install = 0
         remove = 0
-        if locale == "en_GB.UTF-8" or "'en_US.UTF-8'":
-            ret = os.popen("apt-get -s dist-upgrade | grep 'newly inst'")
-        elif locale == "de_DE.UTF-8":
-            ret = os.popen("apt-get -s dist-upgrade | grep 'neu inst'")
-        else:
-            raise Exception
+        ret = os.popen("LC_ALL=C apt-get -s dist-upgrade | grep 'newly inst'")
         updatedata = ret.readlines()
         ret.close()
         for line in updatedata:
