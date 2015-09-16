@@ -95,10 +95,13 @@ class Port(object):
             response_time = (end_time - start_time) * 1000
         except socket.gaierror as e:
             logging.error(e)
+            raise
         except socket.timeout as e:
             logging.error(e)
+            raise
         except Exception as e:
             logging.error(e)
+            raise
 
         channel_list = [
             {

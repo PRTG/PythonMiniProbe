@@ -55,7 +55,7 @@ class MDADM(object):
         for index in range(len(raidArrayList)):
             # Searching for list entries beginning with "md"
             if re.match('^md', raidArrayList[index]):
-                    print raidArrayList[index]
+                    print(raidArrayList[index])
                     if '_' in raidArrayList[index]:
                             # adrive missing can also be a defect drive. Defect or missing drives are marked with an "_" instead of an "U" in the drive list
                             arraysMissingDrives += 1
