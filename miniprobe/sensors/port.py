@@ -47,8 +47,8 @@ class Port(object):
         sensordefinition = {
             "kind": Port.get_kind(),
             "name": "Port",
-            "description": "Monitors the availability of a port or port range on a target system",
-            "help": "test",
+            "description": "Monitors the availability of a port on a target system",
+            "help": "Monitors the availability of a port on a target system",
             "tag": "mpportsensor",
             "groups": [
                 {
