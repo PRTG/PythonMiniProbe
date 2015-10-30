@@ -52,6 +52,7 @@ class APT(object):
         return sensordefinition
 
     def check(self):
+        locale = os.getenv('LANG')
         upgrade = 0
         install = 0
         remove = 0

@@ -284,15 +284,15 @@ class NMAP(object):
         icmp = socket.getprotobyname("icmp")
         try:
             my_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp)
-        except socket.error, (errno, msg):
-            if errno == 1:
+        except socket.error as serr:
+            if serr.errno == 1:
                 # Operation not permitted
-                msg = msg + (
+                serr.msg += (
                     " - Note that ICMP messages can only be sent from processes"
                     " running as root."
                 )
-                raise socket.error(msg)
-            raise # raise the original error
+                raise socket.error(serr.msg)
+            raise  # raise the original error
         my_ID = os.getpid() & 0xFFFF
         self.send_one_ping(my_socket, dest_addr, my_ID)
         delay = self.receive_one_ping(my_socket, my_ID, timeout)

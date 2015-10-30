@@ -32,6 +32,10 @@ import gc
 import logging
 import subprocess
 import os
+import requests
+import warnings
+
+from requests.packages.urllib3 import exceptions
 
 # import own modules
 sys.path.append('./')
@@ -39,15 +43,16 @@ sys.path.append('./')
 try:
     import sensors
 except Exception as e:
-    print e
+    print(e)
 
 
 class MiniProbe(object):
     """
     Main class for the Python Mini Probe
     """
-    def __init__(self):
+    def __init__(self, http):
         gc.enable()
+        self.http = http
         logging.basicConfig(
             filename="./logs/probe.log",
             filemode="a",
@@ -101,6 +106,7 @@ class MiniProbe(object):
         """
         create hash of probes access key
         """
+        key = key.encode('utf-8')
         return hashlib.sha1(key).hexdigest()
 
     def create_parameters(self, config, jsondata, i=None):
@@ -141,6 +147,46 @@ class MiniProbe(object):
             if not sensor.get_sensordef() == "":
                 sensors_avail.append(sensor.get_sensordef())
         return sensors_avail
+
+    def build_task(self, config):
+        """
+        build data payload for task request.
+        """
+        task = {
+            'gid': config['gid'],
+            'protocol': config['protocol'],
+            'key': self.hash_access_key(config['key'])
+        }
+        return task
+
+    def request_to_core(self, req_type, data, config):
+        """
+        perform different request types to the core
+        """
+        url = self.create_url(config, req_type, self.http)
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", exceptions.InsecureRequestWarning)
+                request_to_core = requests.post(url, data=data, verify=False, timeout=30)
+                logging.info("%s request successfully sent to PRTG Core Server at %s:%s."
+                             % (req_type, config["server"], config["port"]))
+                logging.debug("Connecting to %s:%s" % (config["server"], config["port"]))
+                logging.debug("Status Code: %s | Message: %s" % (request_to_core.status_code, request_to_core.text))
+                return request_to_core
+        except requests.exceptions.Timeout:
+            logging.error("%s Timeout: %s" % (req_type, str(data)))
+            raise
+        except Exception as req_except:
+            logging.error("Exception %s!" % req_except)
+            raise
+
+    def split_json_response(self, json_response, size=None):
+        """
+        split up response from task request into predefined chunk sizes
+        """
+        if not size:
+            size = "10"
+        return [json_response[i:i + int(size)] for i in range(0, len(json_response), int(size))]
 
     @staticmethod
     def clean_mem():

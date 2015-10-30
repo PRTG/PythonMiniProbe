@@ -4,6 +4,7 @@ python:
   - "3.2"
   - "3.3"
   - "3.4"
+  - "3.5"
 os:
   - linux
 matrix:
@@ -11,12 +12,18 @@ matrix:
     - python: "3.2"
     - python: "3.3"
     - python: "3.4"
+    - python: "3.5"
 branches:
   only:
     - master
     - development
 install:
   - pip install --upgrade pip
-  - pip install -r requirements.txt
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then pip install -r requirements.txt; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install -r requirements3.txt; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then pip install -r requirements3.txt; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then pip install -r requirements3.txt; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then pip install -r requirements3.txt; fi
+
 script: 
   - nosetests -v

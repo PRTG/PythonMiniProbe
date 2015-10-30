@@ -42,9 +42,11 @@ class Probehealth(object):
         sensordefinition = {
             "kind": Probehealth.get_kind(),
             "name": "Probe Health",
-            "description": "Internal sensor used to monitor the health of a PRTG probe",
+            "description": "Internal sensor used to monitor the health of a PRTG probe on the system the mini probe "
+                           "is running on",
             "default": "yes",
-            "help": "Internal sensor used to monitor the health of a PRTG probe",
+            "help": "Internal sensor used to monitor the health of a PRTG probe on the system the mini probe "
+                    "is running on",
             "tag": "mpprobehealthsensor",
             "groups": [
                 {
