@@ -52,10 +52,11 @@ class APT(object):
         return sensordefinition
 
     def check(self):
+        locale = os.getenv('LANG')
         upgrade = 0
         install = 0
         remove = 0
-        ret = os.popen("apt-get -s dist-upgrade | grep 'newly inst'")
+        ret = os.popen("LC_ALL=C apt-get -s dist-upgrade | grep 'newly inst'")
         updatedata = ret.readlines()
         ret.close()
         for line in updatedata:
