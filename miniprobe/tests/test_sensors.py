@@ -3,7 +3,7 @@
 import sys
 from nose.tools import *
 from miniprobe.sensors import adns, apt, cpuload, cputemp, diskspace, ds18b20, externalip, http, memory, nmap, ping, \
-    port, portrange, probehealth, snmpcustom, snmptraffic, blacklist, snmpcustomstring
+    port, portrange, probehealth, snmpcustom, snmptraffic, blacklist, snmpcustomstring, postfix
 import multiprocessing
 
 class TestSensors:
@@ -27,6 +27,7 @@ class TestSensors:
         cls.test_portrange = portrange.Portrange()
         cls.test_probehealth = probehealth.Probehealth()
         cls.test_blacklist = blacklist.Blacklist()
+        cls.test_postfix = postfix.Postfix()
         cls.test_out_queue = multiprocessing.Queue()
         cls.test_sens_data = {'sensorid': '4567'}
 
@@ -1066,3 +1067,21 @@ class TestSensors:
                          "limitmode": 1,
                          "value": 0}]
         assert_equal(self.test_blacklist.get_blacklist(['', 0, 0, 0]), test_channel)
+
+    #postfix
+    def test_postfix_get_kind(self):
+        """postfix returns the correct kind"""
+        assert_equal(self.test_postfix.get_kind(), 'mppostfix')
+
+    def test_postfix(self):
+        """postfix returns the correct definition"""
+        test_sensordef = {
+            "kind": self.test_postfix.get_kind(),
+            "name": "Postfix Mailqueue",
+            "description": "Monitors the mailqueue of a postfix server",
+            "help": "Monitors the mailqueue of a postfix server for active, deferred, hold or corrupt mail",
+            "tag": "mppostfixsensor",
+            "fields": [],
+            "groups": []
+        }
+        assert_equal(self.test_postfix.get_sensordef(), test_sensordef)
