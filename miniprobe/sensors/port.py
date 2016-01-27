@@ -47,8 +47,8 @@ class Port(object):
         sensordefinition = {
             "kind": Port.get_kind(),
             "name": "Port",
-            "description": "Monitors the availability of a port or port range on a target system",
-            "help": "test",
+            "description": "Monitors the availability of a port on a target system",
+            "help": "Monitors the availability of a port on a target system",
             "tag": "mpportsensor",
             "groups": [
                 {
@@ -94,11 +94,14 @@ class Port(object):
             end_time = time.time()
             response_time = (end_time - start_time) * 1000
         except socket.gaierror as e:
-            print e
+            logging.error(e)
+            raise
         except socket.timeout as e:
-            print e
+            logging.error(e)
+            raise
         except Exception as e:
-            print "test %s" % e
+            logging.error(e)
+            raise
 
         channel_list = [
             {
