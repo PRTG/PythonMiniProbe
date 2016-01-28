@@ -91,7 +91,7 @@ class Diskspace(object):
                         "mode": "integer",
                         "kind": "BytesDisk",
                         "value": int(line[1]) * 1024}
-            channel2 = {"name": "Used Bytes" + str(line[0]),
+            channel2 = {"name": "Used Bytes " + str(line[0]),
                         "mode": "integer",
                         "kind": "BytesDisk",
                         "value": int(line[2]) * 1024}
@@ -107,7 +107,7 @@ class Diskspace(object):
                         "mode": "float",
                         "kind": "Percent",
                         "value": free * 100}
-            channel5 = {"name": "Used Space" + str(line[0]),
+            channel5 = {"name": "Used Space " + str(line[0]),
                         "mode": "float",
                         "kind": "Percent",
                         "value": used * 100}
