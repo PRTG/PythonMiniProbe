@@ -1,4 +1,3 @@
-__all__ = ['Ping', 'HTTP', 'Port', 'SNMPCustom', 'CPULoad', 'Memory', 'Diskspace', 'SNMPTraffic', 'CPUTemp', 'Probehealth', 'ExternalIP', 'ADNS', 'APT', 'NMAP', 'MDADM', 'Postfix']
 # Copyright (c) 2014, Paessler AG <support@paessler.com>
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -22,4 +21,4 @@ __all__ = ['Ping', 'HTTP', 'Port', 'SNMPCustom', 'CPULoad', 'Memory', 'Diskspace
 # Announce modules available in this package
 # Just extend this list for your modules and they will be automatically imported during runtime and
 # are announced to the PRTG Core
-__all__ = ['Ping', 'HTTP', 'Port', 'SNMPCustom', 'CPULoad', 'Memory', 'Diskspace', 'SNMPTraffic', 'CPUTemp', 'Probehealth', 'ExternalIP', 'ADNS', 'APT', 'NMAP', 'MDADM', 'Postfix']
+__all__ = ['Ping', 'HTTP', 'Port', 'SNMPCustom', 'SNMPCusotmString', 'SNMPLoad', 'SNMPMemory', 'SNMPDisk', 'SNMPProcess', 'CPULoad', 'Memory', 'Diskspace', 'SNMPTraffic', 'CPUTemp', 'Probehealth', 'ExternalIP', 'ADNS', 'APT', 'NMAP', 'MDADM', 'Postfix']

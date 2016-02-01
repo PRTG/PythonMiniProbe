@@ -22,7 +22,6 @@
 import sys
 import gc
 import logging
-import time
 
 try:
     from pysnmp.entity.rfc3413.oneliner import cmdgen
@@ -33,7 +32,7 @@ except Exception as e:
     pass
 
 
-class SNMPCustomString(object):
+class SNMPProcess(object):
 
     def __init__(self):
         gc.enable()
@@ -43,7 +42,7 @@ class SNMPCustomString(object):
         """
         return sensor kind
         """
-        return "mpsnmpcustomstring"
+        return "mpsnmpprocess"
 
     @staticmethod
     def get_sensordef():
@@ -51,11 +50,11 @@ class SNMPCustomString(object):
         Definition of the sensor and data to be shown in the PRTG WebGUI
         """
         sensordefinition = {
-            "kind": SNMPCustomString.get_kind(),
-            "name": "SNMP Custom String",
-            "description": "Monitors a string value returned by a specific OID using SNMP",
-            "help": "Monitors a string value returned by a specific OID using SNMP",
-            "tag": "mpsnmpcustomstringsensor",
+            "kind": SNMPProcess.get_kind(),
+            "name": "SNMP Process",
+            "description": "Monitors process count using SNMP",
+            "help": "Monitors process count using SNMP",
+            "tag": "mpsnmpprocesssensor",
             "groups": [
                 {
                     "name": "OID values",
@@ -63,10 +62,10 @@ class SNMPCustomString(object):
                     "fields": [
                         {
                             "type": "edit",
-                            "name": "oid",
-                            "caption": "OID Value",
+                            "name": "process_name",
+                            "caption": "Process Name",
                             "required": "1",
-                            "help": "Please enter the OID value."
+                            "help": "Provide the process name"
                         },
                         {
                             "type": "radio",
@@ -104,39 +103,54 @@ class SNMPCustomString(object):
             sensordefinition = ""
         return sensordefinition
 
-    def snmp_get(self, oid, target, snmp_type, community, port, unit):
+    def snmp_get(self, target, community, port, process_name):
         try:
             sys.path.append('./')
             from pysnmp.entity.rfc3413.oneliner import cmdgen
-            start = time.clock()
             snmpget = cmdgen.CommandGenerator()
-            error_indication, error_status, error_index, var_binding = snmpget.getCmd(
-                cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), oid)
-            end = time.clock()
-            delta = (end - start) * 1000
+            error_indication, error_status, error_index, var_bind_table = snmpget.bulkCmd(
+                cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), 
+                0,
+                25,
+                '.1.3.6.1.4.1.2021.2.1.2'
+            )
+            
+            index = -1
+
+            for var_bind_table_row in var_bind_table:
+                for name, val in var_bind_table_row:
+                    if val == process_name:
+                        index = name[len(name) - 1]
+                        break
+
+            if index == -1:
+                raise Exception('Process not found')            
+            else:
+                snmpget = cmdgen.CommandGenerator()
+                error_indication, error_status, error_index, var_binding = snmpget.getCmd(
+                    cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), 
+                    ".1.3.6.1.4.1.2021.2.1.5.%d" % index
+                )
         except Exception as import_error:
             logging.error(import_error)
             raise
 
-        channel_list = [ 
-            {   
-                "name": "Response Time",
-                "mode": "float",
-                "kind": "TimeResponse",
-                "value": float(delta)
+        channellist = [
+            {
+                "name": "Process Count",
+                "mode": "integer",
+                "kind": "Custom",
+                "customunit": "",
+                "value": int(var_binding[0][1])
             }
-        ]  
-        return (
-            str(var_binding[0][1]),
-            channel_list
-        )
+        ]
+        return channellist
 
     @staticmethod
     def get_data(data, out_queue):
-        snmpcustom = SNMPCustomString()
+        snmpcustom = SNMPProcess()
         try:
-            snmp_data, channel = snmpcustom.snmp_get(str(data['oid']), data['host'], 'string',
-                                            data['community'], int(data['port']), '')
+            snmp_data = snmpcustom.snmp_get(data['host'], data['community'], int(data['port']), str(data['process_name']))
             logging.debug("Running sensor: %s" % snmpcustom.get_kind())
         except Exception as get_data_error:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (snmpcustom.get_kind(),
@@ -153,8 +167,8 @@ class SNMPCustomString(object):
 
         data = {
             "sensorid": int(data['sensorid']),
-            "message": snmp_data,
-            "channel": channel
+            "message": "OK",
+            "channel": snmp_data
         }
         del snmpcustom
         gc.collect()
