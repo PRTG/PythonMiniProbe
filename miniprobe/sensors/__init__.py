@@ -21,4 +21,4 @@
 # Announce modules available in this package
 # Just extend this list for your modules and they will be automatically imported during runtime and
 # are announced to the PRTG Core
-__all__ = ['Ping', 'HTTP', 'Port', 'SNMPCustom', 'SNMPCusotmString', 'SNMPLoad', 'SNMPMemory', 'SNMPDisk', 'SNMPProcess', 'CPULoad', 'Memory', 'Diskspace', 'SNMPTraffic', 'CPUTemp', 'Probehealth', 'ExternalIP', 'ADNS', 'APT', 'NMAP', 'MDADM', 'Postfix']
+__all__ = ['Ping', 'HTTP', 'Port', 'SNMPCustom', 'SNMPCustomString', 'SNMPLoad', 'SNMPMemory', 'SNMPDisk', 'SNMPProcess', 'CPULoad', 'Memory', 'Diskspace', 'SNMPTraffic', 'CPUTemp', 'Probehealth', 'ExternalIP', 'ADNS', 'APT', 'NMAP', 'MDADM', 'Postfix']
