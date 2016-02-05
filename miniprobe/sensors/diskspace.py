@@ -83,19 +83,19 @@ class Diskspace(object):
     def read_disk(self):
         disks = []
         channel_list = []
-        for line in os.popen("df -k"):
-            if line.startswith("/"):
+        for line in os.popen("df -k -xtmpfs -xdevtmpfs"):
+            if not line.startswith("Filesystem"):
                 disks.append(line.rstrip().split())
         for line in disks:
-            channel1 = {"name": "Total Bytes " + str(line[0]),
+            channel1 = {"name": "Total Bytes " + str(line[5]),
                         "mode": "integer",
                         "kind": "BytesDisk",
                         "value": int(line[1]) * 1024}
-            channel2 = {"name": "Used Bytes" + str(line[0]),
+            channel2 = {"name": "Used Bytes " + str(line[5]),
                         "mode": "integer",
                         "kind": "BytesDisk",
                         "value": int(line[2]) * 1024}
-            channel3 = {"name": "Free Bytes " + str(line[0]),
+            channel3 = {"name": "Free Bytes " + str(line[5]),
                         "mode": "integer",
                         "kind": "BytesDisk",
                         "value": int(line[3]) * 1024}
@@ -103,11 +103,11 @@ class Diskspace(object):
             used = float(line[2]) / total
             free = float(line[3]) / total
 
-            channel4 = {"name": "Free Space " + str(line[0]),
+            channel4 = {"name": "Free Space " + str(line[5]),
                         "mode": "float",
                         "kind": "Percent",
                         "value": free * 100}
-            channel5 = {"name": "Used Space" + str(line[0]),
+            channel5 = {"name": "Used Space " + str(line[5]),
                         "mode": "float",
                         "kind": "Percent",
                         "value": used * 100}
