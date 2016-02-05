@@ -19,10 +19,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
 import gc
 import logging
-import time
 
 try:
     from pysnmp.entity.rfc3413.oneliner import cmdgen
@@ -33,7 +31,7 @@ except Exception as e:
     pass
 
 
-class SNMPCustomString(object):
+class SNMPMemory(object):
 
     def __init__(self):
         gc.enable()
@@ -43,7 +41,7 @@ class SNMPCustomString(object):
         """
         return sensor kind
         """
-        return "mpsnmpcustomstring"
+        return "mpsnmpmemory"
 
     @staticmethod
     def get_sensordef():
@@ -51,22 +49,27 @@ class SNMPCustomString(object):
         Definition of the sensor and data to be shown in the PRTG WebGUI
         """
         sensordefinition = {
-            "kind": SNMPCustomString.get_kind(),
-            "name": "SNMP Custom String",
-            "description": "Monitors a string value returned by a specific OID using SNMP",
-            "help": "Monitors a string value returned by a specific OID using SNMP",
-            "tag": "mpsnmpcustomstringsensor",
+            "kind": SNMPMemory.get_kind(),
+            "name": "SNMP Memory",
+            "description": "Monitors Memory or SWAP using SNMP",
+            "help": "Monitors Memory or SWAP using SNMP",
+            "tag": "mpsnmpmemorysensor",
             "groups": [
                 {
-                    "name": "OID values",
-                    "caption": "OID values",
+                    "name": "SNMP Settings",
+                    "caption": "SNMP Settings",
                     "fields": [
                         {
-                            "type": "edit",
-                            "name": "oid",
-                            "caption": "OID Value",
+                            "type": "radio",
+                            "name": "memory_type",
+                            "caption": "Memory Type",
                             "required": "1",
-                            "help": "Please enter the OID value."
+                            "help": "Choose memory type to monitor.",
+                            "options": {
+                                "1": "Memory",
+                                "2": "SWAP"
+                            },
+                            "default": 1
                         },
                         {
                             "type": "radio",
@@ -98,48 +101,78 @@ class SNMPCustomString(object):
                         }
                     ]
                 }
-            ]
+            ],
+            "fields": []
         }
         if not snmp:
             sensordefinition = ""
         return sensordefinition
 
-    def snmp_get(self, oid, target, snmp_type, community, port, unit):
-        try:
-            sys.path.append('./')
-            from pysnmp.entity.rfc3413.oneliner import cmdgen
-            start = time.clock()
-            snmpget = cmdgen.CommandGenerator()
-            error_indication, error_status, error_index, var_binding = snmpget.getCmd(
-                cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), oid)
-            end = time.clock()
-            delta = (end - start) * 1000
-        except Exception as import_error:
-            logging.error(import_error)
-            raise
+    def snmp_get(self, target, community, port, memory_type):
+        if memory_type == 1:
+            data = ['.1.3.6.1.4.1.2021.4.5.0', '.1.3.6.1.4.1.2021.4.6.0']
+        else:
+            data = ['.1.3.6.1.4.1.2021.4.3.0', '.1.3.6.1.4.1.2021.4.4.0']
+        snmpget = cmdgen.CommandGenerator()
+        error_indication, error_status, error_index, var_binding = snmpget.getCmd(
+            cmdgen.CommunityData(community), cmdgen.UdpTransportTarget((target, port)), *data)
+        if error_indication:
+            raise Exception(error_indication)
+  
+        total = int(var_binding[0][1]) * 1024
+        free = int(var_binding[1][1]) * 1024
+        used = total - free
+        free_percentage = float((float(free) / float(total)) * 100)
+        used_percentage = float(100 - free_percentage)
 
-        channel_list = [ 
-            {   
-                "name": "Response Time",
+        channellist = [
+            {
+                "name": "Used %",
                 "mode": "float",
-                "kind": "TimeResponse",
-                "value": float(delta)
+                "kind": "Percent",
+                "value": used_percentage
+            },
+            {   
+                "name": "Free %",
+                "mode": "float",
+                "kind": "Percent",
+                "value": free_percentage
+            },  
+            {
+                "name": "Total",
+                "mode": "integer",
+                "unit": "BytesMemory",
+                "value": total
+            },
+            {   
+                "name": "Used",
+                "mode": "integer",
+                "unit": "BytesMemory",
+                "value": used
+            },
+            {
+                "name": "Free",
+                "mode": "integer",
+                "unit": "BytesMemory",
+                "value": free
             }
-        ]  
-        return (
-            str(var_binding[0][1]),
-            channel_list
-        )
+        ]
+        return channellist
 
     @staticmethod
     def get_data(data, out_queue):
-        snmpcustom = SNMPCustomString()
+        snmpmemory = SNMPMemory()
         try:
-            snmp_data, channel = snmpcustom.snmp_get(str(data['oid']), data['host'], 'string',
-                                            data['community'], int(data['port']), '')
-            logging.debug("Running sensor: %s" % snmpcustom.get_kind())
+            snmp_data = snmpmemory.snmp_get(
+                data['host'],
+                data['community'], 
+                int(data['port']), 
+                int(data['memory_type'])
+            )
+            logging.debug("Running sensor: %s" % snmpmemory.get_kind())
         except Exception as get_data_error:
-            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (snmpcustom.get_kind(),
+            print get_data_error
+            logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (snmpmemory.get_kind(),
                                                                                          data['sensorid'],
                                                                                          get_data_error))
             data = {
@@ -153,10 +186,10 @@ class SNMPCustomString(object):
 
         data = {
             "sensorid": int(data['sensorid']),
-            "message": snmp_data,
-            "channel": channel
+            "message": "OK",
+            "channel": snmp_data
         }
-        del snmpcustom
+        del snmpmemory
         gc.collect()
         out_queue.put(data)
         return 0
