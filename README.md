@@ -1,7 +1,11 @@
 PythonMiniProbe
 ===============
 
-Current Status: BETA  
+## There are major changes planned to the underlying API in PRTG. Therefore, this project is currently on hold.
+
+Further news will be provided here.
+
+Current Status: BETA ON-HOLD  
 MiniProbe POC for PRTG Network Monitor written in Python which accesses the MiniProbe Interface on the PRTG Core Server.
   
 DO NOT USE THIS BRANCH IN PRODUCTION! Development!
