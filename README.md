@@ -1,27 +1,40 @@
 PythonMiniProbe
 ===============
 
-## There are major changes planned to the underlying API in PRTG. Therefore, this project is currently on hold.
+With the current version of PRTG, you can use the Mini Probe interface with your custom code to implement solutions to special scenarios that you might have in your network. Please note that there are major changes planned to the underlying API in PRTG. Therefore, any code you write now will likely need to be changed later, so it can be used for future versions of PRTG.
+Further news about changing interfaces will be provided here as soon as there are more detailed plans available.
 
-Further news will be provided here.
+Current Status: BETA
 
-Current Status: BETA ON-HOLD  
 MiniProbe POC for PRTG Network Monitor written in Python which accesses the MiniProbe Interface on the PRTG Core Server.
   
-DO NOT USE THIS BRANCH IN PRODUCTION! Development!
+
 
 Build Status
 ------------
 [![Build Status](https://travis-ci.org/PaesslerAG/PythonMiniProbe.svg?branch=development)](https://travis-ci.org/PaesslerAG/PythonMiniProbe)
 
 IMPORTANT: Major changes in this branch. Please see Migration Howto below!
-Installation for this branch
-----------------------------
+Installation
+------------
+- set up your PRTG server to use HTTPS (other connection methods not allowed at the moment)
+- allow MiniProbes to connect (Setup -> Probes -> Allow MiniProbes to connect)
+- make sure you can reach the PRTG web interface from the machine the mini probe should run on (e.g. wget https://YOUR_PRTG_SERVER)
+  - This is tested during the setup
 - Install python-dev and build-essential (or at least gcc) packages
 - Install pip as outlined here https://pip.pypa.io/en/latest/installing.html (pre Python 2.7.9)
 - Download either zip or clone repository
 - run command 'sudo python setup.py install' which will install all necessary packages
 - run command 'sudo python setup.py configure' which will bring up the configuration dialogue
+
+The miniprobe should now be started. You should also be able to start/stop the same using the command
+
+    sudo service prtgprobe start
+
+or
+
+    sudo service prtgprobe stop
+
 
 Migration Guide
 ---------------
@@ -49,25 +62,6 @@ Module list deprecated as pip will resolve dependencies!
 - pysnmp (https://pypi.python.org/pypi/pysnmp/4.2.5)  
 - requests (https://pypi.python.org/pypi/requests/2.5.3)
 - dnspython (https://pypi.python.org/pypi/dnspython/1.12.0)
-
-Installation
-------------
-- set up your PRTG server to use HTTPS (other connection methods not allowed at the moment)
-- allow MiniProbes to connect (Setup -> Probes -> Allow MiniProbes to connect)
-- make sure you can reach the PRTG web interface from the machine the mini probe should run on (e.g. wget https://YOUR_PRTG_SERVER)
-  - This is tested during the setup
-- Install python-dev and build-essential (or at least gcc) packages
-- Install pip as outlined here https://pip.pypa.io/en/latest/installing.html (pre Python 2.7.9)
-- Download either zip or clone repository
-- run command 'sudo python setup.py install' which will install all necessary packages
-
-The miniprobe should now be started. You should also be able to start/stop the same using the command
-
-    sudo service prtgprobe start
-
-or
-
-    sudo service prtgprobe stop
 
 
 Installation of DS18B20
@@ -118,6 +112,10 @@ Changelog
 =========
 
 =======
+
+12-02-16
+--------
+- Status update on future of Mini Probe API
 
 23-07-2015
 ----------
