@@ -49,7 +49,7 @@ class ExternalIP(object):
             "name": "External IP",
             "description": "Returns the external ip address of the probe",
             "default": "yes",
-            "help": "Returns the external ip address of the probe using the website icanhasip.com",
+            "help": "Returns the external ip address of the probe using the website icanhazip.com",
             "tag": "mpexternalipsensor",
             "fields": [],
             "groups": []
