@@ -1,3 +1,7 @@
+# Important
+**From now on this project is completely deprecated and only here for reference!**  
+Some time ago the Python Mini Probe project was rebooted and moved over to Gitlab. [Come over and check it out](https://gitlab.com/paessler-labs/prtg-pyprobe)! - Konstantin Wolff, Paessler AG 23/11/2020
+
 PythonMiniProbe
 ===============
 
