@@ -83,9 +83,8 @@ class Diskspace(object):
     def read_disk(self):
         disks = []
         channel_list = []
-        for line in os.popen("df -k -xtmpfs -xdevtmpfs"):
-            if not line.startswith("Filesystem"):
-                disks.append(line.rstrip().split())
+        for line in os.popen("df -k -xtmpfs -xdevtmpfs | sed '1d'"):
+            disks.append(line.rstrip().split())
         for line in disks:
             channel1 = {"name": "Total Bytes " + str(line[5]),
                         "mode": "integer",
