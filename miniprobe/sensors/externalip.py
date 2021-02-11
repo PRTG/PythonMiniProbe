@@ -49,7 +49,7 @@ class ExternalIP(object):
             "name": "External IP",
             "description": "Returns the external ip address of the probe",
             "default": "yes",
-            "help": "Returns the external ip address of the probe using the website icanhasip.com",
+            "help": "Returns the external ip address of the probe using the website icanhazip.com",
             "tag": "mpexternalipsensor",
             "fields": [],
             "groups": []
@@ -64,7 +64,7 @@ class ExternalIP(object):
         try:
             address = ip.get_ip(server)
             logging.debug("IP-Address: %s" % address)
-            localip = ip.local_ip('eth0')
+            localip = ip.local_ip()
             remoteip = ip.remote_ip(server)
         except Exception as e:
             logging.error("Ooops Something went wrong with '%s' sensor %s. Error: %s" % (ip.get_kind(),
@@ -111,10 +111,12 @@ class ExternalIP(object):
         ip.close
         return address
 
-    def local_ip(self, ifname):
+    def local_ip(self):
+        """
+        Get the IP address of the local interface which would route to Google DNS
+        """
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        return socket.inet_ntoa(fcntl.ioctl(
-            s.fileno(),
-            0x8915,  # SIOCGIFADDR
-            struct.pack('256s', ifname[:15])
-        )[20:24])
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        return local_ip
