@@ -455,7 +455,7 @@ class Configure(_install):
             print("%s. Exiting!" % e)
             return False
 
-if sys.version > (3, 0):
+if sys.version_info > (3, 0):
     py_requires = 'requirements3.txt'
 else:
     py_requires = 'requirements.txt'
